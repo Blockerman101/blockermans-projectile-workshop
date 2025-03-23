@@ -1,0 +1,36 @@
+
+    {
+
+        "Lobby":
+        {
+            "Max Team 1 Players": 1,
+            "Max Team 2 Players": 1
+        },
+
+        "Modes":
+        {
+            "Skirmish":
+            {
+                "Enabled Maps": ["Workshop Island Night"],
+                "Game Mode Start": "Immediately",
+                "Respawn As Random Hero": true,
+                "Respawn Time Scalar": 40
+            }
+        },
+
+        "Heroes":
+        {
+            "General":
+            {
+                "Enabled Heroes": ["Soldier: 76"]
+            }
+            
+        },
+
+        "Extensions":
+        {
+            "Projectiles": true,
+            "Spawn More Dummy Bots": true,
+            "Play More Effects": true
+        }
+    }

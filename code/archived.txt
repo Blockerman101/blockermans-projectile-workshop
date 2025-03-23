@@ -1,0 +1,177 @@
+void CreateCustomProjectile(ProjectileArgs Args) "[BMPW] CreateProj Sub"
+{
+    lastProjectileID++;
+    Number[] one: [1, constructorQueue.Filter(v => v.ConstructorID == 1).Length]; //# of ID-1, enumerated
+    Number[] two: [2, constructorQueue.Filter(v => v.ConstructorID == 2).Length]; //# of ID-2, enumerated
+    Number[] three: [3, constructorQueue.Filter(v => v.ConstructorID == 3).Length]; //# of ID-3, enumerated
+    Number[] four: [4, constructorQueue.Filter(v => v.ConstructorID == 4).Length]; //# of ID-4, enumerated
+    Number[] five: [5, constructorQueue.Filter(v => v.ConstructorID == 5).Length]; //# of ID-5, enumerated
+    Any[] sorted2: [one, two, three, four, five].Sort(v => v[1]); //the above arrays, sorted based on size of queue lowest -> highest
+    Number ID: sorted2.First[0]; //The constructor ID with the lowest amount of queues
+    LogToInspector($"one: {one[1]}");
+    LogToInspector($"two: {two[1]}");
+    LogToInspector($"three: {three[1]}");
+    LogToInspector($"four: {four[1]}");
+    LogToInspector($"five: {five[1]}");
+    LogToInspector($"Constructor: {ID}");
+    Args.ProjID = lastProjectileID;
+    constructorQueue.ModAppend({args: Args, ConstructorID: ID});
+}
+
+
+
+disabled rule: '[BMPW] Constructor - 1'
+Event.OngoingGlobal
+if (constructorQueue.Filter(v => v.ConstructorID == 1).Length) //If there are any calls for the constructor with ID 1  //This0360
+{
+    ProjConstructor current: constructorQueue.Filter(v => v.ConstructorID == 1).First; //This0360
+    ProjectileArgs Args: constructorQueue.Filter(v => v.ConstructorID == 1).First.args; //This0360
+    //projConstructsInUse[1] = true;
+    Number time: (TotalTimeElapsed() - projData[EvaluateOnce(Args.GetID())].TimeOfCreation);
+    Vector a0: lerp2(projData[EvaluateOnce(Args.GetID())].Bezierp0, projData[EvaluateOnce(Args.GetID())].Bezierp1, time, 7);
+    Vector a1: lerp2(projData[EvaluateOnce(Args.GetID())].Bezierp1, projData[EvaluateOnce(Args.GetID())].Bezierp2, time, 7);
+    Vector b0: lerp2(a0, a1, time, 7);
+
+    
+    if (CountOf(Args)) //ensure projectile has info
+    {
+        ProjData data: {TimeOfCreation: TotalTimeElapsed(), Bezierp0: (Args.StartPosition), Bezierp1: (Args.StartPosition) + maxTime*(Args.Speed * Args.Direction) * 0.5, Bezierp2: (Args.StartPosition) + maxTime*(Args.Speed * Args.Direction) + maxTime^2 * (Args.Gravity / 2), Direction: Args.Direction, ProjState: projectileStates.InUse, VFX: 0};
+//        if (projData.Any(v => v.ProjState == projectileStates.Open)) //If a previously made index isn't being used, use that index instead of making another
+//        {
+//            Args.GetID() = projData.Map(v => v.ProjState == projectileStates.Open ? CurrentArrayIndex() : 0).Filter(v => v).First; //Take the first non-zero index
+//            projData[Args.GetID()] = data;
+//            //projData[Args.GetID()].TimeOfCreation = TotalTimeElapsed(); //time must be set before control points are set, because they utilize that updated time value
+//            //projData[Args.GetID()].Bezierp0 = (Args.StartPosition); //starting pos
+//            //projData[Args.GetID()].Bezierp1 = (Args.StartPosition) + maxTime*(Args.Speed * Args.Direction) * 0.5; //starting pos + velocity * 0.5
+//            //projData[Args.GetID()].Bezierp2 = (Args.StartPosition) + maxTime*(Args.Speed * Args.Direction) + maxTime^2 * (Args.Gravity / 2); //starting pos + velocity + acceleration
+//            //projData[Args.GetID()].Direction = Args.Direction;
+//            //projData[Args.GetID()].ProjState = projectileStates.InUse;
+//            //projData[Args.GetID()].VFX = 0;
+//            LogToInspector($"If fired! (Size: {projData.Length})");
+//        }
+//        else //this should always be appending for now, since the projectiles dont despawn yet
+//        {
+//            lastProjectileID = projData.Length; //no +1 here
+//            projData.ModAppend(data);
+//   
+//           
+//        }
+//        MinWait();
+//        //Wait(ServerLoadPeak()/256);
+//        CreateProjectileEffect(AllPlayers(), ProjectileType.BaptisteBioticLauncher, AllPlayers(), UpdateEveryFrame(b0), projData[EvaluateOnce(Args.GetID())].Direction * EvaluateOnce(Args.Speed) + EvaluateOnce(Args.Gravity) * time, EvaluateOnce(Args.Oversize), ProjectileEffectReeval.PositionDirectionAndSize);
+//        //CreateEffect(AllPlayers(), Effect.LightShaft, Color.White, UpdateEveryFrame(b0), 0.5, EffectRev.PositionAndRadius);
+//        projData[Args.GetID()].VFX = LastCreatedEntity();
+//        Wait(ServerLoadPeak()/128);
+        projData.ModAppend(data);
+        MinWait();
+        CreateProjectileEffect(AllPlayers(), ProjectileType.BaptisteBioticLauncher, AllPlayers(), UpdateEveryFrame(b0), projData[EvaluateOnce(Args.GetID())].Direction * EvaluateOnce(Args.Speed) + EvaluateOnce(Args.Gravity) * time, EvaluateOnce(Args.Oversize), ProjectileEffectReeval.PositionDirectionAndSize);
+        projData[Args.GetID()].VFX = LastCreatedEntity();
+        Wait(ServerLoadPeak()/256);
+    }
+    
+
+    else //create projectile with default info
+    {
+        LogToInspector("else fired");
+    }
+    //After called
+    constructorQueue.ModRemoveByValue({args: Args, ConstructorID: 1});  //This0360
+    projConstructsInUse[1] = false;  //This0360
+    MinWait();
+    LoopIfConditionIsTrue();
+}
+
+
+
+disabled rule: '[BMPW] Constructor Call Manager (Producer/Consumer)'
+Event.OngoingGlobal
+if (unassignedProjQueue.Length)
+if (projConstructsInUse.Filter(v => !v).Length)
+{
+    ProjectileArgs first: unassignedProjQueue.First;
+
+    Number ID: projConstructsInUse.Map(v => !v ? CurrentArrayIndex() : 0).Filter(v => v).First;
+    //constructorQueue.ModAppend({args: first, ConstructorID: ID});
+    projConstructsInUse[ID] = true;
+    //lastProjectileID = projData.Any(v => v.ProjState == projectileStates.Open) ? projData.Map(v => v.ProjState == projectileStates.Open ? CurrentArrayIndex() : 0).Filter(v => v).First : projData.Length;
+    unassignedProjQueue.ModRemoveByIndex(0);
+    MinWait();
+    LoopIfConditionIsTrue();
+}
+
+disabled rule: '[BMPW] Destructor - Remove Hanging Indices'
+Event.OngoingGlobal
+if (projData.Last.ProjState == projectileStates.Open)
+{
+    Number index = projData.Length - 1;
+    DestroyEffect(projData[index].VFX);
+    projData.ModRemoveByIndex(index);
+    //projData.Bezierp0.ModRemoveByIndex(projData.Size() - 1);
+    //projData.Bezierp1.ModRemoveByIndex(projData.Size() - 1);
+    //projData.Bezierp2.ModRemoveByIndex(projData.Size() - 1);
+    //projData.Direction.ModRemoveByIndex(projData.Size() - 1);
+    //projData.TimeOfCreation.ModRemoveByIndex(projData.Size() - 1);
+    //projData.VFX.ModRemoveByIndex(projData.Size() - 1);
+    //projData.ProjState.ModRemoveByIndex(projData.Size() - 1);
+    MinWait();
+    LoopIfConditionIsTrue();
+    
+
+}
+
+
+import "projCallManager.del";
+
+rule: 'Detect Collision'
+Event.OngoingGlobal
+if (aliveProjIDs.Length) //Are any projectiles alive right now?
+{
+    Boolean collided;
+    foreach (Number i in aliveProjIDs) //[1, aliveProjIDs.Length] "for every living projectile"
+    {
+ 
+
+//        //Simpler collision detection
+//        if (projData[i].ReadOnly.ProjSteepness < steepReqForChecks)
+//        {
+//            Vector position: projData[i].Position;
+//            Vector endPosition: projData[i].PositionAtTime(interval);
+//            Vector raycast: RayCastHitPosition(position, endPosition, null, null, true);
+//            collided = raycast != endPosition;
+//        }
+
+        //More rigorous collision, checks for false positives (Only used on proj's with a steep slope)
+//        else
+//        {
+            for (Number k = 0; k < rayCastCount(i); k++) //how many raycasts to use/what raycast your on
+            {
+                Vector position: projData[i].PositionAtTime(lerp2(0, interval, k/rayCastCount(i), 1));
+                Vector endPosition: projData[i].PositionAtTime(lerp2(0, interval, (k+1)/rayCastCount(i), 1));
+                Vector raycast: RayCastHitPosition(position, endPosition, null, null, true);
+//              if (raycast == Vector.Zero) {
+//                  LogToInspector("!-- ERROR --!");
+//                  LogToInspector($"Proj. ID: {i}");
+//                  LogToInspector($"Trial: {j}");
+//                  LogToInspector($"Ray Cast: {k}");
+//              }
+                collided = raycast != endPosition;
+                if (collided) {break;} //stop raycasting if the latest one hit something
+            }
+            if (!collided) {break;} //stop raycasting if none of them in the latest phase hit something
+        }
+//        if (collided) {ProjDestructor.Queue(i); LogToInspector($"Proj. {i} Collided!");}
+    }
+    WaitUntil(projData.Length != EvaluateOnce(projData.Length), interval);
+    LoopIfConditionIsTrue();
+
+}
+
+
+Number[] aliveProjIDs: projData.Map(v => CurrentArrayIndex()).Filter(v => projData[v].ProjState == projectileStates.Active);
+Number interval: 0.5; //How often to check for collision
+Number steepReqForChecks: 90; //Barrier for rigorous collision
+Number maxSteepness: 180;
+
+Number minRayCastCount: 1; //The minimum amount of raycast to subdivide for rigorous collision
+Number maxRayCastCount: 2; //The maximum amount of raycast to subdivide for rigorous collision
+Number rayCastCount(Number ID): projData[ID].ReadOnly.ProjSteepness < steepReqForChecks ? minRayCastCount : LinearInterpolate(minRayCastCount, maxRayCastCount, Min(maxSteepness, projData[ID].ReadOnly.ProjSteepness)/maxSteepness).Round();

@@ -1,0 +1,51 @@
+playervar define Flight;
+playervar define FlightKnockInterrupt;
+playervar define FlightSpeedMetersPerSecond = 20;
+
+rule: "DEBUG - Press interact to toggle flight on and off."
+Event.OngoingPlayer
+if (IsButtonHeld(EventPlayer(), Button.Crouch) && EventPlayer().IsButtonHeld(Button.Jump))
+{
+    Flight = !Flight;
+}
+
+rule: "Make Knockback Effective Against Flight"
+Event.PlayerReceivedKnockback
+{
+    FlightKnockInterrupt = 0.7;
+    ChaseVariableAtRate(FlightKnockInterrupt, 0, 1, RateChaseReevaluation.None);
+}
+
+rule: "Flight Mechanic - NOTE, disabling flight will set movespeed to 100%, if you have custom movespeed, wait 0.016 then set it again."
+Event.OngoingPlayer
+if (Flight == true)
+if (IsAlive(EventPlayer()) == true)
+{
+    SetGravity(EventPlayer(), 0);
+    SetMoveSpeed(EventPlayer(), 0);
+    while (Flight && IsAlive(EventPlayer()))
+    {
+        # If the player is giving any movement input
+        if (XOf(ThrottleOf(EventPlayer())) * -1 * Normalize(CrossProduct(FacingDirectionOf(EventPlayer()), Up())) + ZOf(ThrottleOf(EventPlayer())) * FacingDirectionOf(EventPlayer()) + (IsButtonHeld(EventPlayer(), Button.Jump) ? Up() : Vector(0, 0, 0)) + (IsButtonHeld(EventPlayer(), Button.Crouch) ? Down() : Vector(0, 0, 0)) != Vector(0, 0, 0))
+        {
+            if (FlightKnockInterrupt < 0.4)
+            {
+                # Remove a large portion of all momentum that is not in the player's intended direction
+                ApplyImpulse(EventPlayer(), VelocityOf(EventPlayer()) - DotProduct(VelocityOf(EventPlayer()), Normalize(XOf(ThrottleOf(EventPlayer())) * -1 * Normalize(CrossProduct(FacingDirectionOf(EventPlayer()), Up())) + ZOf(ThrottleOf(EventPlayer())) * FacingDirectionOf(EventPlayer()) + (IsButtonHeld(EventPlayer(), Button.Jump) ? Up() : Vector(0, 0, 0)) + (IsButtonHeld(EventPlayer(), Button.Crouch) ? Down() : Vector(0, 0, 0)))) * Normalize(XOf(ThrottleOf(EventPlayer())) * -1 * Normalize(CrossProduct(FacingDirectionOf(EventPlayer()), Up())) + ZOf(ThrottleOf(EventPlayer())) * FacingDirectionOf(EventPlayer()) + (IsButtonHeld(EventPlayer(), Button.Jump) ? Up() : Vector(0, 0, 0)) + (IsButtonHeld(EventPlayer(), Button.Crouch) ? Down() : Vector(0, 0, 0))), MagnitudeOf(VelocityOf(EventPlayer()) - DotProduct(VelocityOf(EventPlayer()), Normalize(XOf(ThrottleOf(EventPlayer())) * -1 * Normalize(CrossProduct(FacingDirectionOf(EventPlayer()), Up())) + ZOf(ThrottleOf(EventPlayer())) * FacingDirectionOf(EventPlayer()) + (IsButtonHeld(EventPlayer(), Button.Jump) ? Up() : Vector(0, 0, 0)) + (IsButtonHeld(EventPlayer(), Button.Crouch) ? Down() : Vector(0, 0, 0)))) * Normalize(XOf(ThrottleOf(EventPlayer())) * -1 * Normalize(CrossProduct(FacingDirectionOf(EventPlayer()), Up())) + ZOf(ThrottleOf(EventPlayer())) * FacingDirectionOf(EventPlayer()) + (IsButtonHeld(EventPlayer(), Button.Jump) ? Up() : Vector(0, 0, 0)) + (IsButtonHeld(EventPlayer(), Button.Crouch) ? Down() : Vector(0, 0, 0)))) * -0.4, Relative.ToWorld, ContraryMotion.Incorporate);
+            }
+            # Move the player in their intended direction, applying stronger impulses relative to the difference between the current and desired velocity
+            ApplyImpulse(EventPlayer(), XOf(ThrottleOf(EventPlayer())) * -1 * Normalize(CrossProduct(FacingDirectionOf(EventPlayer()), Up())) + ZOf(ThrottleOf(EventPlayer())) * FacingDirectionOf(EventPlayer()) + (IsButtonHeld(EventPlayer(), Button.Jump) ? Up() : Vector(0, 0, 0)) + (IsButtonHeld(EventPlayer(), Button.Crouch) ? Down() : Vector(0, 0, 0)), Max(Min((FlightSpeedMetersPerSecond == 0 ? 5.5 : FlightSpeedMetersPerSecond) * 1.2 - SpeedOfInDirection(EventPlayer(), XOf(ThrottleOf(EventPlayer())) * -1 * Normalize(CrossProduct(FacingDirectionOf(EventPlayer()), Up())) + ZOf(ThrottleOf(EventPlayer())) * FacingDirectionOf(EventPlayer()) + (IsButtonHeld(EventPlayer(), Button.Jump) ? Up() : Vector(0, 0, 0)) + (IsButtonHeld(EventPlayer(), Button.Crouch) ? Down() : Vector(0, 0, 0))), (FlightSpeedMetersPerSecond == 0 ? 5.5 : FlightSpeedMetersPerSecond) * 2.4) * (FlightKnockInterrupt < 0.4 ? 0.18 : 0.08), 0), Relative.ToWorld, ContraryMotion.Incorporate);
+        }
+        else
+        {
+            if (!FlightKnockInterrupt)
+            {
+                # Come to a halt relatively slowly
+                ApplyImpulse(EventPlayer(), VelocityOf(EventPlayer()), Min(SpeedOf(EventPlayer()) * 0.035 + 0.06, SpeedOf(EventPlayer())) * -1, Relative.ToWorld, ContraryMotion.Incorporate);
+            }
+        }
+        MinWait();
+    }
+    SetGravity(EventPlayer(), 100);
+    SetMoveSpeed(EventPlayer(), 100);
+}

@@ -1,0 +1,52 @@
+import "../customGameSettings.json";
+import "../../../Other/extraFunctions.ostw";
+import "dev.del";
+import "projCallManager.del";
+import "environmentCollision.del";
+import "flight.del";
+
+rule: 'Make my projectile'
+Event.OngoingPlayer
+if (toggle)
+{
+    ProjectileArgs args: {Lifetime: 1, ..ProjectileArgs.Default()};
+    CreateCustomProjectile(args);
+    Number myID = lastProjectileID;
+    Wait(0.25);
+    LoopIfConditionIsTrue();
+}
+
+playervar Boolean toggle;
+rule: 'Toggle the toggle'
+Event.OngoingPlayer
+if (_EP().IsButtonHeld(Button.Interact))
+{
+    toggle = !toggle;
+}
+rule: 'Make big proj'
+Event.OngoingPlayer
+if (_EP().IsButtonHeld(Button.PrimaryFire))
+{
+
+    ProjectileArgs bigProj: {Oversize: 0.2, Speed: 50, Lifetime: 3, ..ProjectileArgs.Default()};
+    CreateCustomProjectile(bigProj);
+}
+
+rule: 'Track helix rockets'
+Event.OngoingPlayer
+if (_EP().IsFiringSecondary())
+{
+    ProjectileArgs myArgs = {StartPosition: _EP().EyePosition(), Speed: 50, Gravity: Vector.Zero, Lifetime: 2, ..ProjectileArgs.Default()};
+    CreateCustomProjectile(myArgs);
+}
+
+    Vector RandomSpread(Player player, Number deviation): (player.FacingDirection() * CosineFromDegrees(RandomReal(0, deviation)) + SineFromDegrees(RandomReal(0, deviation)) * (Right().AsWorldVector(player, Transformation.Rotation) * CosineFromDegrees(RandomReal(0, 360)) + CrossProduct(player.FacingDirection(), Left().AsWorldVector(player, Transformation.Rotation)) * SineFromDegrees(RandomReal(0, 360)))).Normalize();
+
+
+//For an array of structs, you can filter/use a single value by doing structArray.Map(v => v.value)
+//Arrays have to index linearly/incrementally. myArray = [5, 2, 4]; myArray[7] = 10; output: [5, 2, 4, 0, 0, 0, 0, 10]
+//
+//String => void message = text => BigMessage(AllPlayers(), text);
+//String => void message                 | [argument data type] => [function return type] [function name]
+// "="                                   | set the function 'message' to this
+//text => BigMessage(AllPlayers(), text) | [argument name] => [expression]

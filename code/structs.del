@@ -1,0 +1,156 @@
+import "projCallManager.del";
+
+//struct ProjConstructor
+//{
+//    //this struct currently uses 2 vars (parallel)
+//    //public Number ID;
+//    //public Number type;
+//    public ProjectileArgs args;
+//    public static ProjConstructor Construct(): {args: ProjectileArgs.Construct()};
+//    public static void Queue(in ProjConstructor projArguments) {constructorQueue.ModAppend(projArguments);}
+//
+//}
+
+struct ProjDestructor
+{
+    public Number ID;
+    public static void Queue(in Number ID) {destructorQueue.ModAppend(ID);}
+}
+
+struct ProjData
+{
+    Number time: (TotalTimeElapsed() - this.TimeOfCreation);
+    Number maxTime: (this.ReadOnly.Lifetime);
+    Vector p0: this.RarelyChange.Bezierp0;
+    Vector p1: this.RarelyChange.Bezierp1;
+    Vector p2: this.RarelyChange.Bezierp2;
+
+    Vector a0: lerp2(p0, p1, (time), maxTime);
+    Vector a1: lerp2(p1, p2, (time), maxTime);
+    Vector b0: lerp2(a0, a1, (time), maxTime);
+    Vector a0Time(Number n): ((maxTime - (time) - n)/maxTime * p0 + ((time) + n)/maxTime * p1);
+    Vector a1Time(Number n): ((maxTime - (time) - n)/maxTime * p1 + ((time) + n)/maxTime * p2);
+    Vector b0Time(Number n): ((maxTime - (time) - n)/maxTime * a0Time(n)) + (((time) + n)/maxTime * a1Time(n));
+    public projectileStates ProjState;
+
+    //public PositionsForProjData ControlPoints;
+    public RarelyChangeProjData RarelyChange;
+    public ReadOnlyProjData ReadOnly;
+    public Number TimeOfCreation;
+    //public Vector Position: (
+    //    ((this.ReadOnly.Lifetime - (TotalTimeElapsed() - this.TimeOfCreation))/this.ReadOnly.Lifetime)*(((this.ReadOnly.Lifetime - (TotalTimeElapsed() - this.TimeOfCreation))/this.ReadOnly.Lifetime)*(this.RarelyChange.Bezierp0) + ((TotalTimeElapsed() - this.TimeOfCreation)/this.ReadOnly.Lifetime)*this.RarelyChange.Bezierp1) + ((TotalTimeElapsed() - this.TimeOfCreation)/this.ReadOnly.Lifetime)*(((this.ReadOnly.Lifetime - (TotalTimeElapsed() - this.TimeOfCreation))/this.ReadOnly.Lifetime)*this.RarelyChange.Bezierp1 + ((TotalTimeElapsed() - this.TimeOfCreation)/this.ReadOnly.Lifetime)*this.RarelyChange.Bezierp2)
+    //);
+    //public Vector Position: b0;
+    public Vector Position: this.RarelyChange.Bezierp0 + time * (this.ReadOnly.Velocity + this.ReadOnly.Gravity * time / 2);
+    public Vector PositionAtTime(in Number extraTime): this.RarelyChange.Bezierp0 + (time + extraTime) * (this.ReadOnly.Velocity + this.ReadOnly.Gravity * (time + extraTime) / 2);
+    //public Vector PositionAtTime(in Number time): b0Time(time); //The above macro, "Position", assumes that "time" is 0. Inputting 0.5 for this will get you the position of the projectile 0.5s in the future
+
+   
+    public static ProjData Construct(): {ProjState: projectileStates.NULL, RarelyChange: RarelyChangeProjData.Construct(), ReadOnly: ReadOnlyProjData.Construct(), TimeOfCreation: 0};  
+    //public static void AddArgs(in ProjectileArgs args) {projData.Map(v => projData[CurrentArrayIndex()].ProjArgs).ModAppend(args);}
+}
+
+//single
+single struct RarelyChangeProjData
+{
+    public Number RicochetCount;
+    public Vector Bezierp0;
+    public Vector Bezierp1;
+    public Vector Bezierp2;
+
+    public static RarelyChangeProjData Construct(): {Bezierp0: Vector.Zero, Bezierp1: Vector.Zero, Bezierp2: Vector.Zero, RicochetCount: 0};
+}
+
+//single
+single struct ReadOnlyProjData
+{
+    public Number Lifetime;
+    public Player[] Targets;
+    public Number ProjSteepness;
+    public Vector Velocity;
+    public Vector Gravity;
+    public static ReadOnlyProjData Construct(): {Lifetime: projDataInitLifetime, Targets: null, ProjSteepness: 0, Velocity: Vector.Zero, Gravity: Vector.Zero};
+}
+
+
+//single struct PositionsForProjData
+//{
+//    public Vector Bezierp0;
+//    public Vector Bezierp1;
+//    public Vector Bezierp2;
+//
+//    public static PositionsForProjData Construct(): {Bezierp0: Vector.Zero, Bezierp1: Vector.Zero, Bezierp2: Vector.Zero};
+//}
+
+
+Number projDataInitLifetime: 10;
+
+enum projectileStates
+{
+    NULL,
+    Active, //Projectile is spawned - run collisions & other operations
+    Open, //Projectile was never spawned (not in use currently) [OUTDATED]
+    Inactive //Projectile was spawned, then was destroyed
+}
+
+
+single struct ProjectileArgs
+{
+    public ProjectileEffect ProjectileType;
+    public Vector StartPosition;
+    public Vector Direction;
+    public Player[] AffectedPlayers;
+    public Number DamageAmount;
+    public Number Oversize;
+    public Number Speed;
+    public Number Lifetime;
+    public Number Knockback;
+    public Vector Gravity;
+    //private Number ProjID;
+    public Number ProjID;
+    //public void SetID(in Number ID) {this.ProjID = ID;}
+    public Number GetID(): ProjID;
+    public static ProjectileArgs Construct(): {ProjectileType: ProjectileEffect.OrbProjectile, StartPosition: Vector.Zero, Direction: Vector.Zero, AffectedPlayers: null, DamageAmount: 0, Oversize: 0, Speed: 0, Lifetime: projDataInitLifetime, Knockback: 0, Gravity: Vector.Zero, ProjID: 0};
+    public static ProjectileArgs Default(): {ProjectileType: ProjectileEffect.OrbProjectile, StartPosition: EyePosition(EventPlayer()) + EventPlayer().FacingDirection(), Direction: VerticalFacingAngleOf(EventPlayer()) <= -88.9 ? Up() : (VerticalFacingAngleOf(EventPlayer()) >= 88.9 ? Down() : EventPlayer().FacingDirection()), AffectedPlayers: AllPlayers(OppositeTeamOf(TeamOf(EventPlayer()))), DamageAmount: 50, Oversize: 0, Speed: 20, Lifetime: projDataInitLifetime, Knockback: 0, Gravity: Vector(Y: -5), ProjID: 0};
+    public static void Queue(in ProjectileArgs args) {constructorQueue.ModAppend(args);}
+}
+
+
+
+//not using this rn
+single struct ProjInfo
+{
+    public Vector Velocity;
+    public Vector Gravity;
+    public Number CreationTime;
+    public Vector Position;
+    public Number Size;
+}
+
+
+
+enum ProjectileEffect
+{
+    BaptisteBioticLauncher,
+    BastionA36TacticalGrenade,
+    EchoStickyBomb,
+    GenjiShuriken,
+    LucioSonicAmplifier,
+    MeiIcicle,
+    MercyCaduceusBlaster,
+    MoiraDamageOrb,
+    MoiraHealOrb,
+    OrbProjectile,
+    OrisaFusionDriver,
+    PharahRocket,
+    RamattraRavenousVortexSphere,
+    ReinhardtFireStrike,
+    RoadhogScrap,
+    RoadhogScrapBall,
+    SigmaHypersphere,
+    SymmetraPhotonProjector,
+    ZaryaGraviton,
+    ZaryaParticleCannon
+}
+
+enum RicochetTarget {Players, World, PlayersAndWorld}

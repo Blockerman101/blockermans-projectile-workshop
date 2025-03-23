@@ -1,0 +1,40 @@
+import "../../../Other/extraFunctions.ostw";
+import "projCallManager.del";
+import "environmentCollision.del";
+import "structs.del";
+rule: '[DEV] Spawn Dummies'
+Event.OngoingGlobal
+if (HostPlayer().IsButtonHeld(Button.Crouch) && HostPlayer().IsButtonHeld(Button.PrimaryFire))
+{
+    CreateDummyBot(AllHeroes().Random(), OppositeTeamOf(HostPlayer().Team()), -1, PositionOf(HostPlayer()));
+}
+
+rule: '[DEV] Destroy Dummies'
+Event.OngoingGlobal
+if (HostPlayer().IsButtonHeld(Button.Crouch) && HostPlayer().IsButtonHeld(Button.SecondaryFire))
+{
+    DestroyAllDummyBots();
+}
+
+rule: '[DEV] Text'
+{
+    Number[] aliveProjIDs: projData.Map(v => CurrentArrayIndex()).Filter(v => projData[v].ProjState == projectileStates.Active);
+    _CreateDevText("Load Avg: " + ServerLoadAverage());
+    _CreateDevText("Data Array Size: " + projData.Length);
+    _CreateDevText("Living Projs: " + aliveProjIDs.Length);
+    _CreateDevText("Wipe Data? - " + cond);
+}
+
+rule: '[DEV] Log Data'
+if (Not(projData.Length%5))
+{
+    LogToInspector($"{projData.Length}	{ServerLoadAverage()}\n");
+
+}
+
+rule: '[DEV] Show stuff'
+{
+    //CreateEffect(HostPlayer(), Effect.Sphere, Color.Blue, projData[1].Position, 0.5, EffectRev.VisibleToPositionRadiusAndColor);
+    //CreateEffect(HostPlayer(), Effect.Sphere, Color.Red, projData[1].TESTPositionWithBeziers, 0.5, EffectRev.VisibleToPositionRadiusAndColor);
+    //CreateEffect(HostPlayer(), Effect.Sphere, Color.Blue, projData[1].PositionAtTime(0.5), 1, EffectRev.VisibleToPositionRadiusAndColor);
+}
