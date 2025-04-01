@@ -1,1 +1,0 @@
-the "hit" value only renders true for a frame, when that projectile hits or ricochets something.

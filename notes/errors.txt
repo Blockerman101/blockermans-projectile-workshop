@@ -1,8 +1,0 @@
-Your "Projectile Identity" is simply the index of the allocated block that you are using for that projectile
-All of the projectiles' end values are stored in a multidimensional array, and BMPWFetchValues() fetches the array from that which corresponds to the projectile's block index (the projectile's "Identity")
-The multidimensional array *shouldn't* be too expensive, as it's only being reevaluated when one the projectiles impacts something
-
-If there is a better way to store all of these values in a way that they can be fetched with their id (I tried a switch statement but couldn't get it to work), please lmk 
-
-Error 1: Projectile ID = -1
-Solution 1: Allocate more rules for projectiles. This error occurs when a projectile request is sent when there are no slots available, meaning you do not have as many rules needed to support how many concurrent projectiles you have
