@@ -1,4 +1,5 @@
-import "projCallManager.del";
+import "projConstructor.del";
+import "projDestructor.del";
 
 //struct ProjConstructor
 //{
@@ -7,14 +8,15 @@ import "projCallManager.del";
 //    //public Number type;
 //    public ProjectileArgs args;
 //    public static ProjConstructor Construct(): {args: ProjectileArgs.Construct()};
-//    public static void Queue(in ProjConstructor projArguments) {constructorQueue.ModAppend(projArguments);}
+//    public static void Queue(in ProjConstructor projArguments) {projConstructor.ModAppend(projArguments);}
 //
 //}
 
 struct ProjDestructor
 {
     public Number ID;
-    public static void Queue(in Number ID) {destructorQueue.ModAppend(ID);}
+    public Number time; //The relative time to destroy this projectile
+    public static void Queue(in Number ID, in Number time) {projDestructor.ModAppend({ID: ID, time: TotalTimeElapsed() + time});} //TTE() is automatically included, so the extra time is relative
 }
 
 struct ProjData
@@ -112,7 +114,7 @@ single struct ProjectileArgs
     public Number GetID(): ProjID;
     public static ProjectileArgs Construct(): {ProjectileType: ProjectileEffect.OrbProjectile, StartPosition: Vector.Zero, Direction: Vector.Zero, AffectedPlayers: null, DamageAmount: 0, Oversize: 0, Speed: 0, Lifetime: projDataInitLifetime, Knockback: 0, Gravity: Vector.Zero, ProjID: 0};
     public static ProjectileArgs Default(): {ProjectileType: ProjectileEffect.OrbProjectile, StartPosition: EyePosition(EventPlayer()) + EventPlayer().FacingDirection(), Direction: VerticalFacingAngleOf(EventPlayer()) <= -88.9 ? Up() : (VerticalFacingAngleOf(EventPlayer()) >= 88.9 ? Down() : EventPlayer().FacingDirection()), AffectedPlayers: AllPlayers(OppositeTeamOf(TeamOf(EventPlayer()))), DamageAmount: 50, Oversize: 0, Speed: 20, Lifetime: projDataInitLifetime, Knockback: 0, Gravity: Vector(Y: -5), ProjID: 0};
-    public static void Queue(in ProjectileArgs args) {constructorQueue.ModAppend(args);}
+    public static void Queue(in ProjectileArgs args) {projConstructor.ModAppend(args);}
 }
 
 

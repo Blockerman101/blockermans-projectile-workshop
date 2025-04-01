@@ -5,24 +5,20 @@ Vector | Number lerp2(in Vector | Number a, in Vector | Number b, in Number t, i
 //lerp2(1, 5, 1, 2) = 1(2 - 1)/2 + 5(1/2) = 1(0.5) + 5(0.5) = 0.5 + 2.5 = 3 
 
 
-globalvar Number[] destructorQueue = []; 
+
 globalvar Number lastProjectileID = 0;
 globalvar ProjData[] projData = [ProjData.Construct()];
 globalvar Number[] projData_VFX = [0];
-globalvar ProjectileArgs[] constructorQueue = [];
+globalvar ProjectileArgs[] projConstructor = [];
 globalvar ProjectileArgs[] constructorData = [EmptyArray()];
-
-
 
 void CreateCustomProjectile(ProjectileArgs Args) "[BMPW] CreateProj Sub"
 {
     lastProjectileID++;
     //Args.ProjID = lastProjectileID;
     Args.ProjID = lastProjectileID;
-    constructorQueue.ModAppend(Args);
+    projConstructor.ModAppend(Args);
 }
-
-
 
 //Number maxTime: 3;
 
@@ -61,56 +57,14 @@ if (ConstructorQueued())
     ConstructorConstructor(5);
 }
 
-disabled rule: 'Test destroy'
-Event.OngoingGlobal
-if (projData.Any(v => TotalTimeElapsed() - v.TimeOfCreation >= v.ReadOnly.Lifetime && v.ProjState == projectileStates.Active))
-{
-    Number[] times: projData.Map(time => TotalTimeElapsed() - time.TimeOfCreation >= time.ReadOnly.Lifetime && time.ProjState == projectileStates.Active ? CurrentArrayIndex() : null).Filter(v => v); //returns an array of the ID's of all projectiles that are timed out, works by making timed out IDs null, then filter out null IDs
-    ProjDestructor.Queue(times.First);
-    MinWait();
-    LoopIfConditionIsTrue();
-}
-
-
-rule: '[BMPW] Destructor - Add filler values'
-Event.OngoingGlobal
-if (destructorQueue.Length)
-{
-    DestroyEffect(projData_VFX[destructorQueue.First]);
-    //projData[destructorQueue.First] = ProjData.Initial();
-    //AbortIf(projData.Length == 1); //checks if Destructor cleared the projectile data already. If it did, and this set a value at a high index, there would be undesired behavior
-    projData[destructorQueue.First].ProjState = projectileStates.Inactive;
-    destructorQueue.ModRemoveByIndex(0);
-    MinWait();
-    LoopIfConditionIsTrue();
-}
-
-Any cond: projData.All(v => v.ProjState == projectileStates.Inactive || !CurrentArrayIndex()) && projData.Length > 1; //If all real projectiles are Inactive
-rule: '[BMPW] Destructor - Clear Projectile Data'
-Event.OngoingGlobal
-if (cond)
-{
-    Wait(0.25, WaitBehavior.AbortWhenFalse);
-    DestroyEffect(projData_VFX);
-    projData = [ProjData.Construct()];
-    projData_VFX = [0];
-    constructorQueue = [];
-    constructorData = [EmptyArray()];
-    destructorQueue = [];
-    lastProjectileID = 0;
-}
-
-
-
-
-Any ConstructorQueued(): constructorQueue.Length;
+Any ConstructorQueued(): projConstructor.Length;
 //ref ProjectileArgs Args
 void ConstructorConstructor(in Number constructorID) 
 {
-    //ProjectileArgs Args: constructorQueue.Filter(v => projData[v].ProjState == projectileStates.Open || projData[v.ProjID].ProjState == null).First;
+    //ProjectileArgs Args: projConstructor.Filter(v => projData[v].ProjState == projectileStates.Open || projData[v.ProjID].ProjState == null).First;
     ProjectileArgs Args: constructorData[constructorID];
     Any ID: Args.GetID();
-    //Args = constructorQueue.Filter(v => projData[v.GetID()].ProjState == projectileStates.Open || projData[v.ProjID].ProjState == null).First;
+    //Args = projConstructor.Filter(v => projData[v.GetID()].ProjState == projectileStates.Open || projData[v.ProjID].ProjState == null).First;
 
     Number time: (TotalTimeElapsed() - projData[EvaluateOnce(ID)].TimeOfCreation);
     //Number time: (TotalTimeElapsed() - EvaluateOnce(TotalTimeElapsed()));
@@ -137,10 +91,12 @@ void ConstructorConstructor(in Number constructorID)
 //        Start Pos + Final Velocity + 1/2 * Final Acceleration
 //        Bezierp2: (Args.StartPosition) + (Args.Lifetime)*(Args.Speed * Args.Direction) + (Args.Lifetime)^2 * (Args.Gravity / 2) 
 //    };
-    Number rubberbandedTime: TotalTimeElapsed() - (0.016*11 * Args.Speed / 100);
+    //Number rubberbandedTime: TotalTimeElapsed() - (0.016*11 * Args.Speed / 100);
+    //experiment with this ^
+    Number rubberbandedTime: TotalTimeElapsed();
 
-    constructorData[constructorID] = constructorQueue.First; //set data
-    constructorQueue.ModRemoveByIndex(0); //truncate constructorQueue
+    constructorData[constructorID] = projConstructor.First; //set data
+    projConstructor.ModRemoveByIndex(0); //truncate projConstructor
     if (CountOf(Args)) //ensure projectile has info
     {
 
@@ -165,6 +121,7 @@ void ConstructorConstructor(in Number constructorID)
         Wait(ServerLoadAverage()/512);
         CreateProjectileEffect(AllPlayers(), ProjectileType.BaptisteBioticLauncher, AllPlayers(), UpdateEveryFrame(b0), projData[EvaluateOnce(ID)].ReadOnly.Velocity + projData[EvaluateOnce(ID)].ReadOnly.Gravity * time, EvaluateOnce(Args.Oversize), ProjectileEffectReeval.PositionDirectionAndSize);
         projData_VFX.ModAppend(LastCreatedEntity());
+        ProjDestructor.Queue(ID, Args.Lifetime);
         Wait(ServerLoadAverage()/512);
 
         //As it stands, there needs to be a wait between spawning the projectile, and truncating the queue

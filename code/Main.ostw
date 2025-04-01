@@ -1,11 +1,15 @@
 import "../customGameSettings.json";
 import "../../../Other/extraFunctions.ostw";
-import "dev.del";
-import "projCallManager.del";
+import "_flight.del";
+import "_dev.del";
 import "environmentCollision.del";
-import "flight.del";
+import "projConstructor.del";
+import "projDestructor.del";
+import "structs.del";
 
-rule: 'Make my projectile'
+
+
+disabled rule: 'Make my projectile'
 Event.OngoingPlayer
 if (toggle)
 {
@@ -17,11 +21,21 @@ if (toggle)
 }
 
 playervar Boolean toggle;
-rule: 'Toggle the toggle'
+disabled rule: 'Toggle the toggle'
 Event.OngoingPlayer
 if (_EP().IsButtonHeld(Button.Interact))
 {
     toggle = !toggle;
+}
+
+rule: 'Make my steep projectile'
+Event.OngoingPlayer
+if (_EP().IsButtonHeld(Button.Interact))
+{
+    CreateCustomProjectile(ProjectileArgs.Default());
+    Number myID = lastProjectileID;
+    Wait(0.25);
+    LoopIfConditionIsTrue();
 }
 rule: 'Make big proj'
 Event.OngoingPlayer

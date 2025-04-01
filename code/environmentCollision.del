@@ -1,4 +1,4 @@
-import "projCallManager.del";
+import "projConstructor.del";
 
 rule: 'Detect Collision'
 Event.OngoingGlobal
@@ -9,11 +9,11 @@ if (projData.Length > 1) //Are any projectiles alive right now? Not checking ali
 
         if (projData[i].ProjState == projectileStates.Active) //Only loop through active projectiles
         {
-            if (TotalTimeElapsed() - projData[i].TimeOfCreation > projData[i].ReadOnly.Lifetime) //Queue timed out projectiles
-            {
-                ProjDestructor.Queue(i);
-                continue;
-            }
+//            if (TotalTimeElapsed() - projData[i].TimeOfCreation > projData[i].ReadOnly.Lifetime) //Queue timed out projectiles
+//            {
+//                ProjDestructor.Queue(i, 0);
+//                continue;
+//            }
             if (isSteep(i))
             {
                 for (Number j = 1; j <= rayCastCount; j++) //how many raycasts to use/what raycast your on
@@ -29,7 +29,7 @@ if (projData.Length > 1) //Are any projectiles alive right now? Not checking ali
 //                  }
 
                     Boolean subdividedCollided: subdividedRaycast != subdividedEndPosition;
-                    if (subdividedCollided) {ProjDestructor.Queue(i); break;} //stop raycasting if the latest one hit
+                    if (subdividedCollided) {ProjDestructor.Queue(i, LinearInterpolate((j-1)/rayCastCount, j/rayCastCount, subdividedPosition.DistanceTo(subdividedRaycast)/subdividedPosition.DistanceTo(subdividedEndPosition)) * interval); break;} //stop raycasting if the latest one hit
                 }
                 continue;
             }
@@ -40,7 +40,8 @@ if (projData.Length > 1) //Are any projectiles alive right now? Not checking ali
             Boolean collided: raycast != endPosition;
             if (collided)
             {
-                ProjDestructor.Queue(i);
+                ProjDestructor.Queue(i, position.DistanceTo(raycast)/position.DistanceTo(endPosition) * interval);
+                LogToInspector(position.DistanceTo(raycast)/position.DistanceTo(endPosition) * interval);
             }
         }
     }

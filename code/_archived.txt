@@ -1,11 +1,11 @@
 void CreateCustomProjectile(ProjectileArgs Args) "[BMPW] CreateProj Sub"
 {
     lastProjectileID++;
-    Number[] one: [1, constructorQueue.Filter(v => v.ConstructorID == 1).Length]; //# of ID-1, enumerated
-    Number[] two: [2, constructorQueue.Filter(v => v.ConstructorID == 2).Length]; //# of ID-2, enumerated
-    Number[] three: [3, constructorQueue.Filter(v => v.ConstructorID == 3).Length]; //# of ID-3, enumerated
-    Number[] four: [4, constructorQueue.Filter(v => v.ConstructorID == 4).Length]; //# of ID-4, enumerated
-    Number[] five: [5, constructorQueue.Filter(v => v.ConstructorID == 5).Length]; //# of ID-5, enumerated
+    Number[] one: [1, projConstructor.Filter(v => v.ConstructorID == 1).Length]; //# of ID-1, enumerated
+    Number[] two: [2, projConstructor.Filter(v => v.ConstructorID == 2).Length]; //# of ID-2, enumerated
+    Number[] three: [3, projConstructor.Filter(v => v.ConstructorID == 3).Length]; //# of ID-3, enumerated
+    Number[] four: [4, projConstructor.Filter(v => v.ConstructorID == 4).Length]; //# of ID-4, enumerated
+    Number[] five: [5, projConstructor.Filter(v => v.ConstructorID == 5).Length]; //# of ID-5, enumerated
     Any[] sorted2: [one, two, three, four, five].Sort(v => v[1]); //the above arrays, sorted based on size of queue lowest -> highest
     Number ID: sorted2.First[0]; //The constructor ID with the lowest amount of queues
     LogToInspector($"one: {one[1]}");
@@ -15,17 +15,17 @@ void CreateCustomProjectile(ProjectileArgs Args) "[BMPW] CreateProj Sub"
     LogToInspector($"five: {five[1]}");
     LogToInspector($"Constructor: {ID}");
     Args.ProjID = lastProjectileID;
-    constructorQueue.ModAppend({args: Args, ConstructorID: ID});
+    projConstructor.ModAppend({args: Args, ConstructorID: ID});
 }
 
 
 
 disabled rule: '[BMPW] Constructor - 1'
 Event.OngoingGlobal
-if (constructorQueue.Filter(v => v.ConstructorID == 1).Length) //If there are any calls for the constructor with ID 1  //This0360
+if (projConstructor.Filter(v => v.ConstructorID == 1).Length) //If there are any calls for the constructor with ID 1  //This0360
 {
-    ProjConstructor current: constructorQueue.Filter(v => v.ConstructorID == 1).First; //This0360
-    ProjectileArgs Args: constructorQueue.Filter(v => v.ConstructorID == 1).First.args; //This0360
+    ProjConstructor current: projConstructor.Filter(v => v.ConstructorID == 1).First; //This0360
+    ProjectileArgs Args: projConstructor.Filter(v => v.ConstructorID == 1).First.args; //This0360
     //projConstructsInUse[1] = true;
     Number time: (TotalTimeElapsed() - projData[EvaluateOnce(Args.GetID())].TimeOfCreation);
     Vector a0: lerp2(projData[EvaluateOnce(Args.GetID())].Bezierp0, projData[EvaluateOnce(Args.GetID())].Bezierp1, time, 7);
@@ -75,7 +75,7 @@ if (constructorQueue.Filter(v => v.ConstructorID == 1).Length) //If there are an
         LogToInspector("else fired");
     }
     //After called
-    constructorQueue.ModRemoveByValue({args: Args, ConstructorID: 1});  //This0360
+    projConstructor.ModRemoveByValue({args: Args, ConstructorID: 1});  //This0360
     projConstructsInUse[1] = false;  //This0360
     MinWait();
     LoopIfConditionIsTrue();
@@ -91,7 +91,7 @@ if (projConstructsInUse.Filter(v => !v).Length)
     ProjectileArgs first: unassignedProjQueue.First;
 
     Number ID: projConstructsInUse.Map(v => !v ? CurrentArrayIndex() : 0).Filter(v => v).First;
-    //constructorQueue.ModAppend({args: first, ConstructorID: ID});
+    //projConstructor.ModAppend({args: first, ConstructorID: ID});
     projConstructsInUse[ID] = true;
     //lastProjectileID = projData.Any(v => v.ProjState == projectileStates.Open) ? projData.Map(v => v.ProjState == projectileStates.Open ? CurrentArrayIndex() : 0).Filter(v => v).First : projData.Length;
     unassignedProjQueue.ModRemoveByIndex(0);
@@ -175,3 +175,13 @@ Number maxSteepness: 180;
 Number minRayCastCount: 1; //The minimum amount of raycast to subdivide for rigorous collision
 Number maxRayCastCount: 2; //The maximum amount of raycast to subdivide for rigorous collision
 Number rayCastCount(Number ID): projData[ID].ReadOnly.ProjSteepness < steepReqForChecks ? minRayCastCount : LinearInterpolate(minRayCastCount, maxRayCastCount, Min(maxSteepness, projData[ID].ReadOnly.ProjSteepness)/maxSteepness).Round();
+
+disabled rule: 'Test destroy'
+Event.OngoingGlobal
+if (projData.Any(v => TotalTimeElapsed() - v.TimeOfCreation >= v.ReadOnly.Lifetime && v.ProjState == projectileStates.Active))
+{
+    Number[] times: projData.Map(time => TotalTimeElapsed() - time.TimeOfCreation >= time.ReadOnly.Lifetime && time.ProjState == projectileStates.Active ? CurrentArrayIndex() : null).Filter(v => v); //returns an array of the ID's of all projectiles that are timed out, works by making timed out IDs null, then filter out null IDs
+    ProjDestructor.Queue(times.First, 0);
+    MinWait();
+    LoopIfConditionIsTrue();
+}

@@ -1,0 +1,38 @@
+import "structs.del";
+
+globalvar ProjDestructor[] projDestructor = []; 
+
+rule: '[BMPW] Destructor - Add filler values'
+Event.OngoingGlobal
+if (projDestructor.Any(v => TotalTimeElapsed() >= v.time))
+{
+    Number ID = projDestructor.Sort(v => v.time).First.ID;
+    DestroyEffect(projData_VFX[ID]);
+    //projData[projDestructor.First] = ProjData.Initial();
+    //AbortIf(projData.Length == 1); //checks if Destructor cleared the projectile data already. If it did, and this set a value at a high index, there would be undesired behavior
+    projData[ID].ProjState = projectileStates.Inactive;
+    for (Number i = 0; i <= projDestructor.Length; i++)
+    {
+        if (projDestructor[i].ID == ID)
+        {
+            projDestructor.ModRemoveByIndex(i);
+        }
+    }
+    MinWait();
+    LoopIfConditionIsTrue();
+}
+
+Any cond: projData.All(v => v.ProjState == projectileStates.Inactive || !CurrentArrayIndex()) && projData.Length > 1; //If all real projectiles are Inactive
+rule: '[BMPW] Destructor - Clear Projectile Data'
+Event.OngoingGlobal
+if (cond)
+{
+    Wait(0.25, WaitBehavior.AbortWhenFalse);
+    DestroyEffect(projData_VFX);
+    projData = [ProjData.Construct()];
+    projData_VFX = [0];
+    projConstructor = [];
+    constructorData = [EmptyArray()];
+    projDestructor = [];
+    lastProjectileID = 0;
+}
