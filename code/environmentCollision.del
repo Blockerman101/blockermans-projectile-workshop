@@ -41,7 +41,6 @@ if (projData.Length > 1) //Are any projectiles alive right now? Not checking ali
             if (collided)
             {
                 ProjDestructor.Queue(i, position.DistanceTo(raycast)/position.DistanceTo(endPosition) * interval);
-                LogToInspector(position.DistanceTo(raycast)/position.DistanceTo(endPosition) * interval);
             }
         }
     }

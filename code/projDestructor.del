@@ -4,20 +4,12 @@ globalvar ProjDestructor[] projDestructor = [];
 
 rule: '[BMPW] Destructor - Add filler values'
 Event.OngoingGlobal
-if (projDestructor.Any(v => TotalTimeElapsed() >= v.time))
+if (TotalTimeElapsed() >= projDestructor.First.time && projDestructor.Length)
 {
-    Number ID = projDestructor.Sort(v => v.time).First.ID;
+    Number ID: projDestructor.First.ID;
     DestroyEffect(projData_VFX[ID]);
-    //projData[projDestructor.First] = ProjData.Initial();
-    //AbortIf(projData.Length == 1); //checks if Destructor cleared the projectile data already. If it did, and this set a value at a high index, there would be undesired behavior
     projData[ID].ProjState = projectileStates.Inactive;
-    for (Number i = 0; i <= projDestructor.Length; i++)
-    {
-        if (projDestructor[i].ID == ID)
-        {
-            projDestructor.ModRemoveByIndex(i);
-        }
-    }
+    projDestructor.ModRemoveByIndex(0);
     MinWait();
     LoopIfConditionIsTrue();
 }

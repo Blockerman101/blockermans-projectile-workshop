@@ -12,11 +12,11 @@ import "projDestructor.del";
 //
 //}
 
-struct ProjDestructor
+single struct ProjDestructor
 {
     public Number ID;
     public Number time; //The relative time to destroy this projectile
-    public static void Queue(in Number ID, in Number time) {projDestructor.ModAppend({ID: ID, time: TotalTimeElapsed() + time});} //TTE() is automatically included, so the extra time is relative
+    public static void Queue(in Number ID, in Number time) {projDestructor = projDestructor.Append({ID: ID, time: TotalTimeElapsed() + time}).Sort(v => v.time);} //TTE() is automatically included, so the extra time is relative
 }
 
 struct ProjData
