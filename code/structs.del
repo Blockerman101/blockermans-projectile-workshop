@@ -16,23 +16,16 @@ single struct ProjDestructor
 {
     public Number ID;
     public Number time; //The relative time to destroy this projectile
+    //Queue proj to be destroyed, the proj will be destroyed `time` seconds from when the method is called
     public static void Queue(in Number ID, in Number time) {projDestructor = projDestructor.Append({ID: ID, time: TotalTimeElapsed() + time}).Sort(v => v.time);} //TTE() is automatically included, so the extra time is relative
+    //Destroy proj ASAP
+    public static void Destroy(in Number ID) {projDestructor = projDestructor.Append({ID: ID, time: null}).Sort(v => v.time);}
+    public static void ClearFromQueue(in Number ID) {projDestructor = projDestructor.Filter(v => v.ID != ID);}
 }
 
 struct ProjData
 {
-    Number time: (TotalTimeElapsed() - this.TimeOfCreation);
-    Number maxTime: (this.ReadOnly.Lifetime);
-    Vector p0: this.RarelyChange.Bezierp0;
-    Vector p1: this.RarelyChange.Bezierp1;
-    Vector p2: this.RarelyChange.Bezierp2;
-
-    Vector a0: lerp2(p0, p1, (time), maxTime);
-    Vector a1: lerp2(p1, p2, (time), maxTime);
-    Vector b0: lerp2(a0, a1, (time), maxTime);
-    Vector a0Time(Number n): ((maxTime - (time) - n)/maxTime * p0 + ((time) + n)/maxTime * p1);
-    Vector a1Time(Number n): ((maxTime - (time) - n)/maxTime * p1 + ((time) + n)/maxTime * p2);
-    Vector b0Time(Number n): ((maxTime - (time) - n)/maxTime * a0Time(n)) + (((time) + n)/maxTime * a1Time(n));
+    public Number time: (TotalTimeElapsed() - this.TimeOfCreation);
     public projectileStates ProjState;
 
     //public PositionsForProjData ControlPoints;
@@ -43,7 +36,11 @@ struct ProjData
     //    ((this.ReadOnly.Lifetime - (TotalTimeElapsed() - this.TimeOfCreation))/this.ReadOnly.Lifetime)*(((this.ReadOnly.Lifetime - (TotalTimeElapsed() - this.TimeOfCreation))/this.ReadOnly.Lifetime)*(this.RarelyChange.Bezierp0) + ((TotalTimeElapsed() - this.TimeOfCreation)/this.ReadOnly.Lifetime)*this.RarelyChange.Bezierp1) + ((TotalTimeElapsed() - this.TimeOfCreation)/this.ReadOnly.Lifetime)*(((this.ReadOnly.Lifetime - (TotalTimeElapsed() - this.TimeOfCreation))/this.ReadOnly.Lifetime)*this.RarelyChange.Bezierp1 + ((TotalTimeElapsed() - this.TimeOfCreation)/this.ReadOnly.Lifetime)*this.RarelyChange.Bezierp2)
     //);
     //public Vector Position: b0;
+
+    //A macro for caculating the projectiles position
     public Vector Position: this.RarelyChange.Bezierp0 + time * (this.ReadOnly.Velocity + this.ReadOnly.Gravity * time / 2);
+
+    //A variable for the projectiles position, updated every [interval] in the EC
     public Vector PositionAtTime(in Number extraTime): this.RarelyChange.Bezierp0 + (time + extraTime) * (this.ReadOnly.Velocity + this.ReadOnly.Gravity * (time + extraTime) / 2);
     //public Vector PositionAtTime(in Number time): b0Time(time); //The above macro, "Position", assumes that "time" is 0. Inputting 0.5 for this will get you the position of the projectile 0.5s in the future
 
@@ -52,6 +49,14 @@ struct ProjData
     //public static void AddArgs(in ProjectileArgs args) {projData.Map(v => projData[CurrentArrayIndex()].ProjArgs).ModAppend(args);}
 }
 
+
+single struct RaycastPositions
+{
+    public Vector StartPosition;
+    public Vector EndPosition;
+    public Vector RaycastPosition;
+    public static RaycastPositions Construct(): {StartPosition: Vector.Zero, EndPosition: Vector.Zero, RaycastPosition: Vector.Zero};
+}
 //single
 single struct RarelyChangeProjData
 {
@@ -66,12 +71,12 @@ single struct RarelyChangeProjData
 //single
 single struct ReadOnlyProjData
 {
-    public Number Lifetime;
+    //public Number Lifetime;
     public Player[] Targets;
-    public Number ProjSteepness;
     public Vector Velocity;
     public Vector Gravity;
-    public static ReadOnlyProjData Construct(): {Lifetime: projDataInitLifetime, Targets: null, ProjSteepness: 0, Velocity: Vector.Zero, Gravity: Vector.Zero};
+    //public static ReadOnlyProjData Construct(): {Lifetime: projDataInitLifetime, Targets: null, ProjSteepness: 0, Velocity: Vector.Zero, Gravity: Vector.Zero};
+    public static ReadOnlyProjData Construct(): {Targets: null, Velocity: Vector.Zero, Gravity: Vector.Zero};
 }
 
 
@@ -116,20 +121,6 @@ single struct ProjectileArgs
     public static ProjectileArgs Default(): {ProjectileType: ProjectileEffect.OrbProjectile, StartPosition: EyePosition(EventPlayer()) + EventPlayer().FacingDirection(), Direction: VerticalFacingAngleOf(EventPlayer()) <= -88.9 ? Up() : (VerticalFacingAngleOf(EventPlayer()) >= 88.9 ? Down() : EventPlayer().FacingDirection()), AffectedPlayers: AllPlayers(OppositeTeamOf(TeamOf(EventPlayer()))), DamageAmount: 50, Oversize: 0, Speed: 20, Lifetime: projDataInitLifetime, Knockback: 0, Gravity: Vector(Y: -5), ProjID: 0};
     public static void Queue(in ProjectileArgs args) {projConstructor.ModAppend(args);}
 }
-
-
-
-//not using this rn
-single struct ProjInfo
-{
-    public Vector Velocity;
-    public Vector Gravity;
-    public Number CreationTime;
-    public Vector Position;
-    public Number Size;
-}
-
-
 
 enum ProjectileEffect
 {

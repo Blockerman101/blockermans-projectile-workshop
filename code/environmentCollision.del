@@ -1,26 +1,23 @@
 import "projConstructor.del";
-
 rule: 'Detect Collision'
 Event.OngoingGlobal
 if (projData.Length > 1) //Are any projectiles alive right now? Not checking aliveProjIDs because thats more expensive
 {
-    for (Number i = 1; i <= projData.Length - 1 ; i++) //inclusive
+    for (Number i = 1; i <= projData.Length - 1; i++) //inclusive
     {
 
         if (projData[i].ProjState == projectileStates.Active) //Only loop through active projectiles
         {
-//            if (TotalTimeElapsed() - projData[i].TimeOfCreation > projData[i].ReadOnly.Lifetime) //Queue timed out projectiles
-//            {
-//                ProjDestructor.Queue(i, 0);
-//                continue;
-//            }
-            if (isSteep(i))
-            {
                 for (Number j = 1; j <= rayCastCount; j++) //how many raycasts to use/what raycast your on
                 {
-                    Vector subdividedPosition: projData[i].PositionAtTime(LinearInterpolate(0, interval, (j-1)/rayCastCount));
-                    Vector subdividedEndPosition: projData[i].PositionAtTime(LinearInterpolate(0, interval, j/rayCastCount));
-                    Vector subdividedRaycast: RayCastHitPosition(subdividedPosition, subdividedEndPosition, null, null, true);
+                    RaycastPositions positions;
+                    positions.StartPosition = projData[i].PositionAtTime(LinearInterpolate(0, interval, (j-1)/rayCastCount));
+                    positions.EndPosition = projData[i].PositionAtTime(LinearInterpolate(0, interval, j/rayCastCount));
+                    positions.RaycastPosition = RayCastHitPosition(positions.StartPosition, positions.EndPosition, null, null, true);
+
+                    Vector position: positions.StartPosition;
+                    Vector endPosition: positions.EndPosition;
+                    Vector raycast: positions.RaycastPosition;
 //                  if (raycast == Vector.Zero) {
 //                      LogToInspector("!-- ERROR --!");
 //                      LogToInspector($"Proj. ID: {i}");
@@ -28,19 +25,13 @@ if (projData.Length > 1) //Are any projectiles alive right now? Not checking ali
 //                      LogToInspector($"Ray Cast: {j}");
 //                  }
 
-                    Boolean subdividedCollided: subdividedRaycast != subdividedEndPosition;
-                    if (subdividedCollided) {ProjDestructor.Queue(i, LinearInterpolate((j-1)/rayCastCount, j/rayCastCount, subdividedPosition.DistanceTo(subdividedRaycast)/subdividedPosition.DistanceTo(subdividedEndPosition)) * interval); break;} //stop raycasting if the latest one hit
-                }
+                    Boolean subdividedCollided: raycast != endPosition;
+                    if (subdividedCollided) 
+                    {
+                        ProjDestructor.Queue(i, LinearInterpolate((j-1)/rayCastCount, j/rayCastCount, position.DistanceTo(raycast)/position.DistanceTo(endPosition)) * interval); 
+                        break;
+                    } //stop raycasting if the latest one hit
                 continue;
-            }
-
-            Vector position: projData[i].Position;
-            Vector endPosition: projData[i].PositionAtTime(interval);
-            Vector raycast: RayCastHitPosition(position, endPosition, null, null, true);
-            Boolean collided: raycast != endPosition;
-            if (collided)
-            {
-                ProjDestructor.Queue(i, position.DistanceTo(raycast)/position.DistanceTo(endPosition) * interval);
             }
         }
     }
@@ -51,7 +42,4 @@ if (projData.Length > 1) //Are any projectiles alive right now? Not checking ali
 
 
 Number interval: 0.5; //How often to check for collision
-Number steepReqForChecks: 90; //Barrier for rigorous collision
-Number maxSteepness: 180;
 Number rayCastCount: 2;
-Boolean isSteep(in Number ID): projData[ID].ReadOnly.ProjSteepness >= steepReqForChecks;

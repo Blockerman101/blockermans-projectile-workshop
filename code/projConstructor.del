@@ -67,30 +67,7 @@ void ConstructorConstructor(in Number constructorID)
     //Args = projConstructor.Filter(v => projData[v.GetID()].ProjState == projectileStates.Open || projData[v.ProjID].ProjState == null).First;
 
     Number time: (TotalTimeElapsed() - projData[EvaluateOnce(ID)].TimeOfCreation);
-    //Number time: (TotalTimeElapsed() - EvaluateOnce(TotalTimeElapsed()));
-
-    //Vector a0: lerp2(projData[EvaluateOnce(ID)].ControlPoints.Bezierp0, projData[EvaluateOnce(ID)].ControlPoints.Bezierp1, time, projData[EvaluateOnce(ID)].ReadOnly.Lifetime);
-    //Vector a1: lerp2(projData[EvaluateOnce(ID)].ControlPoints.Bezierp1, projData[EvaluateOnce(ID)].ControlPoints.Bezierp2, time, projData[EvaluateOnce(ID)].ReadOnly.Lifetime);
-    //Vector b0: lerp2(a0, a1, time, projData[EvaluateOnce(ID)].ReadOnly.Lifetime);
-    Number maxTime: (projData[EvaluateOnce(ID)].ReadOnly.Lifetime);
-    Vector p0: projData[EvaluateOnce(ID)].RarelyChange.Bezierp0;
-    Vector p1: projData[EvaluateOnce(ID)].RarelyChange.Bezierp1;
-    Vector p2: projData[EvaluateOnce(ID)].RarelyChange.Bezierp2;
-
-    Vector a0: ((maxTime - time)/maxTime)*p0 + (time/maxTime)*p1;
-    Vector a1: ((maxTime - time)/maxTime)*p1 + (time/maxTime)*p2;
-    Vector b0: ((maxTime - time)/maxTime)*a0 + (time/maxTime)*a1;
-
-//    BezierPositions:
-//        Start Pos
-//        Bezierp0: (Args.StartPosition),
-
-//        Start Pos + 1/2 * Final Velocity (no acceleration)
-//        Bezierp1: (Args.StartPosition) + (Args.Lifetime)*(Args.Speed * Args.Direction) * 0.5,
-
-//        Start Pos + Final Velocity + 1/2 * Final Acceleration
-//        Bezierp2: (Args.StartPosition) + (Args.Lifetime)*(Args.Speed * Args.Direction) + (Args.Lifetime)^2 * (Args.Gravity / 2) 
-//    };
+    
     //Number rubberbandedTime: TotalTimeElapsed() - (0.016*11 * Args.Speed / 100);
     //experiment with this ^
     Number rubberbandedTime: TotalTimeElapsed();
@@ -110,9 +87,7 @@ void ConstructorConstructor(in Number constructorID)
                 }, 
             ProjState: projectileStates.Active, 
             ReadOnly: {
-                Lifetime: Args.Lifetime,
                 Targets: Args.AffectedPlayers,
-                ProjSteepness: AngleBetweenVectors((Args.StartPosition.DirectionTowards((Args.StartPosition) + (Args.Lifetime)*(Args.Speed * Args.Direction) * 0.5)), (Args.StartPosition.DirectionTowards((Args.StartPosition) + (Args.Lifetime)*(Args.Speed * Args.Direction) + (Args.Lifetime)^2 * (Args.Gravity / 2)))),
                 Velocity: Args.Speed * Args.Direction,
                 Gravity: Args.Gravity
                 }

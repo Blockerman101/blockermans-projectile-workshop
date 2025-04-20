@@ -185,3 +185,55 @@ if (projData.Any(v => TotalTimeElapsed() - v.TimeOfCreation >= v.ReadOnly.Lifeti
     MinWait();
     LoopIfConditionIsTrue();
 }
+
+
+//in structs
+    Number maxTime: (this.ReadOnly.Lifetime);
+    Vector p0: this.RarelyChange.Bezierp0;
+    Vector p1: this.RarelyChange.Bezierp1;
+    Vector p2: this.RarelyChange.Bezierp2;
+
+    Vector a0: lerp2(p0, p1, (time), maxTime);
+    Vector a1: lerp2(p1, p2, (time), maxTime);
+    Vector b0: lerp2(a0, a1, (time), maxTime);
+    Vector a0Time(Number n): ((maxTime - (time) - n)/maxTime * p0 + ((time) + n)/maxTime * p1);
+    Vector a1Time(Number n): ((maxTime - (time) - n)/maxTime * p1 + ((time) + n)/maxTime * p2);
+    Vector b0Time(Number n): ((maxTime - (time) - n)/maxTime * a0Time(n)) + (((time) + n)/maxTime * a1Time(n));
+
+
+//in projConstructor
+    //Number time: (TotalTimeElapsed() - EvaluateOnce(TotalTimeElapsed()));
+
+    //Vector a0: lerp2(projData[EvaluateOnce(ID)].ControlPoints.Bezierp0, projData[EvaluateOnce(ID)].ControlPoints.Bezierp1, time, projData[EvaluateOnce(ID)].ReadOnly.Lifetime);
+    //Vector a1: lerp2(projData[EvaluateOnce(ID)].ControlPoints.Bezierp1, projData[EvaluateOnce(ID)].ControlPoints.Bezierp2, time, projData[EvaluateOnce(ID)].ReadOnly.Lifetime);
+    //Vector b0: lerp2(a0, a1, time, projData[EvaluateOnce(ID)].ReadOnly.Lifetime);
+    Number maxTime: (projData[EvaluateOnce(ID)].ReadOnly.Lifetime);
+    Vector p0: projData[EvaluateOnce(ID)].RarelyChange.Bezierp0;
+    Vector p1: projData[EvaluateOnce(ID)].RarelyChange.Bezierp1;
+    Vector p2: projData[EvaluateOnce(ID)].RarelyChange.Bezierp2;
+
+    Vector a0: ((maxTime - time)/maxTime)*p0 + (time/maxTime)*p1;
+    Vector a1: ((maxTime - time)/maxTime)*p1 + (time/maxTime)*p2;
+    Vector b0: ((maxTime - time)/maxTime)*a0 + (time/maxTime)*a1;
+
+//    BezierPositions:
+//        Start Pos
+//        Bezierp0: (Args.StartPosition),
+
+//        Start Pos + 1/2 * Final Velocity (no acceleration)
+//        Bezierp1: (Args.StartPosition) + (Args.Lifetime)*(Args.Speed * Args.Direction) * 0.5,
+
+//        Start Pos + Final Velocity + 1/2 * Final Acceleration
+//        Bezierp2: (Args.StartPosition) + (Args.Lifetime)*(Args.Speed * Args.Direction) + (Args.Lifetime)^2 * (Args.Gravity / 2) 
+//    };
+
+
+//in EC
+//            if (TotalTimeElapsed() - projData[i].TimeOfCreation > projData[i].ReadOnly.Lifetime) //Queue timed out projectiles
+//            {
+//                ProjDestructor.Queue(i, 0);
+//                continue;
+//            }
+
+
+ProjSteepness: AngleBetweenVectors((Args.StartPosition.DirectionTowards((Args.StartPosition) + (Args.Lifetime)*(Args.Speed * Args.Direction) * 0.5)), (Args.StartPosition.DirectionTowards((Args.StartPosition) + (Args.Lifetime)*(Args.Speed * Args.Direction) + (Args.Lifetime)^2 * (Args.Gravity / 2)))),
