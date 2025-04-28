@@ -9,7 +9,9 @@ if (TotalTimeElapsed() >= projDestructor.First.time && projDestructor.Length)
     Number ID: projDestructor.First.ID;
     DestroyEffect(projData_VFX[ID]);
     projData[ID].ProjState = projectileStates.Inactive;
+
     ProjDestructor.ClearFromQueue(ID);
+    
     MinWait();
     LoopIfConditionIsTrue();
 }

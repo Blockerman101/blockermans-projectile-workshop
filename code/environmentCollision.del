@@ -28,7 +28,7 @@ if (projData.Length > 1) //Are any projectiles alive right now? Not checking ali
                     Boolean subdividedCollided: raycast != endPosition;
                     if (subdividedCollided) 
                     {
-                        ProjDestructor.Queue(i, LinearInterpolate((j-1)/rayCastCount, j/rayCastCount, position.DistanceTo(raycast)/position.DistanceTo(endPosition)) * interval); 
+                        ProjDestructor.Queue(i, LinearInterpolate((j-1)/rayCastCount, j/rayCastCount, (position.DistanceTo(raycast)/position.DistanceTo(endPosition)) * interval)); 
                         break;
                     } //stop raycasting if the latest one hit
                 continue;
