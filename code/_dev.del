@@ -17,12 +17,14 @@ if (HostPlayer().IsButtonHeld(Button.Crouch) && HostPlayer().IsButtonHeld(Button
 
 rule: '[DEV] Text'
 {
-    Number[] aliveProjIDs: projData.Map(v => CurrentArrayIndex()).Filter(v => projData[v].ProjState == projectileStates.Active);
+    Number[] aliveProjIDs: projData.Map(v => CurrentArrayIndex()).Filter(v => projData[v].ProjState != projectileStates.Inactive);
     _CreateDevText("Load Avg: " + ServerLoadAverage());
     _CreateDevText("Data Array Size: " + projData.Length);
     _CreateDevText("Destructor Size: " + projDestructor.Length);
     _CreateDevText("Living Projs: " + aliveProjIDs.Length);
     _CreateDevText("Wipe Data? - " + cond);
+    _CreateDevText("TII: " + TotalTimeElapsed()%interval);
+    _CreateDevText("[1] Time: " + timeInInterval[0].time);
 }
 
 disabled rule: '[DEV] Log Data'

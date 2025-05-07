@@ -9,9 +9,9 @@ if (TotalTimeElapsed() >= projDestructor.First.time && projDestructor.Length)
     Number ID: projDestructor.First.ID;
     DestroyEffect(projData_VFX[ID]);
     projData[ID].ProjState = projectileStates.Inactive;
+    TimeInInterval.ClearFromQueue(ID);
 
-    ProjDestructor.ClearFromQueue(ID);
-    
+    ProjDestructor.ClearFromQueue(ID); //Do this last, ID is tied to ProjDestructor
     MinWait();
     LoopIfConditionIsTrue();
 }
@@ -28,5 +28,6 @@ if (cond)
     projConstructor = [];
     constructorData = [EmptyArray()];
     projDestructor = [];
+    timeInInterval = [];
     lastProjectileID = 0;
 }

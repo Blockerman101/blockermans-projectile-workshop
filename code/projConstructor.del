@@ -1,5 +1,6 @@
 //import "../../../Other/extraFunctions.ostw";
 import "structs.del";
+import "environmentCollision.del";
 Vector | Number lerp2(in Vector | Number a, in Vector | Number b, in Number t, in Number tMax): ((tMax - t)/tMax)*a + (t/tMax)*b;
 //lerp2(1, 5, 0.75, 1) = (1-0.75)*1 + (0.75)*5 = 0.25 + 3.75 = 4 "4 is 75% of the way from 1 to 5"
 //lerp2(1, 5, 1, 2) = 1(2 - 1)/2 + 5(1/2) = 1(0.5) + 5(0.5) = 0.5 + 2.5 = 3 
@@ -8,9 +9,10 @@ Vector | Number lerp2(in Vector | Number a, in Vector | Number b, in Number t, i
 
 globalvar Number lastProjectileID = 0;
 globalvar ProjData[] projData = [ProjData.Construct()];
-globalvar Number[] projData_VFX = [0];
+globalvar Number[] projData_VFX = [null];
 globalvar ProjectileArgs[] projConstructor = [];
 globalvar ProjectileArgs[] constructorData = [EmptyArray()];
+globalvar TimeInInterval[] timeInInterval = [];
 
 void CreateCustomProjectile(ProjectileArgs Args) "[BMPW] CreateProj Sub"
 {
@@ -92,12 +94,17 @@ void ConstructorConstructor(in Number constructorID)
                 Gravity: Args.Gravity
                 }
             };
+
         projData.ModAppend(data);
+
+        TimeInInterval.Queue(ID, (TotalTimeElapsed() + Max(0, -1 * Args.Speed * DotProduct(Args.Direction, Args.Gravity)/DotProduct(Args.Gravity, Args.Gravity)))%interval);
+
         Wait(ServerLoadAverage()/512);
         //CreateProjectileEffect(AllPlayers(), ProjectileType.BaptisteBioticLauncher, AllPlayers(), UpdateEveryFrame(b0), projData[EvaluateOnce(ID)].ReadOnly.Velocity + projData[EvaluateOnce(ID)].ReadOnly.Gravity * time, EvaluateOnce(Args.Oversize), ProjectileEffectReeval.PositionDirectionAndSize);
         CreateProjectileEffect(AllPlayers(), ProjectileType.BaptisteBioticLauncher, AllPlayers(), UpdateEveryFrame(projData[EvaluateOnce(ID)].Position), projData[EvaluateOnce(ID)].ReadOnly.Velocity + projData[EvaluateOnce(ID)].ReadOnly.Gravity * time, EvaluateOnce(Args.Oversize), ProjectileEffectReeval.PositionDirectionAndSize);
         projData_VFX.ModAppend(LastCreatedEntity());
         ProjDestructor.Queue(ID, Args.Lifetime);
+
         Wait(ServerLoadAverage()/512);
 
         //As it stands, there needs to be a wait between spawning the projectile, and truncating the queue

@@ -17,12 +17,14 @@ single struct ProjDestructor
     public Number ID;
     public Number time; //The relative time to destroy this projectile
     //Queue proj to be destroyed, the proj will be destroyed `time` seconds from when the method is called
-    public static void Queue(in Number ID, in Number time) {projDestructor = projDestructor.Append({ID: ID, time: TotalTimeElapsed() + time}).Sort(v => v.time);} //TTE() is automatically included, so the extra time is relative
+
+    //public static void Queue(in Number ID, in Number time) {projDestructor = projDestructor.Append({ID: ID, time: TotalTimeElapsed() + time}).Sort(v => v.time);} //TTE() is automatically included, so the extra time is relative
+    public static void Queue(in Number ID, in Number time) {projDestructor = projDestructor.Append({ID: ID, time: TotalTimeElapsed() + time}).Sort(v => v.time);}
+    
     //Destroy proj ASAP
     public static void Destroy(in Number ID) {projDestructor = projDestructor.Append({ID: ID, time: null}).Sort(v => v.time);}
     public static void ClearFromQueue(in Number ID) {projDestructor = projDestructor.Filter(v => v.ID != ID);}
 }
-
 struct ProjData
 {
     public Number time: (TotalTimeElapsed() - this.TimeOfCreation);
@@ -66,6 +68,15 @@ single struct RarelyChangeProjData
     public Vector Bezierp2;
 
     public static RarelyChangeProjData Construct(): {Bezierp0: Vector.Zero, Bezierp1: Vector.Zero, Bezierp2: Vector.Zero, RicochetCount: 0};
+}
+
+single struct TimeInInterval
+{
+    public Number ID;
+    public Number time;
+    public static TimeInInterval Construct(): {time: null, ID: null};
+    public static void Queue(in Number ID, in Number time) {timeInInterval = timeInInterval.Append({ID: ID, time: time}).Sort(v => v.time);}
+    public static void ClearFromQueue(in Number ID) {timeInInterval = timeInInterval.Filter(v => v.ID != ID);}
 }
 
 //single
