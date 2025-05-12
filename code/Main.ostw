@@ -13,6 +13,7 @@ disabled rule: 'Make my projectile'
 Event.OngoingPlayer
 if (toggle)
 {
+    
     ProjectileArgs args: {Lifetime: 1, ..ProjectileArgs.Default()};
     CreateCustomProjectile(args);
     Number myID = lastProjectileID;
@@ -34,7 +35,7 @@ if (_EP().IsButtonHeld(Button.Interact))
 {
     CreateCustomProjectile(ProjectileArgs.Default());
     Number myID = lastProjectileID;
-    Wait(0.25);
+    Wait(0.25, WaitBehavior.AbortWhenFalse);
     LoopIfConditionIsTrue();
 }
 rule: 'Make big proj'

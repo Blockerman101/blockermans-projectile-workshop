@@ -50,15 +50,6 @@ struct ProjData
     public static ProjData Construct(): {ProjState: projectileStates.NULL, RarelyChange: RarelyChangeProjData.Construct(), ReadOnly: ReadOnlyProjData.Construct(), TimeOfCreation: 0};  
     //public static void AddArgs(in ProjectileArgs args) {projData.Map(v => projData[CurrentArrayIndex()].ProjArgs).ModAppend(args);}
 }
-
-
-single struct RaycastPositions
-{
-    public Vector StartPosition;
-    public Vector EndPosition;
-    public Vector RaycastPosition;
-    public static RaycastPositions Construct(): {StartPosition: Vector.Zero, EndPosition: Vector.Zero, RaycastPosition: Vector.Zero};
-}
 //single
 single struct RarelyChangeProjData
 {
@@ -66,17 +57,9 @@ single struct RarelyChangeProjData
     public Vector Bezierp0;
     public Vector Bezierp1;
     public Vector Bezierp2;
+    public Any temp;
 
-    public static RarelyChangeProjData Construct(): {Bezierp0: Vector.Zero, Bezierp1: Vector.Zero, Bezierp2: Vector.Zero, RicochetCount: 0};
-}
-
-single struct TimeInInterval
-{
-    public Number ID;
-    public Number time;
-    public static TimeInInterval Construct(): {time: null, ID: null};
-    public static void Queue(in Number ID, in Number time) {timeInInterval = timeInInterval.Append({ID: ID, time: time}).Sort(v => v.time);}
-    public static void ClearFromQueue(in Number ID) {timeInInterval = timeInInterval.Filter(v => v.ID != ID);}
+    public static RarelyChangeProjData Construct(): {Bezierp0: Vector.Zero, Bezierp1: Vector.Zero, Bezierp2: Vector.Zero, RicochetCount: 0, temp: null};
 }
 
 //single
@@ -88,6 +71,23 @@ single struct ReadOnlyProjData
     public Vector Gravity;
     //public static ReadOnlyProjData Construct(): {Lifetime: projDataInitLifetime, Targets: null, ProjSteepness: 0, Velocity: Vector.Zero, Gravity: Vector.Zero};
     public static ReadOnlyProjData Construct(): {Targets: null, Velocity: Vector.Zero, Gravity: Vector.Zero};
+}
+
+single struct RaycastPositions
+{
+    public Vector StartPosition;
+    public Vector EndPosition;
+    public Vector RaycastPosition;
+    public static RaycastPositions Construct(): {StartPosition: Vector.Zero, EndPosition: Vector.Zero, RaycastPosition: Vector.Zero};
+}
+
+single struct TimeInInterval
+{
+    public Number ID;
+    public Number Time;
+    public static TimeInInterval Construct(): {Time: null, ID: null};
+    public static void Queue(in Number ID, in Number Time) {timeInInterval = timeInInterval.Append({ID: ID, Time: Time, Checked: false}).Sort(v => v.Time);}
+    public static void ClearFromQueue(in Number ID) {timeInInterval = timeInInterval.Filter(v => v.ID != ID);}
 }
 
 
@@ -108,7 +108,8 @@ enum projectileStates
     NULL,
     Active, //Projectile is spawned - run collisions & other operations
     Open, //Projectile was never spawned (not in use currently) [OUTDATED]
-    Inactive //Projectile was spawned, then was destroyed
+    Inactive, //Projectile was spawned, then was destroyed
+    Constructing
 }
 
 

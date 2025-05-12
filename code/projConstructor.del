@@ -85,19 +85,22 @@ void ConstructorConstructor(in Number constructorID)
                 Bezierp0: (Args.StartPosition), 
                 Bezierp1: (Args.StartPosition) + (Args.Lifetime)*(Args.Speed * Args.Direction) * 0.5, 
                 Bezierp2: (Args.StartPosition) + (Args.Lifetime)*(Args.Speed * Args.Direction) + (Args.Lifetime)^2 * (Args.Gravity / 2),
-                RicochetCount: 0
+                RicochetCount: 0,
+                temp: (-1 * Args.Speed * DotProduct(Args.Direction, Args.Gravity)/DotProduct(Args.Gravity, Args.Gravity))%interval
                 }, 
-            ProjState: projectileStates.Active, 
+            ProjState: projectileStates.Constructing, 
             ReadOnly: {
                 Targets: Args.AffectedPlayers,
                 Velocity: Args.Speed * Args.Direction,
-                Gravity: Args.Gravity
+                Gravity: Args.Gravity,
                 }
             };
+            //Set temp to TimeToMaxHeight (est. time ~0.02s)
 
         projData.ModAppend(data);
 
         TimeInInterval.Queue(ID, (TotalTimeElapsed() + Max(0, -1 * Args.Speed * DotProduct(Args.Direction, Args.Gravity)/DotProduct(Args.Gravity, Args.Gravity)))%interval);
+        LogToInspector($"\nAdded to TII [ID: {ID}, CurrentTII: {intervalOffset}, ProjTII: {(TotalTimeElapsed() + Max(0, -1 * Args.Speed * DotProduct(Args.Direction, Args.Gravity)/DotProduct(Args.Gravity, Args.Gravity)))%interval}, TTE: {TotalTimeElapsed()}]\n");
 
         Wait(ServerLoadAverage()/512);
         //CreateProjectileEffect(AllPlayers(), ProjectileType.BaptisteBioticLauncher, AllPlayers(), UpdateEveryFrame(b0), projData[EvaluateOnce(ID)].ReadOnly.Velocity + projData[EvaluateOnce(ID)].ReadOnly.Gravity * time, EvaluateOnce(Args.Oversize), ProjectileEffectReeval.PositionDirectionAndSize);

@@ -24,8 +24,11 @@ rule: '[DEV] Text'
     _CreateDevText("Living Projs: " + aliveProjIDs.Length);
     _CreateDevText("Wipe Data? - " + cond);
     _CreateDevText("TII: " + TotalTimeElapsed()%interval);
-    _CreateDevText("[1] Time: " + timeInInterval[0].time);
+    _CreateDevText("[1] Time: " + timeInInterval[0].Time);
+    _CreateDevText($"Entity Count: {EntityCount()}");
 }
+
+
 
 disabled rule: '[DEV] Log Data'
 if (Not(projData.Length%5))

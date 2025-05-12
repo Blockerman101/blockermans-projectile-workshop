@@ -11,7 +11,7 @@
         {
             "Skirmish":
             {
-                "Enabled Maps": ["Workshop Island Night"],
+                "Enabled Maps": ["Workshop Expanse Night"],
                 "Game Mode Start": "Immediately",
                 "Respawn As Random Hero": true,
                 "Respawn Time Scalar": 40
