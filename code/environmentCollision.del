@@ -1,52 +1,63 @@
 import "projConstructor.del";
+
+globalvar private RaycastPositions tempPositions;
+globalvar private Number j;
+
 rule: '[BMPW] Detect Collision'
 Event.OngoingGlobal
-if (timeInInterval.Length) 
-if (approxEqual(timeInInterval.First.time, intervalOffset, 0.01))
+if (timeInInterval.Length)
+if (timeInInterval.Any(v => approxEqual(v.Time, intervalOffset, 0.008)))
 {
+    TimeInInterval[] toCheck: timeInInterval.Filter(v => approxEqual(v.Time, intervalOffset, 0.008));
     Number i = 0;
-    while (approxEqual(timeInInterval[i].time, intervalOffset, 0.01)) //This compiles to a while loop, so it should work if timeInInterval updates
+    TimeInInterval current: toCheck[i];
+    for (i; i < toCheck.Length; i++) 
     {
-        TimeInInterval current: timeInInterval[i];
-        checkECollision(current.ID);
-        i++;
-        AbortIf(i >= timeInInterval.Length);
-        WaitUntil(current.time == intervalOffset, interval);
+        checkECollision(current.ID, interval, Color.Red, BeamType.GoodBeam);
     }
-    
-
-//    for (Number i = 1; i <= projData.Length - 1; i++) //inclusive
-//    {
-//
-//        if (projData[i].ProjState == projectileStates.Active) //Only loop through active projectiles
-//        {
-//            WaitUntil(timeInInterval.First.time <= intervalOffset, interval);
-
-//
-//            
-//        }
-//    }
-//    WaitUntil(projData.Length != EvaluateOnce(projData.Length), interval);
-//    LoopIfConditionIsTrue();
+    MinWait();
+    LoopIfConditionIsTrue();
 }
 
-Boolean approxEqual(in Number one, in Number two, in Number leniency): (one <= two + leniency && one >= two - leniency);
+rule: '[BMPW] Initial Environment Collision'
+Event.OngoingGlobal
+if (projData.Any(v => v.ProjState == projectileStates.Constructing))
+{
+    for (Number i = 1; i <= projData.Length - 1; i++)
+    {
+        if (projData[i].ProjState == projectileStates.Constructing)
+        {
+            Number time: projData[i].RarelyChange.temp;
+            projData[i].ProjState = projectileStates.Active;
+            if (time > 0)
+            {
+                LogToInspector($"First Check Proposed, Went Through! [ID: {i}, interval: {time}]");
+                checkECollision(i, time, Color.SkyBlue, BeamType.BadBeam); //The original value of TimeToMaxHeight%interval, before it was translated to the global TII
+            }
 
+            else {LogToInspector($"First Check Proposed, Stopped! [ID: {i}, interval: {time}]");}
+        }
+    }
+    MinWait();
+
+    LoopIfConditionIsTrue();
+}
+
+Boolean approxEqual(in Number one, in Number two, in Number leniency): ((one - two).Abs() <= leniency);
 Number interval: 0.5; //How often to check for collision
 Number intervalOffset: TotalTimeElapsed()%interval;
 Number rayCastCount: 2;
 
-private void checkECollision(in Number ID) {
-    for (Number j = 1; j <= rayCastCount; j++) //how many raycasts to use/what raycast your on
+private void checkECollision(in Number ID, in Number interval, in Color color, BeamType beamType) {
+    LogToInspector($"coll checked! (ID: {ID}, CurrentTII: {intervalOffset}, interval: {interval}, TTE: {TotalTimeElapsed()})");
+    for (j = 1; j <= rayCastCount; j++) //how many raycasts to use/what raycast your on
     {
-        LogToInspector($"coll checked! (ID: {ID})");
-        RaycastPositions positions;
-        positions.StartPosition = projData[ID].PositionAtTime(LinearInterpolate(0, interval, (j-1)/rayCastCount));
-        positions.EndPosition = projData[ID].PositionAtTime(LinearInterpolate(0, interval, j/rayCastCount));
-        positions.RaycastPosition = RayCastHitPosition(positions.StartPosition, positions.EndPosition, null, null, true);
-        Vector position: positions.StartPosition;
-        Vector endPosition: positions.EndPosition;
-        Vector raycast: positions.RaycastPosition;
+        tempPositions.StartPosition = projData[ID].PositionAtTime(LinearInterpolate(0, interval, (j-1)/rayCastCount));
+        tempPositions.EndPosition = projData[ID].PositionAtTime(LinearInterpolate(0, interval, j/rayCastCount));
+        tempPositions.RaycastPosition = RayCastHitPosition(tempPositions.StartPosition, tempPositions.EndPosition, null, null, true);
+        Vector position: tempPositions.StartPosition;
+        Vector endPosition: tempPositions.EndPosition;
+        Vector raycast: tempPositions.RaycastPosition;
     //  if (raycast == Vector.Zero) {
     //      LogToInspector("!-- ERROR --!");
     //      LogToInspector($"Proj. ID: {i}");
@@ -54,9 +65,10 @@ private void checkECollision(in Number ID) {
     //      LogToInspector($"Ray Cast: {j}");
     //  }
         Boolean subdividedCollided: raycast != endPosition;
-        CreateEffect(HostPlayer(), Effect.Sphere, Color.Red, positions.StartPosition, 0.25, EffectRev.None);
-        CreateBeamEffect(HostPlayer(), BeamType.GoodBeam, positions.StartPosition, positions.RaycastPosition, Color.Red, EffectRev.None);
-        CreateEffect(HostPlayer(), Effect.Sphere, Color.Red, positions.RaycastPosition, 0.25, EffectRev.None);
+        CreateEffect(HostPlayer(), Effect.Sphere, color, position, 0.25, EffectRev.None);
+        CreateBeamEffect(HostPlayer(), beamType, position, raycast, Color.Red, EffectRev.None);
+        CreateEffect(HostPlayer(), Effect.Sphere, color, raycast, 0.25, EffectRev.None);
+        if ([position, endPosition, raycast].IsTrueForAny(v => v == Vector.Zero)) {LogToInspector($"POSITIONS REGISTERED ZERO");}
         if (subdividedCollided) 
         {
             //ProjDestructor.Queue(ID, LinearInterpolate((j-1)/rayCastCount, j/rayCastCount, (position.DistanceTo(raycast)/position.DistanceTo(endPosition)) * interval)); 

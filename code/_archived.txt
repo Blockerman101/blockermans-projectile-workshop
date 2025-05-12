@@ -237,3 +237,89 @@ if (projData.Any(v => TotalTimeElapsed() - v.TimeOfCreation >= v.ReadOnly.Lifeti
 
 
 ProjSteepness: AngleBetweenVectors((Args.StartPosition.DirectionTowards((Args.StartPosition) + (Args.Lifetime)*(Args.Speed * Args.Direction) * 0.5)), (Args.StartPosition.DirectionTowards((Args.StartPosition) + (Args.Lifetime)*(Args.Speed * Args.Direction) + (Args.Lifetime)^2 * (Args.Gravity / 2)))),
+
+//in EC
+rule: '[BMPW] Detect Collision' //THIS WHOLE RULE SHOULD BE REDONE
+Event.OngoingGlobal
+if (timeInInterval.Length) 
+if (approxEqual(timeInInterval.First.time, intervalOffset, leniency))
+{
+    Number i = 0;
+    while (approxEqual(timeInInterval[i].time, intervalOffset, leniency) && timeInInterval.Length && intervalOffset > 0)
+    {
+        TimeInInterval current: timeInInterval[i];
+        checkECollision(current.ID, interval, Color.Red, BeamType.GoodBeam);
+        i++;
+        AbortIf(i >= timeInInterval.Length);
+        WaitUntil(approxEqual(current.time, intervalOffset, leniency) || intervalOffset <= 0.01, interval);
+    }
+//    for (Number i = 1; i <= projData.Length - 1; i++) //inclusive
+//    {
+//
+//        if (projData[i].ProjState == projectileStates.Active) //Only loop through active projectiles
+//        {
+//            WaitUntil(timeInInterval.First.time <= intervalOffset, interval);
+
+//
+//            
+//        }
+//    }
+//    WaitUntil(projData.Length != EvaluateOnce(projData.Length), interval);
+//    LoopIfConditionIsTrue();
+}
+
+
+//Attempted EC systems
+disabled rule: '[BMPW] Detect Collision' //THIS WHOLE RULE SHOULD BE REDONE
+Event.OngoingGlobal
+if (timeInInterval.Length) 
+if (timeInInterval.First.Time <= intervalOffset)
+{
+    Number i = 0;
+    while (timeInInterval[i].Time <= intervalOffset && i < timeInInterval.Length)
+    {
+        TimeInInterval current: timeInInterval[i];
+        checkECollision(current.ID, interval, Color.Red, BeamType.GoodBeam);
+        i++;
+        WaitUntil(current.Time <= intervalOffset || intervalOffset <= 0.016, interval - intervalOffset);
+        if (intervalOffset <= 0.016) {break;}
+    }
+}
+
+rule: '[BMPW] Reset Checked Status'
+Event.OngoingGlobal
+if (timeInInterval.Length)
+if (intervalOffset <= 0.016)
+{
+    timeInInterval = timeInInterval.Map(v => {Checked: false, ..v});
+}
+
+disabled rule: '[BMPW] Detect Collision'
+Event.OngoingGlobal
+if (timeInInterval.Length)
+if (timeInInterval.Any(v => (!v.Checked) && approxEqual(v.Time, intervalOffset, 0.016)))
+{
+    TimeInInterval current = timeInInterval.Filter(v => (!v.Checked) && approxEqual(v.Time, intervalOffset, 0.016)).First;
+    checkECollision(current.ID, interval, Color.Red, BeamType.GoodBeam);
+    LogToInspector("EC Length: " + timeInInterval.Length);
+    LogToInspector("EC Index: " + timeInInterval.IndexOf(current));
+    timeInInterval[timeInInterval.IndexOf(current)].Checked = true; //This is broken
+    Wait(0.016, WaitBehavior.RestartWhenTrue);
+    LoopIfConditionIsTrue();
+}
+
+
+rule: '[DEV] Log TII'
+Event.OngoingGlobal
+if (timeInInterval.Length != EvaluateOnce(timeInInterval.Length))
+{
+    LogToInspector("Length: " + timeInInterval.Length);
+    for (Number i = 0; i < timeInInterval.Length; i++)
+    {
+        LogToInspector($"[{i}]: " + timeInInterval[i].Checked + ", "
+         + timeInInterval[i].ID + ", "
+          + timeInInterval[i].Time);
+    }
+    WaitUntil(timeInInterval.Length != EvaluateOnce(timeInInterval.Length), 9999);
+    LoopIf(timeInInterval.Length);
+}

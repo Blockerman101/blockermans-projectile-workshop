@@ -7,34 +7,13 @@ import "projConstructor.del";
 import "projDestructor.del";
 import "structs.del";
 
-
-
-disabled rule: 'Make my projectile'
-Event.OngoingPlayer
-if (toggle)
-{
-    ProjectileArgs args: {Lifetime: 1, ..ProjectileArgs.Default()};
-    CreateCustomProjectile(args);
-    Number myID = lastProjectileID;
-    Wait(0.25);
-    LoopIfConditionIsTrue();
-}
-
-playervar Boolean toggle;
-disabled rule: 'Toggle the toggle'
-Event.OngoingPlayer
-if (_EP().IsButtonHeld(Button.Interact))
-{
-    toggle = !toggle;
-}
-
-rule: 'Make my steep projectile'
+rule: 'Make my projectile'
 Event.OngoingPlayer
 if (_EP().IsButtonHeld(Button.Interact))
 {
     CreateCustomProjectile(ProjectileArgs.Default());
     Number myID = lastProjectileID;
-    Wait(0.25);
+    Wait(0.25, WaitBehavior.AbortWhenFalse);
     LoopIfConditionIsTrue();
 }
 rule: 'Make big proj'
