@@ -1,10 +1,10 @@
 import "../customGameSettings.json";
 import "../../../Other/extraFunctions.ostw";
+import "projDestructor.del";
 import "_flight.del";
 import "_dev.del";
 import "environmentCollision.del";
 import "projConstructor.del";
-import "projDestructor.del";
 import "structs.del";
 
 
@@ -33,9 +33,10 @@ rule: 'Make my steep projectile'
 Event.OngoingPlayer
 if (_EP().IsButtonHeld(Button.Interact))
 {
-    CreateCustomProjectile(ProjectileArgs.Default());
+    ProjectileArgs shortProj: {Lifetime: 1, ..ProjectileArgs.Default()};
+    CreateCustomProjectile(shortProj);
     Number myID = lastProjectileID;
-    Wait(0.25, WaitBehavior.AbortWhenFalse);
+    Wait(0.5, WaitBehavior.AbortWhenFalse);
     LoopIfConditionIsTrue();
 }
 rule: 'Make big proj'

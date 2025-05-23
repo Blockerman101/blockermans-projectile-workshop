@@ -86,10 +86,9 @@ single struct TimeInInterval
     public Number ID;
     public Number Time;
     public static TimeInInterval Construct(): {Time: null, ID: null};
-    public static void Queue(in Number ID, in Number Time) {timeInInterval = timeInInterval.Append({ID: ID, Time: Time, Checked: false}).Sort(v => v.Time);}
+    public static void Queue(in Number ID, in Number Time) {timeInInterval = timeInInterval.Append({ID: ID, Time: Time}).Sort(v => v.Time);}
     public static void ClearFromQueue(in Number ID) {timeInInterval = timeInInterval.Filter(v => v.ID != ID);}
 }
-
 
 //single struct PositionsForProjData
 //{

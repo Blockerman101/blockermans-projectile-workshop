@@ -16,9 +16,17 @@ globalvar TimeInInterval[] timeInInterval = [];
 
 void CreateCustomProjectile(ProjectileArgs Args) "[BMPW] CreateProj Sub"
 {
-    lastProjectileID++;
+    if (projData.Any(v => v.ProjState == projectileStates.Inactive))
+    {
+        lastProjectileID = projData.Map(v => v.ProjState == projectileStates.Inactive ? CurrentArrayIndex() : false).Filter(v => v).First;
+    }
+    else
+    {
+        lastProjectileID = projData.Length;
+    }
     //Args.ProjID = lastProjectileID;
     Args.ProjID = lastProjectileID;
+    LogToInspector($"Last ID: {lastProjectileID}");
     projConstructor.ModAppend(Args);
 }
 
@@ -97,15 +105,15 @@ void ConstructorConstructor(in Number constructorID)
             };
             //Set temp to TimeToMaxHeight (est. time ~0.02s)
 
-        projData.ModAppend(data);
+        projData[ID] = data;
 
         TimeInInterval.Queue(ID, (TotalTimeElapsed() + Max(0, -1 * Args.Speed * DotProduct(Args.Direction, Args.Gravity)/DotProduct(Args.Gravity, Args.Gravity)))%interval);
-        LogToInspector($"\nAdded to TII [ID: {ID}, CurrentTII: {intervalOffset}, ProjTII: {(TotalTimeElapsed() + Max(0, -1 * Args.Speed * DotProduct(Args.Direction, Args.Gravity)/DotProduct(Args.Gravity, Args.Gravity)))%interval}, TTE: {TotalTimeElapsed()}]\n");
+        //LogToInspector($"\nAdded to TII [ID: {ID}, CurrentTII: {intervalOffset}, ProjTII: {(TotalTimeElapsed() + Max(0, -1 * Args.Speed * DotProduct(Args.Direction, Args.Gravity)/DotProduct(Args.Gravity, Args.Gravity)))%interval}, TTE: {TotalTimeElapsed()}]\n");
 
         Wait(ServerLoadAverage()/512);
         //CreateProjectileEffect(AllPlayers(), ProjectileType.BaptisteBioticLauncher, AllPlayers(), UpdateEveryFrame(b0), projData[EvaluateOnce(ID)].ReadOnly.Velocity + projData[EvaluateOnce(ID)].ReadOnly.Gravity * time, EvaluateOnce(Args.Oversize), ProjectileEffectReeval.PositionDirectionAndSize);
         CreateProjectileEffect(AllPlayers(), ProjectileType.BaptisteBioticLauncher, AllPlayers(), UpdateEveryFrame(projData[EvaluateOnce(ID)].Position), projData[EvaluateOnce(ID)].ReadOnly.Velocity + projData[EvaluateOnce(ID)].ReadOnly.Gravity * time, EvaluateOnce(Args.Oversize), ProjectileEffectReeval.PositionDirectionAndSize);
-        projData_VFX.ModAppend(LastCreatedEntity());
+        projData_VFX[ID] = LastCreatedEntity();
         ProjDestructor.Queue(ID, Args.Lifetime);
 
         Wait(ServerLoadAverage()/512);
