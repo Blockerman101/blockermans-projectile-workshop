@@ -1,19 +1,50 @@
 import "../customGameSettings.json";
 import "../../../Other/extraFunctions.ostw";
+import "projDestructor.del";
 import "_flight.del";
 import "_dev.del";
 import "environmentCollision.del";
 import "projConstructor.del";
-import "projDestructor.del";
 import "structs.del";
 
+<<<<<<< HEAD
 rule: 'Make my projectile'
+=======
+
+
+disabled rule: 'Make my projectile'
+Event.OngoingPlayer
+if (toggle)
+{
+    
+    ProjectileArgs args: {Lifetime: 1, ..ProjectileArgs.Default()};
+    CreateCustomProjectile(args);
+    Number myID = lastProjectileID;
+    Wait(0.25);
+    LoopIfConditionIsTrue();
+}
+
+playervar Boolean toggle;
+disabled rule: 'Toggle the toggle'
 Event.OngoingPlayer
 if (_EP().IsButtonHeld(Button.Interact))
 {
-    CreateCustomProjectile(ProjectileArgs.Default());
+    toggle = !toggle;
+}
+
+rule: 'Make my steep projectile'
+>>>>>>> reuse-indexes
+Event.OngoingPlayer
+if (_EP().IsButtonHeld(Button.Interact))
+{
+    ProjectileArgs shortProj: {Lifetime: 1, ..ProjectileArgs.Default()};
+    CreateCustomProjectile(shortProj);
     Number myID = lastProjectileID;
+<<<<<<< HEAD
     Wait(0.25, WaitBehavior.AbortWhenFalse);
+=======
+    Wait(0.5, WaitBehavior.AbortWhenFalse);
+>>>>>>> reuse-indexes
     LoopIfConditionIsTrue();
 }
 rule: 'Make big proj'

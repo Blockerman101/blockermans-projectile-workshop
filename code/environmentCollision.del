@@ -31,11 +31,19 @@ if (projData.Any(v => v.ProjState == projectileStates.Constructing))
             projData[i].ProjState = projectileStates.Active;
             if (time > 0)
             {
+<<<<<<< HEAD
                 LogToInspector($"First Check Proposed, Went Through! [ID: {i}, interval: {time}]");
                 checkECollision(i, time, Color.SkyBlue, BeamType.BadBeam); //The original value of TimeToMaxHeight%interval, before it was translated to the global TII
             }
 
             else {LogToInspector($"First Check Proposed, Stopped! [ID: {i}, interval: {time}]");}
+=======
+//                LogToInspector($"First Check Proposed, Went Through! [ID: {i}, interval: {time}]");
+                checkECollision(i, time, Color.SkyBlue, BeamType.BadBeam); //The original value of TimeToMaxHeight%interval, before it was translated to the global TII
+            }
+
+//            else {LogToInspector($"First Check Proposed, Stopped! [ID: {i}, interval: {time}]");}
+>>>>>>> reuse-indexes
         }
     }
     MinWait();
@@ -49,7 +57,11 @@ Number intervalOffset: TotalTimeElapsed()%interval;
 Number rayCastCount: 2;
 
 private void checkECollision(in Number ID, in Number interval, in Color color, BeamType beamType) {
+<<<<<<< HEAD
     LogToInspector($"coll checked! (ID: {ID}, CurrentTII: {intervalOffset}, interval: {interval}, TTE: {TotalTimeElapsed()})");
+=======
+//    LogToInspector($"coll checked! (ID: {ID}, CurrentTII: {intervalOffset}, interval: {interval}, TTE: {TotalTimeElapsed()})");
+>>>>>>> reuse-indexes
     for (j = 1; j <= rayCastCount; j++) //how many raycasts to use/what raycast your on
     {
         tempPositions.StartPosition = projData[ID].PositionAtTime(LinearInterpolate(0, interval, (j-1)/rayCastCount));
@@ -68,7 +80,11 @@ private void checkECollision(in Number ID, in Number interval, in Color color, B
         CreateEffect(HostPlayer(), Effect.Sphere, color, position, 0.25, EffectRev.None);
         CreateBeamEffect(HostPlayer(), beamType, position, raycast, Color.Red, EffectRev.None);
         CreateEffect(HostPlayer(), Effect.Sphere, color, raycast, 0.25, EffectRev.None);
+<<<<<<< HEAD
         if ([position, endPosition, raycast].IsTrueForAny(v => v == Vector.Zero)) {LogToInspector($"POSITIONS REGISTERED ZERO");}
+=======
+//        if ([position, endPosition, raycast].IsTrueForAny(v => v == Vector.Zero)) {LogToInspector($"POSITIONS REGISTERED ZERO");}
+>>>>>>> reuse-indexes
         if (subdividedCollided) 
         {
             //ProjDestructor.Queue(ID, LinearInterpolate((j-1)/rayCastCount, j/rayCastCount, (position.DistanceTo(raycast)/position.DistanceTo(endPosition)) * interval)); 
