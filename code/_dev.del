@@ -24,11 +24,7 @@ rule: '[DEV] Text'
     _CreateDevText("Living Projs: " + aliveProjIDs.Length);
     _CreateDevText("Wipe Data? - " + cond);
     _CreateDevText("TII: " + TotalTimeElapsed()%interval);
-<<<<<<< HEAD
-    _CreateDevText("[1] Time: " + timeInInterval[0].Time);
-=======
     _CreateDevText("[1] Time: " + timeInInterval.First.Time);
->>>>>>> reuse-indexes
     _CreateDevText($"Entity Count: {EntityCount()}");
 }
 

@@ -108,11 +108,7 @@ void ConstructorConstructor(in Number constructorID)
         projData[ID] = data;
 
         TimeInInterval.Queue(ID, (TotalTimeElapsed() + Max(0, -1 * Args.Speed * DotProduct(Args.Direction, Args.Gravity)/DotProduct(Args.Gravity, Args.Gravity)))%interval);
-<<<<<<< HEAD
-        LogToInspector($"\nAdded to TII [ID: {ID}, CurrentTII: {intervalOffset}, ProjTII: {(TotalTimeElapsed() + Max(0, -1 * Args.Speed * DotProduct(Args.Direction, Args.Gravity)/DotProduct(Args.Gravity, Args.Gravity)))%interval}, TTE: {TotalTimeElapsed()}]\n");
-=======
         //LogToInspector($"\nAdded to TII [ID: {ID}, CurrentTII: {intervalOffset}, ProjTII: {(TotalTimeElapsed() + Max(0, -1 * Args.Speed * DotProduct(Args.Direction, Args.Gravity)/DotProduct(Args.Gravity, Args.Gravity)))%interval}, TTE: {TotalTimeElapsed()}]\n");
->>>>>>> reuse-indexes
 
         Wait(ServerLoadAverage()/512);
         //CreateProjectileEffect(AllPlayers(), ProjectileType.BaptisteBioticLauncher, AllPlayers(), UpdateEveryFrame(b0), projData[EvaluateOnce(ID)].ReadOnly.Velocity + projData[EvaluateOnce(ID)].ReadOnly.Gravity * time, EvaluateOnce(Args.Oversize), ProjectileEffectReeval.PositionDirectionAndSize);
