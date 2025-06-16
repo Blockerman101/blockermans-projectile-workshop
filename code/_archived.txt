@@ -323,3 +323,40 @@ if (timeInInterval.Length != EvaluateOnce(timeInInterval.Length))
     WaitUntil(timeInInterval.Length != EvaluateOnce(timeInInterval.Length), 9999);
     LoopIf(timeInInterval.Length);
 }
+
+disabled rule: '[DEV] show TII time'
+if (timeInInterval.Length)
+{
+    LogToInspector("First Time: " + timeInInterval.First.Time);
+}
+
+//Boolean diff(in Number ID, in Number amount): Min((interval - (timeInInterval[ID].Time + currentTick)).Abs(), (timeInInterval[ID].Time - currentTick).Abs()) <= amount;
+
+rule: '[BMPW] Detect Collision'
+if (timeInInterval.Length)
+if (diff(intervalIndex))
+{
+
+    checkECollision(timeInInterval[intervalIndex].ID, interval, Color.White, BeamType.BadBeam); //Check this projectile
+    intervalIndex++; //Go to next projectile
+    WaitUntil((diff(intervalIndex) || !currentTick) && intervalIndex < timeInInterval.Length, interval); //Wait until there is a value at timeInInterval[intervalIndex].Time and and the next proj is ready to be checked, or the current lap ended  
+    if (!currentTick) {intervalIndex = 0; LogToInspector($"Lap ended. (Index returned to 0) (TTE: {TotalTimeElapsed()})");} //Reset stuff if the lap ended
+    LoopIfConditionIsTrue();
+}
+
+
+disabled rule: '[BMPW] Detect Collision'
+Event.OngoingGlobal
+if (timeInInterval.Length)
+if (timeInInterval.Any(v => approxEqual(v.Time, currentTick, 0.008)))
+{
+    TimeInInterval[] toCheck: timeInInterval.Filter(v => approxEqual(v.Time, currentTick, 0.008));
+    Number i = 0;
+    TimeInInterval current: toCheck[i];
+    for (i; i < toCheck.Length; i++) 
+    {
+        checkECollision(current.ID, interval, Color.Red, BeamType.GoodBeam);
+    }
+    MinWait();
+    LoopIfConditionIsTrue();
+}

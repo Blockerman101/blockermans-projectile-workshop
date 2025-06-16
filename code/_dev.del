@@ -43,3 +43,12 @@ rule: '[DEV] Show stuff'
     //CreateEffect(HostPlayer(), Effect.Sphere, Color.Red, projData[1].TESTPositionWithBeziers, 0.5, EffectRev.VisibleToPositionRadiusAndColor);
     //CreateEffect(HostPlayer(), Effect.Sphere, Color.Blue, projData[1].PositionAtTime(0.5), 1, EffectRev.VisibleToPositionRadiusAndColor);
 }
+
+disabled rule: '[DEV] Show ticks'
+if (currentTick != EvaluateOnce(currentTick))
+{
+    LogToInspector($"Current Tick: {currentTick}");
+    Wait(0.016, WaitBehavior.RestartWhenTrue);
+    LoopIfConditionIsTrue();
+}
+

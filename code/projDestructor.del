@@ -9,6 +9,11 @@ if (TotalTimeElapsed() >= projDestructor.First.time && projDestructor.Length)
     Number ID: projDestructor.First.ID;
     DestroyEffect(projData_VFX[ID]);
     projData[ID].ProjState = projectileStates.Inactive;
+    Boolean[] reqsForDec: [
+    timeInInterval.Length > 1,
+    currentTick >= timeInInterval[timeInInterval.Map(v => v.ID).IndexOf(ID)].Time
+];
+    if (IsTrueForAll(reqsForDec, ArrayElement())) {LogToInspector($"Dec'd Index. (Index {timeInInterval.Map(v => v.ID).IndexOf(ID)} with ID {ID}, Index: {intervalIndex} -> {intervalIndex + 1})"); intervalIndex--;}
     TimeInInterval.ClearFromQueue(ID);
 
     ProjDestructor.ClearFromQueue(ID); //Do this last, ID is tied to ProjDestructor
@@ -30,4 +35,5 @@ if (cond)
     projDestructor = [];
     timeInInterval = [];
     lastProjectileID = 0;
+    intervalIndex = 0;
 }

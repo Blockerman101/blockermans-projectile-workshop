@@ -7,6 +7,8 @@ import "environmentCollision.del";
 import "projConstructor.del";
 import "structs.del";
 
+
+
 rule: 'Make my projectile'
 Event.OngoingPlayer
 if (_EP().IsButtonHeld(Button.Interact))
@@ -17,6 +19,8 @@ if (_EP().IsButtonHeld(Button.Interact))
     Wait(0.25, WaitBehavior.AbortWhenFalse);
     LoopIfConditionIsTrue();
 }
+
+private playervar Number[] bigProjIDs = [];
 rule: 'Make big proj'
 Event.OngoingPlayer
 if (_EP().IsButtonHeld(Button.PrimaryFire))
@@ -24,6 +28,23 @@ if (_EP().IsButtonHeld(Button.PrimaryFire))
 
     ProjectileArgs bigProj: {Oversize: 0.2, Speed: 50, Lifetime: 3, ..ProjectileArgs.Default()};
     CreateCustomProjectile(bigProj);
+    bigProjIDs.ModAppend(lastProjectileID);
+}
+
+disabled rule: 'Explode big projs!'
+Event.OngoingPlayer
+if (bigProjIDs.Any(v => projData[v].ProjState == projectileStates.Inactive))
+{
+    LogToInspector("Kaboom!");
+    Number _waitlessIterator = 0;
+    while (_waitlessIterator < bigProjIDs.Length) {
+        if (projData[bigProjIDs].ProjState == projectileStates.Inactive) {
+            PlayEffect(AllPlayers(), PlayEffect.GoodExplosion, Color.Red, projData[bigProjIDs[_waitlessIterator]].Position, 15);
+            PlayEffect(AllPlayers(), PlayEffect.BuffExplosionSound, TeamOf(_EP()), projData[bigProjIDs[_waitlessIterator]].Position, 150);
+            bigProjIDs.ModRemoveByIndex(_waitlessIterator);
+        }
+        else {_waitlessIterator++;}
+    }
 }
 
 rule: 'Track helix rockets'
