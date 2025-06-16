@@ -113,20 +113,8 @@ void ConstructorConstructor(in Number constructorID)
         LogToInspector($"\nAdded to TII (ID: {ID})\nCurrentTick: {currentTick}, ProjTick: {ProjTick}\nCurrentIndex: {intervalIndex}, ProjIndex: {timeInInterval.Map(v => v.ID).IndexOf(ID)}]\n");
         
         //Translate intervalIndex
-        //if (timeInInterval.Length > 1 && timeInInterval.Map(v => v.ID).IndexOf(ID) <= intervalIndex) {LogToInspector($"Inc'd Index. (Index {timeInInterval.Map(v => v.ID).IndexOf(ID)} with ID {ID}, Index: {intervalIndex} -> {intervalIndex + 1})"); intervalIndex++;}
-        
         //Increment if this wasnt the first proj added to the struct, and if the current index already checked EC
-        Boolean[] reqsForInc: [
-            timeInInterval.Length > 1,
-            //intervalIndex, 
-            //(timeInInterval[intervalIndex].Time <= timeInInterval || timeInInterval.Map(v => v.ID).IndexOf(ID) <= intervalIndex),
-            //timeInInterval.Map(v => v.ID).IndexOf(ID) <= intervalIndex //needs to be <=
-            currentTick > ProjTick //Cases of current == proj are handled by the first check
-            //timeInInterval.Map(v => v.ID).IndexOf(ID) < intervalIndex
-            //timeInInterval.Map(v => v.ID).IndexOf(ID) <= intervalIndex || ProjTick <= (currentTick - 0.016) //The to-be-added projs TII needs to be less than the current TII
-        ];
-
-        if (IsTrueForAll(reqsForInc, ArrayElement())) {LogToInspector($"Inc'd Index. (Index {timeInInterval.Map(v => v.ID).IndexOf(ID)} with ID {ID}, Index: {intervalIndex} -> {intervalIndex + 1})"); intervalIndex++;}
+        if (timeInInterval.Length > 1 && currentTick > ProjTick) {LogToInspector($"Inc'd Index. (Index {timeInInterval.Map(v => v.ID).IndexOf(ID)} with ID {ID}, Index: {intervalIndex} -> {intervalIndex + 1})"); intervalIndex++;}
 
         Wait(ServerLoadAverage()/512);
         //CreateProjectileEffect(AllPlayers(), ProjectileType.BaptisteBioticLauncher, AllPlayers(), UpdateEveryFrame(b0), projData[EvaluateOnce(ID)].ReadOnly.Velocity + projData[EvaluateOnce(ID)].ReadOnly.Gravity * time, EvaluateOnce(Args.Oversize), ProjectileEffectReeval.PositionDirectionAndSize);
