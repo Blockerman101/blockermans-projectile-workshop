@@ -37,46 +37,51 @@ rule: '[BMPW] Constructor - 1'
 Event.OngoingGlobal
 if (ConstructorQueued())
 {
-    Wait(ServerLoadAverage()/512);
+    //Wait(ServerLoadAverage()/512);
     ConstructorConstructor(1);
     Wait(ServerLoadAverage()/512);
+    LoopIfConditionIsTrue();
 }
 
-rule: '[BMPW] Constructor - 2'
+disabled rule: '[BMPW] Constructor - 2'
 Event.OngoingGlobal
 if (ConstructorQueued())
 {
     Wait(ServerLoadAverage()/512);
     ConstructorConstructor(2);
     Wait(ServerLoadAverage()/512);
+    LoopIfConditionIsTrue();
 }
 
-rule: '[BMPW] Constructor - 3'
+disabled rule: '[BMPW] Constructor - 3'
 Event.OngoingGlobal
 if (ConstructorQueued())
 {
     Wait(ServerLoadAverage()/512);
     ConstructorConstructor(3);
     Wait(ServerLoadAverage()/512);
+    LoopIfConditionIsTrue();
 }
 
-rule: '[BMPW] Constructor - 4'
+disabled rule: '[BMPW] Constructor - 4'
 Event.OngoingGlobal
 if (ConstructorQueued())
 {
     Wait(ServerLoadAverage()/512);
     ConstructorConstructor(4);
     Wait(ServerLoadAverage()/512);
+    LoopIfConditionIsTrue();
 }
 
 
-rule: '[BMPW] Constructor - 5'
+disabled rule: '[BMPW] Constructor - 5'
 Event.OngoingGlobal
 if (ConstructorQueued())
 {
     Wait(ServerLoadAverage()/512);
     ConstructorConstructor(5);
     Wait(ServerLoadAverage()/512);
+    LoopIfConditionIsTrue();
 }
 
 Any ConstructorQueued(): projConstructor.Length;
@@ -153,5 +158,5 @@ void ConstructorConstructor(Number constructorID) "Projectile Constructor"
     //After called
 
     //MinWait();
-    LoopIfConditionIsTrue();
+
 }
