@@ -72,8 +72,8 @@ private void checkECollision(in Number ID, in Number interval, in Color color, B
 
         Boolean subdividedCollided: raycast != endPosition;
 //        CreateEffect(HostPlayer(), Effect.Sphere, color, position, 0.25, EffectRev.None);
-        CreateBeamEffect(HostPlayer(), beamType, position, raycast, Color.Red, EffectRev.None);
-        CreateEffect(HostPlayer(), Effect.Sphere, color, raycast, 0.25, EffectRev.None);
+        //CreateBeamEffect(HostPlayer(), beamType, position, raycast, Color.Red, EffectRev.None);
+        //CreateEffect(HostPlayer(), Effect.Sphere, color, raycast, 0.25, EffectRev.None);
 //        if ([position, endPosition, raycast].IsTrueForAny(v => v == Vector.Zero)) {LogToInspector($"POSITIONS REGISTERED ZERO");}
         if (subdividedCollided) 
         {

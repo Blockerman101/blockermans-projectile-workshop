@@ -28,12 +28,56 @@ void CreateCustomProjectile(ProjectileArgs Args) "[BMPW] CreateProj Sub"
     //Args.ProjID = lastProjectileID;
     Args.ProjID = lastProjectileID;
     //LogToInspector($"Last ID: {lastProjectileID}");
-    projConstructor.ModAppend(Args);
+
+    //projConstructor.ModAppend(Args); //omitted
+
+
+
+    Any ID: Args.GetID();
+    Number time: (TotalTimeElapsed() - projData[EvaluateOnce(ID)].TimeOfCreation);
+    
+    //Number rubberbandedTime: TotalTimeElapsed() - (0.016*11 * Args.Speed / 100);
+    //experiment with this ^
+    Number rubberbandedTime: TotalTimeElapsed();
+    if (CountOf(Args)) //ensure projectile has info
+    {
+        Vector normalDir: Args.Direction.Normalize();
+        ProjData data: {
+            TimeOfCreation: rubberbandedTime, 
+            RarelyChange: {
+                Bezierp0: (Args.StartPosition), 
+                Bezierp1: (Args.StartPosition) + (Args.Lifetime)*(Args.Speed * normalDir) * 0.5, 
+                Bezierp2: (Args.StartPosition) + (Args.Lifetime)*(Args.Speed * normalDir) + (Args.Lifetime)^2 * (Args.Gravity / 2),
+                RicochetCount: 0,
+                temp: (-1 * Args.Speed * DotProduct(normalDir, Args.Gravity)/DotProduct(Args.Gravity, Args.Gravity))%interval
+                }, 
+            ProjState: projectileStates.Constructing, 
+            ReadOnly: {
+                Targets: Args.AffectedPlayers,
+                Velocity: Args.Speed * normalDir.Normalize(),
+                Gravity: Args.Gravity,
+                }
+            };
+
+        projData[ID] = data;
+        Number ProjTime: (TotalTimeElapsed() + Max(0, -1 * Args.Speed * DotProduct(normalDir, Args.Gravity)/DotProduct(Args.Gravity, Args.Gravity)));
+        Number ProjTick: (((ProjTime%interval) / 0.016).Floor());
+        TimeInInterval.Queue(ID, ProjTick);
+        LogToInspector($"\nAdded to TII (ID: {ID})\nCurrentTick: {currentTick}, ProjTick: {ProjTick}\nCurrentIndex: {intervalIndex}, ProjIndex: {timeInInterval.Map(v => v.ID).IndexOf(ID)}]\n");
+        if (timeInInterval.Length > 1 && currentTick > ProjTick) {LogToInspector($"Inc'd Index. (Index {timeInInterval.Map(v => v.ID).IndexOf(ID)} with ID {ID}, Index: {intervalIndex} -> {intervalIndex + 1})"); intervalIndex++;}
+        CreateProjectileEffect(AllPlayers(), ProjectileType.BaptisteBioticLauncher, AllPlayers(), UpdateEveryFrame(projData[EvaluateOnce(ID)].Position), projData[EvaluateOnce(ID)].ReadOnly.Velocity + projData[EvaluateOnce(ID)].ReadOnly.Gravity * time, EvaluateOnce(Args.Oversize), ProjectileEffectReeval.PositionDirectionAndSize);
+        projData_VFX[ID] = LastCreatedEntity();
+        ProjDestructor.Queue(ID, Args.Lifetime);
+    }
+    else
+    {
+        LogToInspector("else fired");
+    }
 }
 
 //Number maxTime: 3;
 
-rule: '[BMPW] Constructor - 1'
+disabled rule: '[BMPW] Constructor - 1'
 Event.OngoingGlobal
 if (ConstructorQueued())
 {
@@ -88,11 +132,9 @@ Any ConstructorQueued(): projConstructor.Length;
 //ref ProjectileArgs Args
 void ConstructorConstructor(Number constructorID) "Projectile Constructor"
 {
-    //ProjectileArgs Args: projConstructor.Filter(v => projData[v].ProjState == projectileStates.Open || projData[v.ProjID].ProjState == null).First;
+
     ProjectileArgs Args: constructorData[constructorID];
     Any ID: Args.GetID();
-    //Args = projConstructor.Filter(v => projData[v.GetID()].ProjState == projectileStates.Open || projData[v.ProjID].ProjState == null).First;
-
     Number time: (TotalTimeElapsed() - projData[EvaluateOnce(ID)].TimeOfCreation);
     
     //Number rubberbandedTime: TotalTimeElapsed() - (0.016*11 * Args.Speed / 100);
@@ -103,60 +145,36 @@ void ConstructorConstructor(Number constructorID) "Projectile Constructor"
     projConstructor.ModRemoveByIndex(0); //truncate projConstructor
     if (CountOf(Args)) //ensure projectile has info
     {
-
+        Vector normalDir: Args.Direction.Normalize();
         ProjData data: {
             TimeOfCreation: rubberbandedTime, 
             RarelyChange: {
                 Bezierp0: (Args.StartPosition), 
-                Bezierp1: (Args.StartPosition) + (Args.Lifetime)*(Args.Speed * Args.Direction) * 0.5, 
-                Bezierp2: (Args.StartPosition) + (Args.Lifetime)*(Args.Speed * Args.Direction) + (Args.Lifetime)^2 * (Args.Gravity / 2),
+                Bezierp1: (Args.StartPosition) + (Args.Lifetime)*(Args.Speed * normalDir) * 0.5, 
+                Bezierp2: (Args.StartPosition) + (Args.Lifetime)*(Args.Speed * normalDir) + (Args.Lifetime)^2 * (Args.Gravity / 2),
                 RicochetCount: 0,
-                temp: (-1 * Args.Speed * DotProduct(Args.Direction, Args.Gravity)/DotProduct(Args.Gravity, Args.Gravity))%interval
+                temp: (-1 * Args.Speed * DotProduct(normalDir, Args.Gravity)/DotProduct(Args.Gravity, Args.Gravity))%interval
                 }, 
             ProjState: projectileStates.Constructing, 
             ReadOnly: {
                 Targets: Args.AffectedPlayers,
-                Velocity: Args.Speed * Args.Direction,
+                Velocity: Args.Speed * normalDir,
                 Gravity: Args.Gravity,
                 }
             };
-            //Set temp to TimeToMaxHeight (est. time ~0.02s)
 
         projData[ID] = data;
-        Number ProjTime: (TotalTimeElapsed() + Max(0, -1 * Args.Speed * DotProduct(Args.Direction, Args.Gravity)/DotProduct(Args.Gravity, Args.Gravity)));
+        Number ProjTime: (TotalTimeElapsed() + Max(0, -1 * Args.Speed * DotProduct(normalDir, Args.Gravity)/DotProduct(Args.Gravity, Args.Gravity)));
         Number ProjTick: (((ProjTime%interval) / 0.016).Floor());
         TimeInInterval.Queue(ID, ProjTick);
         LogToInspector($"\nAdded to TII (ID: {ID})\nCurrentTick: {currentTick}, ProjTick: {ProjTick}\nCurrentIndex: {intervalIndex}, ProjIndex: {timeInInterval.Map(v => v.ID).IndexOf(ID)}]\n");
-        
-        //Translate intervalIndex
-        //if (timeInInterval.Length > 1 && timeInInterval.Map(v => v.ID).IndexOf(ID) <= intervalIndex) {LogToInspector($"Inc'd Index. (Index {timeInInterval.Map(v => v.ID).IndexOf(ID)} with ID {ID}, Index: {intervalIndex} -> {intervalIndex + 1})"); intervalIndex++;}
-        
-        //Increment if this wasnt the first proj added to the struct, and if the current index already checked EC
-        Boolean[] reqsForInc: [
-            timeInInterval.Length > 1,
-            //intervalIndex, 
-            //(timeInInterval[intervalIndex].Time <= timeInInterval || timeInInterval.Map(v => v.ID).IndexOf(ID) <= intervalIndex),
-            //timeInInterval.Map(v => v.ID).IndexOf(ID) <= intervalIndex //needs to be <=
-            currentTick > ProjTick //Cases of current == proj are handled by the first check
-            //timeInInterval.Map(v => v.ID).IndexOf(ID) < intervalIndex
-            //timeInInterval.Map(v => v.ID).IndexOf(ID) <= intervalIndex || ProjTick <= (currentTick - 0.016) //The to-be-added projs TII needs to be less than the current TII
-        ];
-
-        if (IsTrueForAll(reqsForInc, ArrayElement())) {LogToInspector($"Inc'd Index. (Index {timeInInterval.Map(v => v.ID).IndexOf(ID)} with ID {ID}, Index: {intervalIndex} -> {intervalIndex + 1})"); intervalIndex++;}
-        //CreateProjectileEffect(AllPlayers(), ProjectileType.BaptisteBioticLauncher, AllPlayers(), UpdateEveryFrame(b0), projData[EvaluateOnce(ID)].ReadOnly.Velocity + projData[EvaluateOnce(ID)].ReadOnly.Gravity * time, EvaluateOnce(Args.Oversize), ProjectileEffectReeval.PositionDirectionAndSize);
+        if (timeInInterval.Length > 1 && currentTick > ProjTick) {LogToInspector($"Inc'd Index. (Index {timeInInterval.Map(v => v.ID).IndexOf(ID)} with ID {ID}, Index: {intervalIndex} -> {intervalIndex + 1})"); intervalIndex++;}
         CreateProjectileEffect(AllPlayers(), ProjectileType.BaptisteBioticLauncher, AllPlayers(), UpdateEveryFrame(projData[EvaluateOnce(ID)].Position), projData[EvaluateOnce(ID)].ReadOnly.Velocity + projData[EvaluateOnce(ID)].ReadOnly.Gravity * time, EvaluateOnce(Args.Oversize), ProjectileEffectReeval.PositionDirectionAndSize);
         projData_VFX[ID] = LastCreatedEntity();
         ProjDestructor.Queue(ID, Args.Lifetime);
-
-        //As it stands, there needs to be a wait between spawning the projectile, and truncating the queue
-        //You cant use 
     }
-    else //create projectile with default info
+    else
     {
         LogToInspector("else fired");
     }
-    //After called
-
-    //MinWait();
-
 }
