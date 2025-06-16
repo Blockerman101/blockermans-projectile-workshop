@@ -37,40 +37,51 @@ rule: '[BMPW] Constructor - 1'
 Event.OngoingGlobal
 if (ConstructorQueued())
 {
+    Wait(ServerLoadAverage()/512);
     ConstructorConstructor(1);
+    Wait(ServerLoadAverage()/512);
 }
 
 rule: '[BMPW] Constructor - 2'
 Event.OngoingGlobal
 if (ConstructorQueued())
 {
+    Wait(ServerLoadAverage()/512);
     ConstructorConstructor(2);
+    Wait(ServerLoadAverage()/512);
 }
 
 rule: '[BMPW] Constructor - 3'
 Event.OngoingGlobal
 if (ConstructorQueued())
 {
+    Wait(ServerLoadAverage()/512);
     ConstructorConstructor(3);
+    Wait(ServerLoadAverage()/512);
 }
 
 rule: '[BMPW] Constructor - 4'
 Event.OngoingGlobal
 if (ConstructorQueued())
 {
+    Wait(ServerLoadAverage()/512);
     ConstructorConstructor(4);
+    Wait(ServerLoadAverage()/512);
 }
+
 
 rule: '[BMPW] Constructor - 5'
 Event.OngoingGlobal
 if (ConstructorQueued())
 {
+    Wait(ServerLoadAverage()/512);
     ConstructorConstructor(5);
+    Wait(ServerLoadAverage()/512);
 }
 
 Any ConstructorQueued(): projConstructor.Length;
 //ref ProjectileArgs Args
-void ConstructorConstructor(in Number constructorID) 
+void ConstructorConstructor(Number constructorID) "Projectile Constructor"
 {
     //ProjectileArgs Args: projConstructor.Filter(v => projData[v].ProjState == projectileStates.Open || projData[v.ProjID].ProjState == null).First;
     ProjectileArgs Args: constructorData[constructorID];
@@ -127,14 +138,10 @@ void ConstructorConstructor(in Number constructorID)
         ];
 
         if (IsTrueForAll(reqsForInc, ArrayElement())) {LogToInspector($"Inc'd Index. (Index {timeInInterval.Map(v => v.ID).IndexOf(ID)} with ID {ID}, Index: {intervalIndex} -> {intervalIndex + 1})"); intervalIndex++;}
-
-        Wait(ServerLoadAverage()/512);
         //CreateProjectileEffect(AllPlayers(), ProjectileType.BaptisteBioticLauncher, AllPlayers(), UpdateEveryFrame(b0), projData[EvaluateOnce(ID)].ReadOnly.Velocity + projData[EvaluateOnce(ID)].ReadOnly.Gravity * time, EvaluateOnce(Args.Oversize), ProjectileEffectReeval.PositionDirectionAndSize);
         CreateProjectileEffect(AllPlayers(), ProjectileType.BaptisteBioticLauncher, AllPlayers(), UpdateEveryFrame(projData[EvaluateOnce(ID)].Position), projData[EvaluateOnce(ID)].ReadOnly.Velocity + projData[EvaluateOnce(ID)].ReadOnly.Gravity * time, EvaluateOnce(Args.Oversize), ProjectileEffectReeval.PositionDirectionAndSize);
         projData_VFX[ID] = LastCreatedEntity();
         ProjDestructor.Queue(ID, Args.Lifetime);
-
-        Wait(ServerLoadAverage()/512);
 
         //As it stands, there needs to be a wait between spawning the projectile, and truncating the queue
         //You cant use 
