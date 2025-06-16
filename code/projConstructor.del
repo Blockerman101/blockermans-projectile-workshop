@@ -87,27 +87,27 @@ void ConstructorConstructor(in Number constructorID)
     projConstructor.ModRemoveByIndex(0); //truncate projConstructor
     if (CountOf(Args)) //ensure projectile has info
     {
-
+        Vector normalDir: Args.Direction.Normalize();
         ProjData data: {
             TimeOfCreation: rubberbandedTime, 
             RarelyChange: {
                 Bezierp0: (Args.StartPosition), 
-                Bezierp1: (Args.StartPosition) + (Args.Lifetime)*(Args.Speed * Args.Direction) * 0.5, 
-                Bezierp2: (Args.StartPosition) + (Args.Lifetime)*(Args.Speed * Args.Direction) + (Args.Lifetime)^2 * (Args.Gravity / 2),
+                Bezierp1: (Args.StartPosition) + (Args.Lifetime)*(Args.Speed * normalDir) * 0.5, 
+                Bezierp2: (Args.StartPosition) + (Args.Lifetime)*(Args.Speed * normalDir) + (Args.Lifetime)^2 * (Args.Gravity / 2),
                 RicochetCount: 0,
-                temp: (-1 * Args.Speed * DotProduct(Args.Direction, Args.Gravity)/DotProduct(Args.Gravity, Args.Gravity))%interval
+                temp: (-1 * Args.Speed * DotProduct(normalDir, Args.Gravity)/DotProduct(Args.Gravity, Args.Gravity))%interval
                 }, 
             ProjState: projectileStates.Constructing, 
             ReadOnly: {
                 Targets: Args.AffectedPlayers,
-                Velocity: Args.Speed * Args.Direction,
+                Velocity: Args.Speed * normalDir,
                 Gravity: Args.Gravity,
                 }
             };
             //Set temp to TimeToMaxHeight (est. time ~0.02s)
 
         projData[ID] = data;
-        Number ProjTime: (TotalTimeElapsed() + Max(0, -1 * Args.Speed * DotProduct(Args.Direction, Args.Gravity)/DotProduct(Args.Gravity, Args.Gravity)));
+        Number ProjTime: (TotalTimeElapsed() + Max(0, -1 * Args.Speed * DotProduct(normalDir, Args.Gravity)/DotProduct(Args.Gravity, Args.Gravity)));
         Number ProjTick: (((ProjTime%interval) / 0.016).Floor());
         TimeInInterval.Queue(ID, ProjTick);
         LogToInspector($"\nAdded to TII (ID: {ID})\nCurrentTick: {currentTick}, ProjTick: {ProjTick}\nCurrentIndex: {intervalIndex}, ProjIndex: {timeInInterval.Map(v => v.ID).IndexOf(ID)}]\n");
