@@ -54,7 +54,7 @@ void CreateCustomProjectile(ProjectileArgs Args) "[BMPW] CreateProj Sub"
             ProjState: projectileStates.Constructing, 
             ReadOnly: {
                 Targets: Args.AffectedPlayers,
-                Velocity: Args.Speed * normalDir.Normalize(),
+                Velocity: Args.Speed * normalDir,
                 Gravity: Args.Gravity,
                 }
             };
