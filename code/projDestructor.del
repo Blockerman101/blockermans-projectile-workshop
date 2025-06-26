@@ -31,7 +31,6 @@ if (cond)
     projData = [ProjData.Construct()];
     projData_VFX = [0];
     projConstructor = [];
-    constructorData = [EmptyArray()];
     projDestructor = [];
     timeInInterval = [];
     lastProjectileID = 0;
