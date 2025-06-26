@@ -26,20 +26,20 @@ void CreateCustomProjectile(ProjectileArgs Args) "[BMPW] CreateProj Sub"
         lastProjectileID = projData.Length;
     }
     //Args.ProjID = lastProjectileID;
-    Args.ProjID = lastProjectileID;
+    Args._SetID(lastProjectileID);
+    Args._SetTOC(TotalTimeElapsed());
     projData[lastProjectileID].ProjState = projectileStates.NULL; //setting a projstate value so `lastProjectileID = projData.Length` increments correctly with >1 proj in a single tick
+    
     //LogToInspector($"Last ID: {lastProjectileID}");
     projConstructor.ModAppend(Args);
 }
-
-//Number maxTime: 3;
 
 rule: '[BMPW] Constructor'
 Event.OngoingGlobal
 if (projConstructor.Length)
 {
     ProjectileArgs Args: projConstructor.First;
-    Any ID: Args.GetID();
+    Any ID: Args._GetID();
     Number time: (TotalTimeElapsed() - projData[EvaluateOnce(ID)].TimeOfCreation);
     
     //Number rubberbandedTime: TotalTimeElapsed() - (0.016*11 * Args.Speed / 100);
@@ -72,21 +72,17 @@ if (projConstructor.Length)
         TimeInInterval.Queue(ID, ProjTick);
         LogToInspector($"\nAdded to TII (ID: {ID})\nCurrentTick: {currentTick}, ProjTick: {ProjTick}\nCurrentIndex: {intervalIndex}, ProjIndex: {timeInInterval.Map(v => v.ID).IndexOf(ID)}]\n");
         if (timeInInterval.Length > 1 && currentTick > ProjTick) {LogToInspector($"Inc'd Index. (Index {timeInInterval.Map(v => v.ID).IndexOf(ID)} with ID {ID}, Index: {intervalIndex} -> {intervalIndex + 1})"); intervalIndex++;}
-        
-        MinWait();
+        Wait(0.016);
         CreateProjectileEffect(AllPlayers(), ProjectileType.BaptisteBioticLauncher, AllPlayers(), UpdateEveryFrame(projData[EvaluateOnce(ID)].Position), projData[EvaluateOnce(ID)].ReadOnly.Velocity + projData[EvaluateOnce(ID)].ReadOnly.Gravity * time, EvaluateOnce(Args.Oversize), ProjectileEffectReeval.PositionDirectionAndSize);
-        MinWait();
         projData_VFX[ID] = LastCreatedEntity();
         ProjDestructor.Queue(ID, Args.Lifetime);
+        Wait(0.016);
     }
     else
     {
         LogToInspector("else fired"); //This else will happen if a proj is queued without any info for args
     }
 
-
-    MinWait();
     projConstructor.ModRemoveByIndex(0); //All done with first in queue, get ready for next
-    MinWait();
     LoopIfConditionIsTrue();
 }

@@ -125,11 +125,14 @@ single struct ProjectileArgs
     public Number Knockback;
     public Vector Gravity;
     //private Number ProjID;
-    public Number ProjID;
-    //public void SetID(in Number ID) {this.ProjID = ID;}
-    public Number GetID(): ProjID;
-    public static ProjectileArgs Construct(): {ProjectileType: ProjectileEffect.OrbProjectile, StartPosition: Vector.Zero, Direction: Vector.Zero, AffectedPlayers: null, DamageAmount: 0, Oversize: 0, Speed: 0, Lifetime: projDataInitLifetime, Knockback: 0, Gravity: Vector.Zero, ProjID: 0};
-    public static ProjectileArgs Default(): {ProjectileType: ProjectileEffect.OrbProjectile, StartPosition: EyePosition(EventPlayer()) + EventPlayer().FacingDirection(), Direction: VerticalFacingAngleOf(EventPlayer()) <= -88.9 ? Up() : (VerticalFacingAngleOf(EventPlayer()) >= 88.9 ? Down() : EventPlayer().FacingDirection()), AffectedPlayers: AllPlayers(OppositeTeamOf(TeamOf(EventPlayer()))), DamageAmount: 50, Oversize: 0, Speed: 20, Lifetime: projDataInitLifetime, Knockback: 0, Gravity: Vector(Y: -5), ProjID: 0};
+    private Number _ProjID;
+    public Number _GetID() {return _ProjID;}
+    public ref void _SetID(in Number ID) {_ProjID = ID;}
+    private Number _TimeOfCall;
+    public Number _GetTOC() {return _TimeOfCall;}
+    public ref void _SetTOC(in Number time) {_TimeOfCall = time;} 
+    public static ProjectileArgs Construct(): {ProjectileType: ProjectileEffect.OrbProjectile, StartPosition: Vector.Zero, Direction: Vector.Zero, AffectedPlayers: null, DamageAmount: 0, Oversize: 0, Speed: 0, Lifetime: projDataInitLifetime, Knockback: 0, Gravity: Vector.Zero, _ProjID: 0, _TimeOfCall: 0};
+    public static ProjectileArgs Default(): {ProjectileType: ProjectileEffect.OrbProjectile, StartPosition: EyePosition(EventPlayer()) + EventPlayer().FacingDirection(), Direction: VerticalFacingAngleOf(EventPlayer()) <= -88.9 ? Up() : (VerticalFacingAngleOf(EventPlayer()) >= 88.9 ? Down() : EventPlayer().FacingDirection()), AffectedPlayers: AllPlayers(OppositeTeamOf(TeamOf(EventPlayer()))), DamageAmount: 50, Oversize: 0, Speed: 20, Lifetime: projDataInitLifetime, Knockback: 0, Gravity: Vector(Y: -5), _ProjID: 0, _TimeOfCall: null};
     public static void Queue(in ProjectileArgs args) {projConstructor.ModAppend(args);}
 }
 
