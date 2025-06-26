@@ -40,11 +40,12 @@ if (projConstructor.Length)
 {
     ProjectileArgs Args: projConstructor.First;
     Any ID: Args._GetID();
-    Number time: (TotalTimeElapsed() - projData[EvaluateOnce(ID)].TimeOfCreation);
+    Number deltaT: (TotalTimeElapsed() - Args._GetTOC());
     
     //Number rubberbandedTime: TotalTimeElapsed() - (0.016*11 * Args.Speed / 100);
     //experiment with this ^
-    Number rubberbandedTime: TotalTimeElapsed();
+    Number rubberbandedTime: (TotalTimeElapsed() - deltaT);
+    Number time: (rubberbandedTime - projData[EvaluateOnce(ID)].TimeOfCreation);
     if (CountOf(Args)) //ensure projectile has info
     {
         Vector normalDir: Args.Direction.Normalize();
@@ -72,11 +73,12 @@ if (projConstructor.Length)
         TimeInInterval.Queue(ID, ProjTick);
         LogToInspector($"\nAdded to TII (ID: {ID})\nCurrentTick: {currentTick}, ProjTick: {ProjTick}\nCurrentIndex: {intervalIndex}, ProjIndex: {timeInInterval.Map(v => v.ID).IndexOf(ID)}]\n");
         if (timeInInterval.Length > 1 && currentTick > ProjTick) {LogToInspector($"Inc'd Index. (Index {timeInInterval.Map(v => v.ID).IndexOf(ID)} with ID {ID}, Index: {intervalIndex} -> {intervalIndex + 1})"); intervalIndex++;}
-        Wait(0.016);
-        CreateProjectileEffect(AllPlayers(), ProjectileType.BaptisteBioticLauncher, AllPlayers(), UpdateEveryFrame(projData[EvaluateOnce(ID)].Position), projData[EvaluateOnce(ID)].ReadOnly.Velocity + projData[EvaluateOnce(ID)].ReadOnly.Gravity * time, EvaluateOnce(Args.Oversize), ProjectileEffectReeval.PositionDirectionAndSize);
+        Wait(0.032);
+        CreateProjectileEffect(AllPlayers(), ProjectileType.BaptisteBioticLauncher, AllPlayers(), UpdateEveryFrame(projData[EvaluateOnce(ID)].Position), projData[EvaluateOnce(ID)].ReadOnly.Velocity + projData[EvaluateOnce(ID)].ReadOnly.Gravity * projData[EvaluateOnce(ID)].time, EvaluateOnce(Args.Oversize), ProjectileEffectReeval.PositionDirectionAndSize);
+        LogToInspector($"Proj {ID} Created\ndeltaT: {deltaT}");
         projData_VFX[ID] = LastCreatedEntity();
-        ProjDestructor.Queue(ID, Args.Lifetime);
-        Wait(0.016);
+        ProjDestructor.Queue(ID, Args.Lifetime - deltaT);
+        Wait(0.032);
     }
     else
     {
