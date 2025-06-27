@@ -12,6 +12,8 @@ import "projDestructor.del";
 //
 //}
 
+
+
 single struct ProjDestructor
 {
     public Number ID;
@@ -20,7 +22,7 @@ single struct ProjDestructor
 
     //public static void Queue(in Number ID, in Number time) {projDestructor = projDestructor.Append({ID: ID, time: TotalTimeElapsed() + time}).Sort(v => v.time);} //TTE() is automatically included, so the extra time is relative
     public static void Queue(in Number ID, in Number time) {projDestructor = projDestructor.Append({ID: ID, time: TotalTimeElapsed() + time}).Sort(v => v.time);}
-    
+    public static void QueueRaw(in Number ID, in Number time) {projDestructor = projDestructor.Append({ID: ID, time: time}).Sort(v => v.time);} //Queue without the automated TTE, letting you have full control over when, specifically, the proj is deleted
     //Destroy proj ASAP
     public static void Destroy(in Number ID) {projDestructor = projDestructor.Append({ID: ID, time: null}).Sort(v => v.time);}
     public static void ClearFromQueue(in Number ID) {projDestructor = projDestructor.Filter(v => v.ID != ID);}

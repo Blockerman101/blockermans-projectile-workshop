@@ -41,7 +41,7 @@ if (projConstructor.Length)
     ProjectileArgs Args: projConstructor.First;
     Any ID: Args._GetID();
     Number deltaT: (TotalTimeElapsed() - Args._GetTOC());
-    
+
     //Number rubberbandedTime: TotalTimeElapsed() - (0.016*11 * Args.Speed / 100);
     //experiment with this ^
     Number rubberbandedTime: (TotalTimeElapsed() - deltaT);
@@ -50,7 +50,7 @@ if (projConstructor.Length)
     {
         Vector normalDir: Args.Direction.Normalize();
         ProjData data: {
-            TimeOfCreation: rubberbandedTime, 
+            TimeOfCreation: rubberbandedTime,  //This is used as the reference for other time-based values, so by modifying this, you modify everything else
             RarelyChange: {
                 Bezierp0: (Args.StartPosition), 
                 Bezierp1: (Args.StartPosition) + (Args.Lifetime)*(Args.Speed * normalDir) * 0.5, 
