@@ -1,6 +1,7 @@
-import "../../../Other/extraFunctions.ostw";
+//import "../../../Other/extraFunctions.ostw";
 import "projDestructor.del";
 
+void _CreateDevText(in String str) {CreateHudText(HostPlayer(), str, null, null, Location.Left);}
 rule: '[DEV] Spawn Dummies'
 Event.OngoingGlobal
 if (HostPlayer().IsButtonHeld(Button.Crouch) && HostPlayer().IsButtonHeld(Button.PrimaryFire))

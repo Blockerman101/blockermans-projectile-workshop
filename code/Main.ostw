@@ -1,5 +1,5 @@
 import "../customGameSettings.json";
-import "../../../Other/extraFunctions.ostw";
+//import "../../../Other/extraFunctions.ostw";
 import "projDestructor.del";
 import "_flight.del";
 import "_dev.del";
@@ -11,7 +11,7 @@ import "structs.del";
 
 rule: 'Make my projectile'
 Event.OngoingPlayer
-if (_EP().IsButtonHeld(Button.Interact))
+if (EventPlayer().IsButtonHeld(Button.Interact))
 {
     ProjectileArgs shortProj: {Lifetime: 1, ..ProjectileArgs.Default()};
     CreateCustomProjectile(shortProj);
@@ -23,13 +23,13 @@ if (_EP().IsButtonHeld(Button.Interact))
 private playervar Number[] bigProjIDs = [];
 rule: 'Make big proj'
 Event.OngoingPlayer
-if (_EP().IsButtonHeld(Button.PrimaryFire))
+if (EventPlayer().IsButtonHeld(Button.PrimaryFire))
 {
 
     ProjectileArgs bigProj: {Oversize: 0.2, Speed: 50, Lifetime: 3, ..ProjectileArgs.Default()};
     ProjectileArgs up: {Direction: bigProj.Direction + Up() * 0.2, ..bigProj};
-    ProjectileArgs left: {Direction: bigProj.Direction + Left().AsWorldVector(_EP(), Transformation.Rotation) * 0.2, ..bigProj};
-    ProjectileArgs right: {Direction: bigProj.Direction + Right().AsWorldVector(_EP(), Transformation.Rotation) * 0.2, ..bigProj};
+    ProjectileArgs left: {Direction: bigProj.Direction + Left().AsWorldVector(EventPlayer(), Transformation.Rotation) * 0.2, ..bigProj};
+    ProjectileArgs right: {Direction: bigProj.Direction + Right().AsWorldVector(EventPlayer(), Transformation.Rotation) * 0.2, ..bigProj};
     CreateCustomProjectile(bigProj);
     bigProjIDs.ModAppend(lastProjectileID);
     CreateCustomProjectile(up);
@@ -48,7 +48,7 @@ if (bigProjIDs.Any(v => projData[v].ProjState == projectileStates.Inactive))
     while (_waitlessIterator < bigProjIDs.Length) {
         if (projData[bigProjIDs].ProjState == projectileStates.Inactive) {
             PlayEffect(AllPlayers(), PlayEffect.GoodExplosion, Color.Red, projData[bigProjIDs[_waitlessIterator]].Position, 15);
-            PlayEffect(AllPlayers(), PlayEffect.BuffExplosionSound, TeamOf(_EP()), projData[bigProjIDs[_waitlessIterator]].Position, 150);
+            PlayEffect(AllPlayers(), PlayEffect.BuffExplosionSound, TeamOf(EventPlayer()), projData[bigProjIDs[_waitlessIterator]].Position, 150);
             bigProjIDs.ModRemoveByIndex(_waitlessIterator);
         }
         else {_waitlessIterator++;}
@@ -57,9 +57,9 @@ if (bigProjIDs.Any(v => projData[v].ProjState == projectileStates.Inactive))
 
 rule: 'Track helix rockets'
 Event.OngoingPlayer
-if (_EP().IsFiringSecondary())
+if (EventPlayer().IsFiringSecondary())
 {
-    ProjectileArgs myArgs = {StartPosition: _EP().EyePosition(), Speed: 50, Gravity: Vector.Zero, Lifetime: 2, ..ProjectileArgs.Default()};
+    ProjectileArgs myArgs = {StartPosition: EventPlayer().EyePosition(), Speed: 50, Gravity: Vector.Zero, Lifetime: 2, ..ProjectileArgs.Default()};
     CreateCustomProjectile(myArgs);
 }
 
