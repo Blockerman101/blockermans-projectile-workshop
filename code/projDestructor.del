@@ -35,4 +35,5 @@ if (cond)
     timeInInterval = [];
     lastProjectileID = 0;
     intervalIndex = 0;
+    LoopIfConditionIsTrue();
 }

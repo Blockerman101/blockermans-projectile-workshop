@@ -59,9 +59,8 @@ single struct RarelyChangeProjData
     public Vector Bezierp0;
     public Vector Bezierp1;
     public Vector Bezierp2;
-    public Any temp;
 
-    public static RarelyChangeProjData Construct(): {Bezierp0: Vector.Zero, Bezierp1: Vector.Zero, Bezierp2: Vector.Zero, RicochetCount: 0, temp: null};
+    public static RarelyChangeProjData Construct(): {Bezierp0: Vector.Zero, Bezierp1: Vector.Zero, Bezierp2: Vector.Zero, RicochetCount: 0};
 }
 
 //single
@@ -108,9 +107,8 @@ enum projectileStates
 {
     NULL,
     Active, //Projectile is spawned - run collisions & other operations
-    Open, //Projectile was never spawned (not in use currently) [OUTDATED]
-    Inactive, //Projectile was spawned, then was destroyed
-    Constructing
+//    Open, //Projectile was never spawned (not in use currently) [OUTDATED]
+    Inactive //Projectile was spawned, then was destroyed
 }
 
 

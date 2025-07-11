@@ -42,6 +42,7 @@ if (projConstructor.Length)
     ProjectileArgs Args: projConstructor.First;
     Any ID: Args._GetID();
     Number deltaT: (TotalTimeElapsed() - Args._GetTOC()); //deltaT is not the time since the last tick, but the time that passed since this proj was called
+    Number ModdedTimeToMaxHeight: (-1 * Args.Speed * DotProduct(Args.Direction, Args.Gravity)/DotProduct(Args.Gravity, Args.Gravity))%interval;
     //This is useful because instead of making the projectile at the current time, I can buffer it to act as if it was created at its time of call
 
     //Number rubberbandedTime: TotalTimeElapsed() - (0.016*11 * Args.Speed / 100);
@@ -50,40 +51,40 @@ if (projConstructor.Length)
     Number time: (rubberbandedTime - projData[EvaluateOnce(ID)].TimeOfCreation);
     if (CountOf(Args)) //ensure projectile has info
     {
-        Vector normalDir: Args.Direction.Normalize();
+        projConstructor[0].Direction = projConstructor[0].Direction.Normalize(); //Normalize dir internally (redundancy) //For reference, if you do .First instead of [0] OSTW throws an error
         ProjData data: {
             TimeOfCreation: rubberbandedTime,  //This is used as the reference for other time-based values, so by modifying this, you modify everything else
             RarelyChange: {
                 Bezierp0: (Args.StartPosition), 
-                Bezierp1: (Args.StartPosition) + (Args.Lifetime)*(Args.Speed * normalDir) * 0.5, 
-                Bezierp2: (Args.StartPosition) + (Args.Lifetime)*(Args.Speed * normalDir) + (Args.Lifetime)^2 * (Args.Gravity / 2),
-                RicochetCount: 0,
-                temp: (-1 * Args.Speed * DotProduct(normalDir, Args.Gravity)/DotProduct(Args.Gravity, Args.Gravity))%interval
+                Bezierp1: (Args.StartPosition) + (Args.Lifetime)*(Args.Speed * Args.Direction) * 0.5, 
+                Bezierp2: (Args.StartPosition) + (Args.Lifetime)*(Args.Speed * Args.Direction) + (Args.Lifetime)^2 * (Args.Gravity / 2),
+                RicochetCount: 0
                 }, 
-            ProjState: projectileStates.Constructing, 
+            ProjState: projectileStates.Active, 
             ReadOnly: {
                 Targets: Args.AffectedPlayers,
-                Velocity: Args.Speed * normalDir,
+                Velocity: Args.Speed * Args.Direction,
                 Gravity: Args.Gravity,
                 }
             };
 
         projData[ID] = data;
-
-        Number ProjTime: (TotalTimeElapsed() + Max(0, -1 * Args.Speed * DotProduct(normalDir, Args.Gravity)/DotProduct(Args.Gravity, Args.Gravity)));
+        Number ProjTime: (TotalTimeElapsed() + Max(0, -1 * Args.Speed * DotProduct(Args.Direction, Args.Gravity)/DotProduct(Args.Gravity, Args.Gravity)));
         Number ProjTick: (((ProjTime%interval) / 0.016).Floor());
         TimeInInterval.Queue(ID, ProjTick);
         LogToInspector($"\nAdded to TII (ID: {ID})\nCurrentTick: {currentTick}, ProjTick: {ProjTick}\nCurrentIndex: {intervalIndex}, ProjIndex: {timeInInterval.Map(v => v.ID).IndexOf(ID)}]\n");
         if (timeInInterval.Length > 1 && currentTick > ProjTick) {LogToInspector($"Inc'd Index. (Index {timeInInterval.Map(v => v.ID).IndexOf(ID)} with ID {ID}, Index: {intervalIndex} -> {intervalIndex + 1})"); intervalIndex++;}
         
-        //Wait(0.016);
+        Wait(0.016 * 1);
         
         CreateProjectileEffect(AllPlayers(), ProjectileType.BaptisteBioticLauncher, AllPlayers(), UpdateEveryFrame(projData[EvaluateOnce(ID)].Position), projData[EvaluateOnce(ID)].ReadOnly.Velocity + projData[EvaluateOnce(ID)].ReadOnly.Gravity * projData[EvaluateOnce(ID)].time, EvaluateOnce(Args.Oversize), ProjectileEffectReeval.PositionDirectionAndSize);
-        LogToInspector($"Proj {ID} Created\ndeltaT: {deltaT}");
         projData_VFX[ID] = LastCreatedEntity();
+        LogToInspector($"Proj {ID} Created\ndeltaT: {deltaT}");
+        checkECollision(ID, ModdedTimeToMaxHeight, Color.SkyBlue, BeamType.GoodBeam); //First EC
         ProjDestructor.Queue(ID, Args.Lifetime - deltaT);
+
         
-        Wait(0.016 * 3);
+        Wait(0.016 * 2);
     
     }
     else
