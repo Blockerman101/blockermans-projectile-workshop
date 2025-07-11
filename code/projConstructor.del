@@ -11,13 +11,13 @@ globalvar Number lastProjectileID = 0;
 globalvar ProjData[] projData = [ProjData.Construct()];
 globalvar Number[] projData_VFX = [null];
 globalvar ProjectileArgs[] projConstructor = [];
-//globalvar ProjectileArgs[] constructorData = [EmptyArray()];  //This var wont be needed with 1 constructor, you can just ref `projConstructor.First`
+//globalvar ProjectileArgs[] constructorData = [EmptyArray()];  //This var isnt be needed with 1 constructor, you can just ref `projConstructor.First`
 globalvar TimeInInterval[] timeInInterval = [];
 
 void CreateCustomProjectile(ProjectileArgs Args) "[BMPW] CreateProj Sub"
 {
     //if (projData.Any(v => v.ProjState == projectileStates.Inactive))
-    if (IsTrueForAny(projData.Map(v => v.ProjState), ArrayElement() == projectileStates.Inactive))
+    if (IsTrueForAny(projData.Map(v => v.ProjState), ArrayElement() == projectileStates.Inactive)) //Make new lastProjID
     {
         lastProjectileID = projData.Map(v => v.ProjState == projectileStates.Inactive ? CurrentArrayIndex() : false).Filter(v => v).First;
     }
@@ -30,8 +30,9 @@ void CreateCustomProjectile(ProjectileArgs Args) "[BMPW] CreateProj Sub"
     Args._SetTOC(TotalTimeElapsed());
     projData[lastProjectileID].ProjState = projectileStates.NULL; //setting a projstate value so `lastProjectileID = projData.Length` increments correctly with >1 proj in a single tick
     
+
     //LogToInspector($"Last ID: {lastProjectileID}");
-    projConstructor.ModAppend(Args);
+    projConstructor.ModAppend(Args); //Add this proj call to the construction queue
 }
 
 rule: '[BMPW] Constructor'
@@ -40,11 +41,12 @@ if (projConstructor.Length)
 {
     ProjectileArgs Args: projConstructor.First;
     Any ID: Args._GetID();
-    Number deltaT: (TotalTimeElapsed() - Args._GetTOC());
+    Number deltaT: (TotalTimeElapsed() - Args._GetTOC()); //deltaT is not the time since the last tick, but the time that passed since this proj was called
+    //This is useful because instead of making the projectile at the current time, I can buffer it to act as if it was created at its time of call
 
     //Number rubberbandedTime: TotalTimeElapsed() - (0.016*11 * Args.Speed / 100);
     //experiment with this ^
-    Number rubberbandedTime: (TotalTimeElapsed() - deltaT);
+    Number rubberbandedTime: (TotalTimeElapsed() - deltaT); //buffer current time using deltaT for reason above ^
     Number time: (rubberbandedTime - projData[EvaluateOnce(ID)].TimeOfCreation);
     if (CountOf(Args)) //ensure projectile has info
     {
@@ -73,12 +75,16 @@ if (projConstructor.Length)
         TimeInInterval.Queue(ID, ProjTick);
         LogToInspector($"\nAdded to TII (ID: {ID})\nCurrentTick: {currentTick}, ProjTick: {ProjTick}\nCurrentIndex: {intervalIndex}, ProjIndex: {timeInInterval.Map(v => v.ID).IndexOf(ID)}]\n");
         if (timeInInterval.Length > 1 && currentTick > ProjTick) {LogToInspector($"Inc'd Index. (Index {timeInInterval.Map(v => v.ID).IndexOf(ID)} with ID {ID}, Index: {intervalIndex} -> {intervalIndex + 1})"); intervalIndex++;}
-        Wait(0.032);
+        
+        //Wait(0.016);
+        
         CreateProjectileEffect(AllPlayers(), ProjectileType.BaptisteBioticLauncher, AllPlayers(), UpdateEveryFrame(projData[EvaluateOnce(ID)].Position), projData[EvaluateOnce(ID)].ReadOnly.Velocity + projData[EvaluateOnce(ID)].ReadOnly.Gravity * projData[EvaluateOnce(ID)].time, EvaluateOnce(Args.Oversize), ProjectileEffectReeval.PositionDirectionAndSize);
         LogToInspector($"Proj {ID} Created\ndeltaT: {deltaT}");
         projData_VFX[ID] = LastCreatedEntity();
         ProjDestructor.Queue(ID, Args.Lifetime - deltaT);
-        Wait(0.032);
+        
+        Wait(0.016 * 3);
+    
     }
     else
     {
