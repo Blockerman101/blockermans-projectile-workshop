@@ -385,3 +385,41 @@ if (projData.Any(v => v.ProjState == projectileStates.Constructing))
 
     LoopIfConditionIsTrue();
 }
+
+rule: 'Make big proj'
+Event.OngoingPlayer
+if (EventPlayer().IsButtonHeld(Button.PrimaryFire))
+{
+    
+    ProjectileArgs bigProj: {Oversize: 0.2, Speed: 20, Lifetime: 3, TEST_VisualDir: ProjectileArgs.Default().Direction, ..ProjectileArgs.Default()};
+//    ProjectileArgs up: {Direction: bigProj.Direction + Up() * 0.2, TEST_VisualDir: Up(), ..bigProj};
+//    ProjectileArgs left: {Direction: bigProj.Direction + Left().AsWorldVector(EventPlayer(), Transformation.Rotation) * 0.2, TEST_VisualDir: Left().AsWorldVector(EventPlayer(), Transformation.Rotation), ..bigProj};
+//    ProjectileArgs right: {Direction: bigProj.Direction + Right().AsWorldVector(EventPlayer(), Transformation.Rotation) * 0.2, TEST_VisualDir: Right().AsWorldVector(EventPlayer(), Transformation.Rotation), ..bigProj};
+//    //for (Number i = 0; i < 3; i++)
+//    //{
+//    CreateCustomProjectile(bigProj);
+//    bigProjIDs.ModAppend(lastProjectileID);
+//    CreateCustomProjectile(up);
+//    CreateCustomProjectile(left);
+//    CreateCustomProjectile(right);
+
+    Number n: 10;
+
+    Vector right: Right().AsWorldVector(EventPlayer(), Transformation.Rotation);
+    Vector left: Right().AsWorldVector(EventPlayer(), Transformation.Rotation);
+    for (Number i = 0; i < n; i++)
+    {
+        Number current: (i / (n-1));
+        ProjectileArgs projArgs = {
+            Direction: EventPlayer().FacingDirection() + DirectionFromAngles(LinearInterpolate(40, -40, current)).AsWorldVector(EventPlayer(), Transformation.Rotation) + Up() * 0.5,
+            TEST_VisualDir: Vector(CosineFromDegrees(180*current), SineFromDegrees(180*current),0).AsWorldVector(EventPlayer(), Transformation.Rotation),
+            Lifetime: 2,
+            ..bigProj
+            };
+        LogToInspector($"current: {current}, visualDir: {projArgs.TEST_VisualDir}, dir: {projArgs.Direction}");
+        CreateCustomProjectile(projArgs);
+    }
+    //}
+    MinWait();
+    //LoopIfConditionIsTrue();
+}

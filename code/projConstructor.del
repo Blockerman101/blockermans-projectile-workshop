@@ -75,7 +75,7 @@ if (projConstructor.Length)
         LogToInspector($"\nAdded to TII (ID: {ID})\nCurrentTick: {currentTick}, ProjTick: {ProjTick}\nCurrentIndex: {intervalIndex}, ProjIndex: {timeInInterval.Map(v => v.ID).IndexOf(ID)}]\n");
         if (timeInInterval.Length > 1 && currentTick > ProjTick) {LogToInspector($"Inc'd Index. (Index {timeInInterval.Map(v => v.ID).IndexOf(ID)} with ID {ID}, Index: {intervalIndex} -> {intervalIndex + 1})"); intervalIndex++;}
         
-        Wait(0.016 * 1);
+        Wait(ServerLoadAverage() >= 200 ? 0.032 : 0.016);
         
         CreateProjectileEffect(AllPlayers(), ProjectileType.BaptisteBioticLauncher, AllPlayers(), UpdateEveryFrame(projData[EvaluateOnce(ID)].Position), projData[EvaluateOnce(ID)].ReadOnly.Velocity + projData[EvaluateOnce(ID)].ReadOnly.Gravity * projData[EvaluateOnce(ID)].time, EvaluateOnce(Args.Oversize), ProjectileEffectReeval.PositionDirectionAndSize);
         projData_VFX[ID] = LastCreatedEntity();
@@ -84,7 +84,7 @@ if (projConstructor.Length)
         ProjDestructor.Queue(ID, Args.Lifetime - deltaT);
 
         
-        Wait(0.016 * 2);
+        Wait(ServerLoadAverage() >= 150 ? 0.032 : 0.016); //If the server load is on the higher side, limit the constructor rate so THE BUG happens less
     
     }
     else
