@@ -34,7 +34,7 @@ Number currentTick: ((TotalTimeElapsed()%interval) / 0.016).Floor();
 Number rayCastCount: 2;
 
 private void checkECollision(in Number ID, in Number interval, in Color color, BeamType beamType) {
-    LogToInspector($"coll checked! (ID: {ID}, CurrentTII: {currentTick}, interval: {interval}, TTE: {TotalTimeElapsed()})");
+    //LogToInspector($"coll checked! (ID: {ID}, CurrentTII: {currentTick}, interval: {interval}, TTE: {TotalTimeElapsed()})");
     for (j = 1; j <= rayCastCount; j++) //how many raycasts to use/what raycast your on
     {
         tempPositions.StartPosition = projData[ID].PositionAtTime(LinearInterpolate(0, interval, (j-1)/rayCastCount));

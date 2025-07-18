@@ -21,10 +21,10 @@ if (TotalTimeElapsed() >= projDestructor.First.time && projDestructor.Length)
     LoopIfConditionIsTrue();
 }
 
-Any cond: projData.All(v => v.ProjState == projectileStates.Inactive || !CurrentArrayIndex()) && projData.Length > 1; //If all real projectiles are Inactive
+Any cond: projData.All(v => v.ProjState == projectileStates.Inactive || v.ProjState == projectileStates.NULL) && projData.Length > 1; //If all real projectiles are Inactive
 rule: '[BMPW] Destructor - Clear Projectile Data'
 Event.OngoingGlobal
-if (cond)
+if (cond && !projConstructor.Length)
 {
     Wait(0.25, WaitBehavior.AbortWhenFalse);
     DestroyEffect(projData_VFX);
