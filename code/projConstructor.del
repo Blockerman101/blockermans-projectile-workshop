@@ -37,8 +37,9 @@ void CreateCustomProjectile(ProjectileArgs Args) "[BMPW] CreateProj Sub"
 
 rule: '[BMPW] Constructor'
 Event.OngoingGlobal
-if (projConstructor.Length)
+if (projConstructor.Length > 0)
 {
+    LogToInspector("Constructor Fired!");
     ProjectileArgs Args: projConstructor.First;
     Any ID: Args._GetID();
     Number deltaT: (TotalTimeElapsed() - Args._GetTOC()); //deltaT is not the time since the last tick, but the time that passed since this proj was called
@@ -89,9 +90,12 @@ if (projConstructor.Length)
     }
     else
     {
-        LogToInspector("else fired"); //This else will happen if a proj is queued without any info for args
+        LogToInspector("\n\n!--ELSE FIRED\n\n"); //This else will happen if a proj is queued without any info for args
     }
 
     projConstructor.ModRemoveByIndex(0); //All done with first in queue, get ready for next
+    LoopIfConditionIsTrue();
+    LogToInspector($"\n\n\n\n\nNO LOOP ({projConstructor.Length} Con Queues)\n\n\n\n\n");
+    MinWait();
     LoopIfConditionIsTrue();
 }

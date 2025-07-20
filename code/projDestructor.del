@@ -35,5 +35,6 @@ if (cond && !projConstructor.Length)
     timeInInterval = [];
     lastProjectileID = 0;
     intervalIndex = 0;
+    MinWait();
     LoopIfConditionIsTrue();
 }
