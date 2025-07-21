@@ -1,11 +1,11 @@
 import "../customGameSettings.json";
 //import "../../../Other/extraFunctions.ostw";
-import "projDestructor.del";
+import "BMPW/environmentCollision.del";
+import "BMPW/projConstructor.del";
+import "BMPW/projDestructor.del";
+import "BMPW/structs.del";
 import "_flight.del";
 import "_dev.del";
-import "environmentCollision.del";
-import "projConstructor.del";
-import "structs.del";
 
 
 
@@ -27,26 +27,20 @@ if (EventPlayer().IsButtonHeld(Button.PrimaryFire))
 {
 
     ProjectileArgs bigProj: {Oversize: 0.2, Speed: 50, Lifetime: 3, ..ProjectileArgs.Default()};
-    ProjectileArgs up: {Direction: bigProj.Direction + Up() * 0.2, ..bigProj};
-    ProjectileArgs left: {Direction: bigProj.Direction + Left().AsWorldVector(EventPlayer(), Transformation.Rotation) * 0.2, ..bigProj};
-    ProjectileArgs right: {Direction: bigProj.Direction + Right().AsWorldVector(EventPlayer(), Transformation.Rotation) * 0.2, ..bigProj};
     CreateCustomProjectile(bigProj);
     bigProjIDs.ModAppend(lastProjectileID);
-    CreateCustomProjectile(up);
-    CreateCustomProjectile(left);
-    CreateCustomProjectile(right);
     MinWait();
     //LoopIfConditionIsTrue();
 }
 
 disabled rule: 'Explode big projs!'
 Event.OngoingPlayer
-if (bigProjIDs.Any(v => projData[v].ProjState == projectileStates.Inactive))
+if (bigProjIDs.Any(v => projData[v].ProjState == ProjState.Inactive))
 {
     LogToInspector("Kaboom!");
     Number _waitlessIterator = 0;
     while (_waitlessIterator < bigProjIDs.Length) {
-        if (projData[bigProjIDs].ProjState == projectileStates.Inactive) {
+        if (projData[bigProjIDs].ProjState == ProjState.Inactive) {
             PlayEffect(AllPlayers(), PlayEffect.GoodExplosion, Color.Red, projData[bigProjIDs[_waitlessIterator]].Position, 15);
             PlayEffect(AllPlayers(), PlayEffect.BuffExplosionSound, TeamOf(EventPlayer()), projData[bigProjIDs[_waitlessIterator]].Position, 150);
             bigProjIDs.ModRemoveByIndex(_waitlessIterator);

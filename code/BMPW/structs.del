@@ -30,7 +30,7 @@ single struct ProjDestructor
 struct ProjData
 {
     public Number time: (TotalTimeElapsed() - this.TimeOfCreation);
-    public projectileStates ProjState;
+    public ProjState ProjState;
 
     //public PositionsForProjData ControlPoints;
     public RarelyChangeProjData RarelyChange;
@@ -49,7 +49,7 @@ struct ProjData
     //public Vector PositionAtTime(in Number time): b0Time(time); //The above macro, "Position", assumes that "time" is 0. Inputting 0.5 for this will get you the position of the projectile 0.5s in the future
 
    
-    public static ProjData Construct(): {ProjState: projectileStates.NULL, RarelyChange: RarelyChangeProjData.Construct(), ReadOnly: ReadOnlyProjData.Construct(), TimeOfCreation: 0};  
+    public static ProjData Construct(): {ProjState: ProjState.NULL, RarelyChange: RarelyChangeProjData.Construct(), ReadOnly: ReadOnlyProjData.Construct(), TimeOfCreation: 0};  
     //public static void AddArgs(in ProjectileArgs args) {projData.Map(v => projData[CurrentArrayIndex()].ProjArgs).ModAppend(args);}
 }
 //single
@@ -103,7 +103,7 @@ single struct TimeInInterval
 
 Number projDataInitLifetime: 10;
 
-enum projectileStates
+enum ProjState
 {
     NULL,
     Active, //Projectile is spawned - run collisions & other operations

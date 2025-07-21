@@ -423,3 +423,10 @@ if (EventPlayer().IsButtonHeld(Button.PrimaryFire))
     MinWait();
     //LoopIfConditionIsTrue();
 }
+
+    ProjectileArgs up: {Direction: bigProj.Direction + Up() * 0.2, ..bigProj};
+    ProjectileArgs left: {Direction: bigProj.Direction + Left().AsWorldVector(EventPlayer(), Transformation.Rotation) * 0.2, ..bigProj};
+    ProjectileArgs right: {Direction: bigProj.Direction + Right().AsWorldVector(EventPlayer(), Transformation.Rotation) * 0.2, ..bigProj};
+    CreateCustomProjectile(up);
+    CreateCustomProjectile(left);
+    CreateCustomProjectile(right);

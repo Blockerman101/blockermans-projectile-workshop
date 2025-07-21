@@ -16,10 +16,10 @@ globalvar TimeInInterval[] timeInInterval = [];
 
 void CreateCustomProjectile(ProjectileArgs Args) "[BMPW] CreateProj Sub"
 {
-    //if (projData.Any(v => v.ProjState == projectileStates.Inactive))
-    if (IsTrueForAny(projData.Map(v => v.ProjState), ArrayElement() == projectileStates.Inactive)) //Make new lastProjID
+    //if (projData.Any(v => v.ProjState == ProjState.Inactive))
+    if (IsTrueForAny(projData.Map(v => v.ProjState), ArrayElement() == ProjState.Inactive)) //Make new lastProjID
     {
-        lastProjectileID = projData.Map(v => v.ProjState == projectileStates.Inactive ? CurrentArrayIndex() : false).Filter(v => v).First;
+        lastProjectileID = projData.Map(v => v.ProjState == ProjState.Inactive ? CurrentArrayIndex() : false).Filter(v => v).First;
     }
     else
     {
@@ -28,7 +28,7 @@ void CreateCustomProjectile(ProjectileArgs Args) "[BMPW] CreateProj Sub"
     //Args.ProjID = lastProjectileID;
     Args._SetID(lastProjectileID);
     Args._SetTOC(TotalTimeElapsed());
-    projData[lastProjectileID].ProjState = projectileStates.NULL; //setting a projstate value so `lastProjectileID = projData.Length` increments correctly with >1 proj in a single tick
+    projData[lastProjectileID].ProjState = ProjState.NULL; //setting a projstate value so `lastProjectileID = projData.Length` increments correctly with >1 proj in a single tick
     
 
     //LogToInspector($"Last ID: {lastProjectileID}");
@@ -61,7 +61,7 @@ if (projConstructor.Length > 0)
                 Bezierp2: (Args.StartPosition) + (Args.Lifetime)*(Args.Speed * Args.Direction) + (Args.Lifetime)^2 * (Args.Gravity / 2),
                 RicochetCount: 0
                 }, 
-            ProjState: projectileStates.Active, 
+            ProjState: ProjState.Active, 
             ReadOnly: {
                 Targets: Args.AffectedPlayers,
                 Velocity: Args.Speed * Args.Direction,
