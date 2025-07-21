@@ -43,8 +43,10 @@ if (projConstructor.Length > 0)
     ProjectileArgs Args: projConstructor.First;
     Any ID: Args._GetID();
     Number deltaT: (TotalTimeElapsed() - Args._GetTOC()); //deltaT is not the time since the last tick, but the time that passed since this proj was called
-    Number ModdedTimeToMaxHeight: (-1 * Args.Speed * DotProduct(Args.Direction, Args.Gravity)/DotProduct(Args.Gravity, Args.Gravity))%interval;
     //This is useful because instead of making the projectile at the current time, I can buffer it to act as if it was created at its time of call
+
+
+    Number ModdedTimeToMaxHeight: Max(0, -1 * Args.Speed * DotProduct(Args.Direction, Args.Gravity)/DotProduct(Args.Gravity, Args.Gravity))%interval;
 
     //Number rubberbandedTime: TotalTimeElapsed() - (0.016*11 * Args.Speed / 100);
     //experiment with this ^
@@ -81,7 +83,9 @@ if (projConstructor.Length > 0)
         CreateProjectileEffect(AllPlayers(), ProjectileType.BaptisteBioticLauncher, AllPlayers(), UpdateEveryFrame(projData[EvaluateOnce(ID)].Position), projData[EvaluateOnce(ID)].ReadOnly.Velocity + projData[EvaluateOnce(ID)].ReadOnly.Gravity * projData[EvaluateOnce(ID)].time, EvaluateOnce(Args.Oversize), ProjectileEffectReeval.PositionDirectionAndSize);
         projData_VFX[ID] = LastCreatedEntity();
         LogToInspector($"Proj {ID} Created\ndeltaT: {deltaT}");
-        checkECollision(ID, ModdedTimeToMaxHeight, Color.SkyBlue, BeamType.GoodBeam); //First EC
+
+        checkECollision(ID, (!ModdedTimeToMaxHeight ? interval : ModdedTimeToMaxHeight), Color.SkyBlue, BeamType.GoodBeam); //First EC. If there is no TTMH (the proj is created past its apex), run a full interval EC check
+
         ProjDestructor.Queue(ID, Args.Lifetime - deltaT);
 
         
@@ -90,12 +94,12 @@ if (projConstructor.Length > 0)
     }
     else
     {
-        LogToInspector("\n\n!--ELSE FIRED\n\n"); //This else will happen if a proj is queued without any info for args
+        LogToInspector("\n\n!--ELSE FIRED--!\n\n"); //This else will happen if a proj is queued without any info for args
     }
 
     projConstructor.ModRemoveByIndex(0); //All done with first in queue, get ready for next
     LoopIfConditionIsTrue();
-    LogToInspector($"\n\n\n\n\nNO LOOP ({projConstructor.Length} Con Queues)\n\n\n\n\n");
+    LogToInspector($"\n\n\NO LOOP ({projConstructor.Length} Con Queues)\n\n");
     MinWait();
     LoopIfConditionIsTrue();
 }

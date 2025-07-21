@@ -52,7 +52,7 @@ if (currentTick != EvaluateOnce(currentTick))
 
 globalvar Number count;
 globalvar Number conCount;
-rule: '[DEV] show inactive projstate'
+disabled rule: '[DEV] show inactive projstate'
 if (conCount != projConstructor.Length || count != projData.Map(v => v.ProjState).Filter(v => v == ProjState.Inactive).Length)
 {
     count = projData.Map(v => v.ProjState).Filter(v => v == ProjState.Inactive).Length;

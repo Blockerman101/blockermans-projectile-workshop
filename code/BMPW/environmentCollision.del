@@ -52,8 +52,8 @@ private void checkECollision(in Number ID, in Number interval, in Color color, B
 //        if ([position, endPosition, raycast].IsTrueForAny(v => v == Vector.Zero)) {LogToInspector($"POSITIONS REGISTERED ZERO");}
         if (subdividedCollided) 
         {
-            //ProjDestructor.Queue(ID, LinearInterpolate((j-1)/rayCastCount, j/rayCastCount, (position.DistanceTo(raycast)/position.DistanceTo(endPosition)) * interval)); 
             ProjDestructor.Queue(ID, interval * LinearInterpolate((j-1)/rayCastCount, j/rayCastCount, (position.DistanceTo(raycast)/position.DistanceTo(endPosition)))); //Cant add an offset for visuals because it would mess up ricochets
+            //LogToInspector($"Collided! (Proj ${ID} queued with ${interval * LinearInterpolate((j-1)/rayCastCount, j/rayCastCount, (position.DistanceTo(raycast)/position.DistanceTo(endPosition)))} time)");
             break;
         } //stop raycasting if the latest one hit
     }
