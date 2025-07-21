@@ -114,7 +114,7 @@ enum ProjState
 
 single struct ProjectileArgs
 {
-    public ProjectileEffect ProjectileType;
+    public ProjFX ProjFX;
     public Vector StartPosition;
     public Vector Direction;
     public Player[] AffectedPlayers;
@@ -131,12 +131,12 @@ single struct ProjectileArgs
     private Number _TimeOfCall;
     public Number _GetTOC() {return _TimeOfCall;}
     public ref void _SetTOC(in Number time) {_TimeOfCall = time;} 
-    public static ProjectileArgs Construct(): {ProjectileType: ProjectileEffect.OrbProjectile, StartPosition: Vector.Zero, Direction: Vector.Zero, AffectedPlayers: null, DamageAmount: 0, Oversize: 0, Speed: 0, Lifetime: projDataInitLifetime, Knockback: 0, Gravity: Vector.Zero, _ProjID: 0, _TimeOfCall: 0};
-    public static ProjectileArgs Default(): {ProjectileType: ProjectileEffect.OrbProjectile, StartPosition: EyePosition(EventPlayer()) + EventPlayer().FacingDirection(), Direction: VerticalFacingAngleOf(EventPlayer()) <= -88.9 ? Up() : (VerticalFacingAngleOf(EventPlayer()) >= 88.9 ? Down() : EventPlayer().FacingDirection()), AffectedPlayers: AllPlayers(OppositeTeamOf(TeamOf(EventPlayer()))), DamageAmount: 50, Oversize: 0, Speed: 20, Lifetime: projDataInitLifetime, Knockback: 0, Gravity: Vector(Y: -5), _ProjID: 0, _TimeOfCall: null};
+    public static ProjectileArgs Construct(): {ProjFX: ProjFX.OrbProjectile, StartPosition: Vector.Zero, Direction: Vector.Zero, AffectedPlayers: null, DamageAmount: 0, Oversize: 0, Speed: 0, Lifetime: projDataInitLifetime, Knockback: 0, Gravity: Vector.Zero, _ProjID: 0, _TimeOfCall: 0};
+    public static ProjectileArgs Default(): {ProjFX: ProjFX.OrbProjectile, StartPosition: EyePosition(EventPlayer()) + EventPlayer().FacingDirection(), Direction: VerticalFacingAngleOf(EventPlayer()) <= -88.9 ? Up() : (VerticalFacingAngleOf(EventPlayer()) >= 88.9 ? Down() : EventPlayer().FacingDirection()), AffectedPlayers: AllPlayers(OppositeTeamOf(TeamOf(EventPlayer()))), DamageAmount: 50, Oversize: 0, Speed: 20, Lifetime: projDataInitLifetime, Knockback: 0, Gravity: Vector(Y: -5), _ProjID: 0, _TimeOfCall: null};
     public static void Queue(in ProjectileArgs args) {projConstructor.ModAppend(args);}
 }
 
-enum ProjectileEffect
+enum ProjFX
 {
     BaptisteBioticLauncher,
     BastionA36TacticalGrenade,

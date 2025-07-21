@@ -13,7 +13,7 @@ rule: 'Make my projectile'
 Event.OngoingPlayer
 if (EventPlayer().IsButtonHeld(Button.Interact))
 {
-    ProjectileArgs shortProj: {Lifetime: 1, ..ProjectileArgs.Default()};
+    ProjectileArgs shortProj: {ProjFX: ProjFX.GenjiShuriken, Lifetime: 1, ..ProjectileArgs.Default()};
     CreateCustomProjectile(shortProj);
     Number myID = lastProjectileID;
     Wait(0.25, WaitBehavior.AbortWhenFalse);
@@ -26,7 +26,7 @@ Event.OngoingPlayer
 if (EventPlayer().IsButtonHeld(Button.PrimaryFire))
 {
 
-    ProjectileArgs bigProj: {Oversize: 0.2, Speed: 50, Lifetime: 3, ..ProjectileArgs.Default()};
+    ProjectileArgs bigProj: {ProjFX: ProjFX.BaptisteBioticLauncher, Oversize: 0.2, Speed: 50, Lifetime: 3, ..ProjectileArgs.Default()};
     CreateCustomProjectile(bigProj);
     bigProjIDs.ModAppend(lastProjectileID);
     MinWait();
@@ -53,7 +53,7 @@ rule: 'Track helix rockets'
 Event.OngoingPlayer
 if (EventPlayer().IsFiringSecondary())
 {
-    ProjectileArgs myArgs = {StartPosition: EventPlayer().EyePosition(), Speed: 50, Gravity: Vector.Zero, Lifetime: 2, ..ProjectileArgs.Default()};
+    ProjectileArgs myArgs = {ProjFX: ProjFX.PharahRocket, StartPosition: EventPlayer().EyePosition(), Speed: 50, Gravity: Vector.Zero, Lifetime: 2, ..ProjectileArgs.Default()};
     CreateCustomProjectile(myArgs);
 }
 
