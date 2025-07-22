@@ -1,0 +1,23 @@
+import "simpleProcessing.del";
+globalvar Number _waitlessIterator;
+globalvar Number[] complexProjs = EmptyArray();
+rule: '[BMPW] Player Collision'
+if (complexProjs.Length)
+{
+    for (_waitlessIterator = 0; _waitlessIterator < complexProjs.Length; _waitlessIterator++)
+    {
+
+        //Number ID: complexProjs[EvaluateOnce(_waitlessIterator)]; 
+        Number ID: complexProjs[_waitlessIterator]; 
+        ProjData proj: projData[ID];
+
+        projData[ID].HitPlayer = RayCastHitPlayer(proj.Position, proj.PositionAtTime(0.016), proj.ReadOnly.Targets, null, false);
+        if (proj.HitPlayer)
+        {
+            ProjDestructor.Destroy(ID);
+            LogToInspector($"Proj {ID} hit {proj.HitPlayer}!");
+        }
+    }
+    MinWait();
+    LoopIfConditionIsTrue();
+}

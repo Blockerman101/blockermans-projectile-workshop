@@ -1,6 +1,7 @@
 import "../customGameSettings.json";
 //import "../../../Other/extraFunctions.ostw";
-import "BMPW/environmentCollision.del";
+import "BMPW/simpleProcessing.del";
+import "BMPW/complexProcessing.del";
 import "BMPW/projConstructor.del";
 import "BMPW/projDestructor.del";
 import "BMPW/structs.del";
@@ -13,7 +14,7 @@ rule: 'Make my projectile'
 Event.OngoingPlayer
 if (EventPlayer().IsButtonHeld(Button.Interact))
 {
-    ProjectileArgs shortProj: {ProjFX: ProjFX.GenjiShuriken, Lifetime: 1, ..ProjectileArgs.Default()};
+    ProjectileArgs shortProj: {ProjFX: ProjFX.GenjiShuriken, Lifetime: 7, ..ProjectileArgs.Default()};
     CreateCustomProjectile(shortProj);
     Number myID = lastProjectileID;
     Wait(0.25, WaitBehavior.AbortWhenFalse);
@@ -26,7 +27,7 @@ Event.OngoingPlayer
 if (EventPlayer().IsButtonHeld(Button.PrimaryFire))
 {
 
-    ProjectileArgs bigProj: {ProjFX: ProjFX.BaptisteBioticLauncher, Oversize: 0.2, Speed: 50, Lifetime: 3, ..ProjectileArgs.Default()};
+    ProjectileArgs bigProj: {ProjFX: ProjFX.BaptisteBioticLauncher, Oversize: 0.2, Speed: 50, Lifetime: 7, ..ProjectileArgs.Default()};
     CreateCustomProjectile(bigProj);
     bigProjIDs.ModAppend(lastProjectileID);
     MinWait();
@@ -38,7 +39,7 @@ Event.OngoingPlayer
 if (bigProjIDs.Any(v => projData[v].ProjState == ProjState.Inactive))
 {
     LogToInspector("Kaboom!");
-    Number _waitlessIterator = 0;
+    _waitlessIterator = 0;
     while (_waitlessIterator < bigProjIDs.Length) {
         if (projData[bigProjIDs].ProjState == ProjState.Inactive) {
             PlayEffect(AllPlayers(), PlayEffect.GoodExplosion, Color.Red, projData[bigProjIDs[_waitlessIterator]].Position, 15);

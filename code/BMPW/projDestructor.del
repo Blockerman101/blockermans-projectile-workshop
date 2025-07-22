@@ -9,6 +9,7 @@ if (TotalTimeElapsed() >= projDestructor.First.time && projDestructor.Length)
     Number ID: projDestructor.First.ID;
     DestroyEffect(projData_VFX[ID]);
     projData[ID].ProjState = ProjState.Inactive;
+    complexProjs.ModRemoveByValue(ID);
     Boolean[] reqsForDec: [
     timeInInterval.Length > 1,
     currentTick >= timeInInterval[timeInInterval.Map(v => v.ID).IndexOf(ID)].Time
@@ -21,7 +22,7 @@ if (TotalTimeElapsed() >= projDestructor.First.time && projDestructor.Length)
     LoopIfConditionIsTrue();
 }
 
-Any cond: projData.All(v => v.ProjState == ProjState.Inactive || v.ProjState == ProjState.NULL) && projData.Length > 1; //If all real projectiles are Inactive
+Any cond: projData.All(v => v.ProjState == ProjState.Inactive || !CurrentArrayIndex()) && projData.Length > 1; //If all real projectiles are Inactive
 rule: '[BMPW] Destructor - Clear Projectile Data'
 Event.OngoingGlobal
 if (cond && !projConstructor.Length)
@@ -33,6 +34,7 @@ if (cond && !projConstructor.Length)
     projConstructor = [];
     projDestructor = [];
     timeInInterval = [];
+    complexProjs = [];
     lastProjectileID = 0;
     intervalIndex = 0;
     MinWait();

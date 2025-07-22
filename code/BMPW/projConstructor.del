@@ -1,6 +1,6 @@
 //import "../../../Other/extraFunctions.ostw";
 import "structs.del";
-import "environmentCollision.del";
+import "simpleProcessing.del";
 Vector | Number lerp2(in Vector | Number a, in Vector | Number b, in Number t, in Number tMax): ((tMax - t)/tMax)*a + (t/tMax)*b;
 //lerp2(1, 5, 0.75, 1) = (1-0.75)*1 + (0.75)*5 = 0.25 + 3.75 = 4 "4 is 75% of the way from 1 to 5"
 //lerp2(1, 5, 1, 2) = 1(2 - 1)/2 + 5(1/2) = 1(0.5) + 5(0.5) = 0.5 + 2.5 = 3 
@@ -57,18 +57,20 @@ if (projConstructor.Length > 0)
         projConstructor[0].Direction = projConstructor[0].Direction.Normalize(); //Normalize dir internally (redundancy) //For reference, if you do .First instead of [0] OSTW throws an error
         ProjData data: {
             TimeOfCreation: rubberbandedTime,  //This is used as the reference for other time-based values, so by modifying this, you modify everything else
-            RarelyChange: {
-                Bezierp0: (Args.StartPosition), 
-                Bezierp1: (Args.StartPosition) + (Args.Lifetime)*(Args.Speed * Args.Direction) * 0.5, 
-                Bezierp2: (Args.StartPosition) + (Args.Lifetime)*(Args.Speed * Args.Direction) + (Args.Lifetime)^2 * (Args.Gravity / 2),
-                RicochetCount: 0
-                }, 
-            ProjState: ProjState.Active, 
+            //RarelyChange: {
+            //    Bezierp0: (Args.StartPosition), 
+            //    Bezierp1: (Args.StartPosition) + (Args.Lifetime)*(Args.Speed * Args.Direction) * 0.5, 
+            //    Bezierp2: (Args.StartPosition) + (Args.Lifetime)*(Args.Speed * Args.Direction) + (Args.Lifetime)^2 * (Args.Gravity / 2),
+            //    }, 
+            ProjState: ProjState.Simple, 
             ReadOnly: {
-                Targets: Args.AffectedPlayers,
+                InitPos: Args.StartPosition,
+                Radius: 0,
+                Targets: Args.Targets,
                 Velocity: Args.Speed * Args.Direction,
-                Gravity: Args.Gravity,
-                }
+                Gravity: Args.Gravity
+                },
+            HitPlayer: null
             };
 
         projData[ID] = data;
@@ -93,7 +95,7 @@ if (projConstructor.Length > 0)
         LogToInspector($"Proj {ID} Created\ndeltaT: {deltaT}");
 
         checkECollision(ID, (!ModdedTimeToMaxHeight ? interval : ModdedTimeToMaxHeight), Color.SkyBlue, BeamType.GoodBeam); //First EC. If there is no TTMH (the proj is created past its apex), run a full interval EC check
-
+        stateCheck(ID, projData[ID].Position); //First stateCheck. If the proj spawns close to a player, it should be in the complex state
         ProjDestructor.Queue(ID, Args.Lifetime - deltaT);
 
         
@@ -107,7 +109,7 @@ if (projConstructor.Length > 0)
 
     projConstructor.ModRemoveByIndex(0); //All done with first in queue, get ready for next
     LoopIfConditionIsTrue();
-    LogToInspector($"\n\n\NO LOOP ({projConstructor.Length} Con Queues)\n\n");
+    LogToInspector($"NO LOOP ({projConstructor.Length} Con Queues)");
     MinWait();
     LoopIfConditionIsTrue();
 }

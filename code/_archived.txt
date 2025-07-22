@@ -430,3 +430,6 @@ if (EventPlayer().IsButtonHeld(Button.PrimaryFire))
     CreateCustomProjectile(up);
     CreateCustomProjectile(left);
     CreateCustomProjectile(right);
+
+structs.del
+//    Open, //Projectile was never spawned (not in use currently) [OUTDATED]

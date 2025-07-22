@@ -33,45 +33,48 @@ struct ProjData
     public ProjState ProjState;
 
     //public PositionsForProjData ControlPoints;
-    public RarelyChangeProjData RarelyChange;
+    //public RarelyChangeProjData RarelyChange;
     public ReadOnlyProjData ReadOnly;
     public Number TimeOfCreation;
+
+    public Player HitPlayer;
     //public Vector Position: (
     //    ((this.ReadOnly.Lifetime - (TotalTimeElapsed() - this.TimeOfCreation))/this.ReadOnly.Lifetime)*(((this.ReadOnly.Lifetime - (TotalTimeElapsed() - this.TimeOfCreation))/this.ReadOnly.Lifetime)*(this.RarelyChange.Bezierp0) + ((TotalTimeElapsed() - this.TimeOfCreation)/this.ReadOnly.Lifetime)*this.RarelyChange.Bezierp1) + ((TotalTimeElapsed() - this.TimeOfCreation)/this.ReadOnly.Lifetime)*(((this.ReadOnly.Lifetime - (TotalTimeElapsed() - this.TimeOfCreation))/this.ReadOnly.Lifetime)*this.RarelyChange.Bezierp1 + ((TotalTimeElapsed() - this.TimeOfCreation)/this.ReadOnly.Lifetime)*this.RarelyChange.Bezierp2)
     //);
     //public Vector Position: b0;
 
     //A macro for caculating the projectiles position
-    public Vector Position: this.RarelyChange.Bezierp0 + time * (this.ReadOnly.Velocity + this.ReadOnly.Gravity * time / 2);
+    public Vector Position: this.ReadOnly.InitPos + time * (this.ReadOnly.Velocity + this.ReadOnly.Gravity * time / 2);
 
     //A variable for the projectiles position, updated every [interval] in the EC
-    public Vector PositionAtTime(in Number extraTime): this.RarelyChange.Bezierp0 + (time + extraTime) * (this.ReadOnly.Velocity + this.ReadOnly.Gravity * (time + extraTime) / 2);
+    public Vector PositionAtTime(in Number extraTime): this.ReadOnly.InitPos + (time + extraTime) * (this.ReadOnly.Velocity + this.ReadOnly.Gravity * (time + extraTime) / 2);
     //public Vector PositionAtTime(in Number time): b0Time(time); //The above macro, "Position", assumes that "time" is 0. Inputting 0.5 for this will get you the position of the projectile 0.5s in the future
 
    
-    public static ProjData Construct(): {ProjState: ProjState.NULL, RarelyChange: RarelyChangeProjData.Construct(), ReadOnly: ReadOnlyProjData.Construct(), TimeOfCreation: 0};  
+    public static ProjData Construct(): {ProjState: ProjState.NULL, ReadOnly: ReadOnlyProjData.Construct(), TimeOfCreation: 0, HitPlayer: null};  
     //public static void AddArgs(in ProjectileArgs args) {projData.Map(v => projData[CurrentArrayIndex()].ProjArgs).ModAppend(args);}
 }
 //single
-single struct RarelyChangeProjData
-{
-    public Number RicochetCount;
-    public Vector Bezierp0;
-    public Vector Bezierp1;
-    public Vector Bezierp2;
-
-    public static RarelyChangeProjData Construct(): {Bezierp0: Vector.Zero, Bezierp1: Vector.Zero, Bezierp2: Vector.Zero, RicochetCount: 0};
-}
+//single struct RarelyChangeProjData
+//{
+//    public Vector Bezierp0;
+//    public Vector Bezierp1;
+//    public Vector Bezierp2;
+//
+//    public static RarelyChangeProjData Construct(): {Bezierp0: Vector.Zero, Bezierp1: Vector.Zero, Bezierp2: Vector.Zero};
+//}
 
 //single
 single struct ReadOnlyProjData
 {
     //public Number Lifetime;
+    public Vector InitPos;
+    public Number Radius;
     public Player[] Targets;
     public Vector Velocity;
     public Vector Gravity;
     //public static ReadOnlyProjData Construct(): {Lifetime: projDataInitLifetime, Targets: null, ProjSteepness: 0, Velocity: Vector.Zero, Gravity: Vector.Zero};
-    public static ReadOnlyProjData Construct(): {Targets: null, Velocity: Vector.Zero, Gravity: Vector.Zero};
+    public static ReadOnlyProjData Construct(): {InitPos: Vector.Zero, Radius: 0, Targets: null, Velocity: Vector.Zero, Gravity: Vector.Zero};
 }
 
 single struct RaycastPositions
@@ -103,12 +106,20 @@ single struct TimeInInterval
 
 Number projDataInitLifetime: 10;
 
+
+//A good design philosophy is to reference specific states, rather "Not" states
+//projData[ID].ProjState == ProjState.Engaged //Good
+//projData[ID].ProjState != ProjState.Inactive //Bad
+//This helps future-proof
+//The syntax wont be the exact same for users, but its still good info to have
+
 enum ProjState
 {
-    NULL,
-    Active, //Projectile is spawned - run collisions & other operations
-//    Open, //Projectile was never spawned (not in use currently) [OUTDATED]
-    Inactive //Projectile was spawned, then was destroyed
+    NULL, //Debugging
+    Simple, //Projectile is processing passively/simply - run EC, update ProjState
+    Inactive, //Projectile was spawned, then was destroyed
+    Complex //Projectile is processing special things - player collision
+
 }
 
 
@@ -117,7 +128,7 @@ single struct ProjectileArgs
     public ProjFX ProjFX;
     public Vector StartPosition;
     public Vector Direction;
-    public Player[] AffectedPlayers;
+    public Player[] Targets;
     public Number DamageAmount;
     public Number Oversize;
     public Number Speed;
@@ -131,8 +142,8 @@ single struct ProjectileArgs
     private Number _TimeOfCall;
     public Number _GetTOC() {return _TimeOfCall;}
     public ref void _SetTOC(in Number time) {_TimeOfCall = time;} 
-    public static ProjectileArgs Construct(): {ProjFX: ProjFX.OrbProjectile, StartPosition: Vector.Zero, Direction: Vector.Zero, AffectedPlayers: null, DamageAmount: 0, Oversize: 0, Speed: 0, Lifetime: projDataInitLifetime, Knockback: 0, Gravity: Vector.Zero, _ProjID: 0, _TimeOfCall: 0};
-    public static ProjectileArgs Default(): {ProjFX: ProjFX.OrbProjectile, StartPosition: EyePosition(EventPlayer()) + EventPlayer().FacingDirection(), Direction: VerticalFacingAngleOf(EventPlayer()) <= -88.9 ? Up() : (VerticalFacingAngleOf(EventPlayer()) >= 88.9 ? Down() : EventPlayer().FacingDirection()), AffectedPlayers: AllPlayers(OppositeTeamOf(TeamOf(EventPlayer()))), DamageAmount: 50, Oversize: 0, Speed: 20, Lifetime: projDataInitLifetime, Knockback: 0, Gravity: Vector(Y: -5), _ProjID: 0, _TimeOfCall: null};
+    public static ProjectileArgs Construct(): {ProjFX: ProjFX.OrbProjectile, StartPosition: Vector.Zero, Direction: Vector.Zero, Targets: null, DamageAmount: 0, Oversize: 0, Speed: 0, Lifetime: projDataInitLifetime, Knockback: 0, Gravity: Vector.Zero, _ProjID: 0, _TimeOfCall: 0};
+    public static ProjectileArgs Default(): {ProjFX: ProjFX.OrbProjectile, StartPosition: EyePosition(EventPlayer()) + EventPlayer().FacingDirection(), Direction: VerticalFacingAngleOf(EventPlayer()) <= -88.9 ? Up() : (VerticalFacingAngleOf(EventPlayer()) >= 88.9 ? Down() : EventPlayer().FacingDirection()), Targets: AllPlayers(OppositeTeamOf(TeamOf(EventPlayer()))), DamageAmount: 50, Oversize: 0, Speed: 20, Lifetime: projDataInitLifetime, Knockback: 0, Gravity: Vector(Y: -5), _ProjID: 0, _TimeOfCall: null};
     public static void Queue(in ProjectileArgs args) {projConstructor.ModAppend(args);}
 }
 

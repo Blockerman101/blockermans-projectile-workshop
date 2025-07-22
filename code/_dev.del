@@ -7,6 +7,7 @@ Event.OngoingGlobal
 if (HostPlayer().IsButtonHeld(Button.Crouch) && HostPlayer().IsButtonHeld(Button.PrimaryFire))
 {
     CreateDummyBot(AllHeroes().Random(), OppositeTeamOf(HostPlayer().Team()), -1, PositionOf(HostPlayer()));
+    LogToInspector($"{LastCreatedEntity()} Spawned");
 }
 
 rule: '[DEV] Destroy Dummies'
@@ -57,7 +58,7 @@ if (conCount != projConstructor.Length || count != projData.Map(v => v.ProjState
 {
     count = projData.Map(v => v.ProjState).Filter(v => v == ProjState.Inactive).Length;
     conCount = projConstructor.Length;
-    LogToInspector($"Size: {projData.Length} ({projData.Map(v => v.ProjState).Filter(v => v == ProjState.Active).Length} Active {count} Inactive {projData.Map(v => v.ProjState).Filter(v => v == ProjState.NULL).Length} Null)
+    LogToInspector($"Size: {projData.Length} ({projData.Map(v => v.ProjState).Filter(v => v == ProjState.Simple).Length} Active {count} Inactive {projData.Map(v => v.ProjState).Filter(v => v == ProjState.NULL).Length} Null)
     {projConstructor.Length} Con Requests");
     Wait(0.016, WaitBehavior.RestartWhenTrue);
     LoopIfConditionIsTrue();
@@ -69,4 +70,16 @@ if (projData.Length > 1)
     LogToInspector($"Tick {(TotalTimeElapsed()/0.016).Floor()}");
     MinWait();
     LoopIfConditionIsTrue();
+}
+
+rule: '[DEV] show state criteria'
+{
+    for (Number i = 0; i < 10; i++)
+    {
+        Number ie: EvaluateOnce(i);
+        CreateEffect((projData[ie].ProjState == ProjState.Simple || projData[ie].ProjState == ProjState.Complex) ? AllPlayers() : null, Effect.Sphere, projData[ie].ProjState == ProjState.Complex ? Color.Blue : Color.Red, pos(ie), rad(ie), EffectRev.VisibleToPositionRadiusAndColor);
+        CreateEffect((projData[ie].ProjState == ProjState.Simple || projData[ie].ProjState == ProjState.Complex) ? AllPlayers() : null, Effect.Sphere, Color.Red, projData[ie].Position, 0.5, EffectRev.VisibleToPositionRadiusAndColor);
+        CreateEffect((projData[ie].ProjState == ProjState.Simple || projData[ie].ProjState == ProjState.Complex) ? AllPlayers() : null, Effect.Sphere, Color.White, projData[ie].PositionAtTime(0.016), 0.5, EffectRev.VisibleToPositionRadiusAndColor);
+    
+    }
 }
