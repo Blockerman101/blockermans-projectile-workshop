@@ -11,128 +11,131 @@ globalvar Number lastProjectileID = 0;
 globalvar ProjData[] projData = [ProjData.Construct()];
 globalvar Number[] projData_VFX = [null];
 globalvar ProjectileArgs[] projConstructor = [];
-globalvar ProjectileArgs[] constructorData = [EmptyArray()];
+//globalvar ProjectileArgs[] constructorData = [EmptyArray()];  //This var isnt be needed with 1 constructor, you can just ref `projConstructor.First`
 globalvar TimeInInterval[] timeInInterval = [];
 
 void CreateCustomProjectile(ProjectileArgs Args) "[BMPW] CreateProj Sub"
 {
-    //if (projData.Any(v => v.ProjState == projectileStates.Inactive))
-    if (IsTrueForAny(projData.Map(v => v.ProjState), ArrayElement() == projectileStates.Inactive))
+    //if (projData.Any(v => v.ProjState == ProjState.Inactive))
+    if (IsTrueForAny(projData.Map(v => v.ProjState), ArrayElement() == ProjState.Inactive)) //Make new lastProjID
     {
-        lastProjectileID = projData.Map(v => v.ProjState == projectileStates.Inactive ? CurrentArrayIndex() : false).Filter(v => v).First;
+        lastProjectileID = projData.Map(v => v.ProjState == ProjState.Inactive ? CurrentArrayIndex() : false).Filter(v => v).First;
     }
     else
     {
         lastProjectileID = projData.Length;
     }
     //Args.ProjID = lastProjectileID;
-    Args.ProjID = lastProjectileID;
-    //LogToInspector($"Last ID: {lastProjectileID}");
-    projConstructor.ModAppend(Args);
-}
-
-//Number maxTime: 3;
-
-rule: '[BMPW] Constructor - 1'
-Event.OngoingGlobal
-if (ConstructorQueued())
-{
-    ConstructorConstructor(1);
-}
-
-rule: '[BMPW] Constructor - 2'
-Event.OngoingGlobal
-if (ConstructorQueued())
-{
-    ConstructorConstructor(2);
-}
-
-rule: '[BMPW] Constructor - 3'
-Event.OngoingGlobal
-if (ConstructorQueued())
-{
-    ConstructorConstructor(3);
-}
-
-rule: '[BMPW] Constructor - 4'
-Event.OngoingGlobal
-if (ConstructorQueued())
-{
-    ConstructorConstructor(4);
-}
-
-rule: '[BMPW] Constructor - 5'
-Event.OngoingGlobal
-if (ConstructorQueued())
-{
-    ConstructorConstructor(5);
-}
-
-Any ConstructorQueued(): projConstructor.Length;
-//ref ProjectileArgs Args
-void ConstructorConstructor(in Number constructorID) 
-{
-    //ProjectileArgs Args: projConstructor.Filter(v => projData[v].ProjState == projectileStates.Open || projData[v.ProjID].ProjState == null).First;
-    ProjectileArgs Args: constructorData[constructorID];
-    Any ID: Args.GetID();
-    //Args = projConstructor.Filter(v => projData[v.GetID()].ProjState == projectileStates.Open || projData[v.ProjID].ProjState == null).First;
-
-    Number time: (TotalTimeElapsed() - projData[EvaluateOnce(ID)].TimeOfCreation);
+    Args._SetID(lastProjectileID);
+    Args._SetTOC(TotalTimeElapsed());
+    projData[lastProjectileID].ProjState = ProjState.NULL; //setting a projstate value so `lastProjectileID = projData.Length` increments correctly with >1 proj in a single tick
     
+
+    //LogToInspector($"Last ID: {lastProjectileID}");
+    projConstructor.ModAppend(Args); //Add this proj call to the construction queue
+}
+
+rule: '[BMPW] Constructor'
+Event.OngoingGlobal
+if (projConstructor.Length > 0)
+{
+    LogToInspector("Constructor Fired!");
+    ProjectileArgs Args: projConstructor.First;
+    Any ID: Args._GetID();
+    Number deltaT: (TotalTimeElapsed() - Args._GetTOC()); //deltaT is not the time since the last tick, but the time that passed since this proj was called
+    //This is useful because instead of making the projectile at the current time, I can buffer it to act as if it was created at its time of call
+
+
+    Number ModdedTimeToMaxHeight: Max(0, -1 * Args.Speed * DotProduct(Args.Direction, Args.Gravity)/DotProduct(Args.Gravity, Args.Gravity))%interval;
+
     //Number rubberbandedTime: TotalTimeElapsed() - (0.016*11 * Args.Speed / 100);
     //experiment with this ^
-    Number rubberbandedTime: TotalTimeElapsed();
-
-    constructorData[constructorID] = projConstructor.First; //set data
-    projConstructor.ModRemoveByIndex(0); //truncate projConstructor
+    Number rubberbandedTime: (TotalTimeElapsed() - deltaT); //buffer current time using deltaT for reason above ^
+    Number time: (rubberbandedTime - projData[EvaluateOnce(ID)].TimeOfCreation);
     if (CountOf(Args)) //ensure projectile has info
     {
-        Vector normalDir: Args.Direction.Normalize();
+        projConstructor[0].Direction = projConstructor[0].Direction.Normalize(); //Normalize dir internally (redundancy) //For reference, if you do .First instead of [0] OSTW throws an error
         ProjData data: {
-            TimeOfCreation: rubberbandedTime, 
+            TimeOfCreation: rubberbandedTime,  //This is used as the reference for other time-based values, so by modifying this, you modify everything else
             RarelyChange: {
                 Bezierp0: (Args.StartPosition), 
-                Bezierp1: (Args.StartPosition) + (Args.Lifetime)*(Args.Speed * normalDir) * 0.5, 
-                Bezierp2: (Args.StartPosition) + (Args.Lifetime)*(Args.Speed * normalDir) + (Args.Lifetime)^2 * (Args.Gravity / 2),
-                RicochetCount: 0,
-                temp: (-1 * Args.Speed * DotProduct(normalDir, Args.Gravity)/DotProduct(Args.Gravity, Args.Gravity))%interval
+                Bezierp1: (Args.StartPosition) + (Args.Lifetime)*(Args.Speed * Args.Direction) * 0.5, 
+                Bezierp2: (Args.StartPosition) + (Args.Lifetime)*(Args.Speed * Args.Direction) + (Args.Lifetime)^2 * (Args.Gravity / 2),
+                RicochetCount: 0
                 }, 
-            ProjState: projectileStates.Constructing, 
+            ProjState: ProjState.Active, 
             ReadOnly: {
                 Targets: Args.AffectedPlayers,
-                Velocity: Args.Speed * normalDir,
+                Velocity: Args.Speed * Args.Direction,
                 Gravity: Args.Gravity,
                 }
             };
-            //Set temp to TimeToMaxHeight (est. time ~0.02s)
 
         projData[ID] = data;
-        Number ProjTime: (TotalTimeElapsed() + Max(0, -1 * Args.Speed * DotProduct(normalDir, Args.Gravity)/DotProduct(Args.Gravity, Args.Gravity)));
+        Number ProjTime: (TotalTimeElapsed() + Max(0, -1 * Args.Speed * DotProduct(Args.Direction, Args.Gravity)/DotProduct(Args.Gravity, Args.Gravity)));
         Number ProjTick: (((ProjTime%interval) / 0.016).Floor());
         TimeInInterval.Queue(ID, ProjTick);
         LogToInspector($"\nAdded to TII (ID: {ID})\nCurrentTick: {currentTick}, ProjTick: {ProjTick}\nCurrentIndex: {intervalIndex}, ProjIndex: {timeInInterval.Map(v => v.ID).IndexOf(ID)}]\n");
-        
-        //Translate intervalIndex
-        //Increment if this wasnt the first proj added to the struct, and if the current index already checked EC
         if (timeInInterval.Length > 1 && currentTick > ProjTick) {LogToInspector($"Inc'd Index. (Index {timeInInterval.Map(v => v.ID).IndexOf(ID)} with ID {ID}, Index: {intervalIndex} -> {intervalIndex + 1})"); intervalIndex++;}
+        
+        Wait(ServerLoadAverage() >= 200 ? 0.032 : 0.016);
+        
 
-        Wait(ServerLoadAverage()/512);
-        //CreateProjectileEffect(AllPlayers(), ProjectileType.BaptisteBioticLauncher, AllPlayers(), UpdateEveryFrame(b0), projData[EvaluateOnce(ID)].ReadOnly.Velocity + projData[EvaluateOnce(ID)].ReadOnly.Gravity * time, EvaluateOnce(Args.Oversize), ProjectileEffectReeval.PositionDirectionAndSize);
-        CreateProjectileEffect(AllPlayers(), ProjectileType.BaptisteBioticLauncher, AllPlayers(), UpdateEveryFrame(projData[EvaluateOnce(ID)].Position), projData[EvaluateOnce(ID)].ReadOnly.Velocity + projData[EvaluateOnce(ID)].ReadOnly.Gravity * time, EvaluateOnce(Args.Oversize), ProjectileEffectReeval.PositionDirectionAndSize);
+        CastPFX(
+            pfx: Args.ProjFX,
+            fx => {
+                CreateProjectileEffect(AllPlayers(), fx, AllPlayers(), UpdateEveryFrame(projData[EvaluateOnce(ID)].Position), projData[EvaluateOnce(ID)].ReadOnly.Velocity + projData[EvaluateOnce(ID)].ReadOnly.Gravity * projData[EvaluateOnce(ID)].time, EvaluateOnce(Args.Oversize), ProjectileEffectReeval.PositionDirectionAndSize);
+                }
+        );
+        
+        
         projData_VFX[ID] = LastCreatedEntity();
-        ProjDestructor.Queue(ID, Args.Lifetime);
+        LogToInspector($"Proj {ID} Created\ndeltaT: {deltaT}");
 
-        Wait(ServerLoadAverage()/512);
+        checkECollision(ID, (!ModdedTimeToMaxHeight ? interval : ModdedTimeToMaxHeight), Color.SkyBlue, BeamType.GoodBeam); //First EC. If there is no TTMH (the proj is created past its apex), run a full interval EC check
 
-        //As it stands, there needs to be a wait between spawning the projectile, and truncating the queue
-        //You cant use 
+        ProjDestructor.Queue(ID, Args.Lifetime - deltaT);
+
+        
+        Wait(ServerLoadAverage() >= 150 ? 0.032 : 0.016); //If the server load is on the higher side, limit the constructor rate so THE BUG happens less
+    
     }
-    else //create projectile with default info
+    else
     {
-        LogToInspector("else fired");
+        LogToInspector("\n\n!--ELSE FIRED--!\n\n"); //This else will happen if a proj is queued without any info for args
     }
-    //After called
 
-    //MinWait();
+    projConstructor.ModRemoveByIndex(0); //All done with first in queue, get ready for next
     LoopIfConditionIsTrue();
+    LogToInspector($"\n\n\NO LOOP ({projConstructor.Length} Con Queues)\n\n");
+    MinWait();
+    LoopIfConditionIsTrue();
+}
+
+
+void CastPFX(in ProjFX pfx, const ProjectileType => void cast)
+{
+    switch (pfx)
+    {
+        case ProjFX.BaptisteBioticLauncher:         cast(ProjectileType.BaptisteBioticLauncher);        break;
+        case ProjFX.BastionA36TacticalGrenade:      cast(ProjectileType.BastionA36TacticalGrenade);     break;
+        case ProjFX.EchoStickyBomb:                 cast(ProjectileType.EchoStickyBomb);                break;
+        case ProjFX.GenjiShuriken:                  cast(ProjectileType.GenjiShuriken);                 break;
+        case ProjFX.LucioSonicAmplifier:            cast(ProjectileType.LucioSonicAmplifier);           break;
+        case ProjFX.MeiIcicle:                      cast(ProjectileType.MeiIcicle);                     break;
+        case ProjFX.MercyCaduceusBlaster:           cast(ProjectileType.MercyCaduceusBlaster);          break;
+        case ProjFX.MoiraDamageOrb:                 cast(ProjectileType.MoiraDamageOrb);                break;
+        case ProjFX.MoiraHealOrb:                   cast(ProjectileType.MoiraHealOrb);                  break;
+        case ProjFX.OrbProjectile:                  cast(ProjectileType.OrbProjectile);                 break;
+        case ProjFX.OrisaFusionDriver:              cast(ProjectileType.OrisaFusionDriver);             break;
+        case ProjFX.PharahRocket:                   cast(ProjectileType.PharahRocket);                  break;
+        case ProjFX.RamattraRavenousVortexSphere:   cast(ProjectileType.RamattraRavenousVortexSphere);  break;
+        case ProjFX.ReinhardtFireStrike:            cast(ProjectileType.ReinhardtFireStrike);           break;
+        case ProjFX.RoadhogScrap:                   cast(ProjectileType.RoadhogScrap);                  break;
+        case ProjFX.RoadhogScrapBall:               cast(ProjectileType.RoadhogScrapBall);              break;
+        case ProjFX.SigmaHypersphere:               cast(ProjectileType.SigmaHypersphere);              break;
+        case ProjFX.SymmetraPhotonProjector:        cast(ProjectileType.SymmetraPhotonProjector);       break;
+        case ProjFX.ZaryaGraviton:                  cast(ProjectileType.ZaryaGraviton);                 break;
+        case ProjFX.ZaryaParticleCannon:            cast(ProjectileType.ZaryaParticleCannon);           break;
+    }
 }

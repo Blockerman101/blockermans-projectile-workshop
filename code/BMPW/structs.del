@@ -12,6 +12,8 @@ import "projDestructor.del";
 //
 //}
 
+
+
 single struct ProjDestructor
 {
     public Number ID;
@@ -20,7 +22,7 @@ single struct ProjDestructor
 
     //public static void Queue(in Number ID, in Number time) {projDestructor = projDestructor.Append({ID: ID, time: TotalTimeElapsed() + time}).Sort(v => v.time);} //TTE() is automatically included, so the extra time is relative
     public static void Queue(in Number ID, in Number time) {projDestructor = projDestructor.Append({ID: ID, time: TotalTimeElapsed() + time}).Sort(v => v.time);}
-    
+    public static void QueueRaw(in Number ID, in Number time) {projDestructor = projDestructor.Append({ID: ID, time: time}).Sort(v => v.time);} //Queue without the automated TTE, letting you have full control over when, specifically, the proj is deleted
     //Destroy proj ASAP
     public static void Destroy(in Number ID) {projDestructor = projDestructor.Append({ID: ID, time: null}).Sort(v => v.time);}
     public static void ClearFromQueue(in Number ID) {projDestructor = projDestructor.Filter(v => v.ID != ID);}
@@ -28,7 +30,7 @@ single struct ProjDestructor
 struct ProjData
 {
     public Number time: (TotalTimeElapsed() - this.TimeOfCreation);
-    public projectileStates ProjState;
+    public ProjState ProjState;
 
     //public PositionsForProjData ControlPoints;
     public RarelyChangeProjData RarelyChange;
@@ -47,7 +49,7 @@ struct ProjData
     //public Vector PositionAtTime(in Number time): b0Time(time); //The above macro, "Position", assumes that "time" is 0. Inputting 0.5 for this will get you the position of the projectile 0.5s in the future
 
    
-    public static ProjData Construct(): {ProjState: projectileStates.NULL, RarelyChange: RarelyChangeProjData.Construct(), ReadOnly: ReadOnlyProjData.Construct(), TimeOfCreation: 0};  
+    public static ProjData Construct(): {ProjState: ProjState.NULL, RarelyChange: RarelyChangeProjData.Construct(), ReadOnly: ReadOnlyProjData.Construct(), TimeOfCreation: 0};  
     //public static void AddArgs(in ProjectileArgs args) {projData.Map(v => projData[CurrentArrayIndex()].ProjArgs).ModAppend(args);}
 }
 //single
@@ -57,9 +59,8 @@ single struct RarelyChangeProjData
     public Vector Bezierp0;
     public Vector Bezierp1;
     public Vector Bezierp2;
-    public Any temp;
 
-    public static RarelyChangeProjData Construct(): {Bezierp0: Vector.Zero, Bezierp1: Vector.Zero, Bezierp2: Vector.Zero, RicochetCount: 0, temp: null};
+    public static RarelyChangeProjData Construct(): {Bezierp0: Vector.Zero, Bezierp1: Vector.Zero, Bezierp2: Vector.Zero, RicochetCount: 0};
 }
 
 //single
@@ -102,19 +103,18 @@ single struct TimeInInterval
 
 Number projDataInitLifetime: 10;
 
-enum projectileStates
+enum ProjState
 {
     NULL,
     Active, //Projectile is spawned - run collisions & other operations
-    Open, //Projectile was never spawned (not in use currently) [OUTDATED]
-    Inactive, //Projectile was spawned, then was destroyed
-    Constructing
+//    Open, //Projectile was never spawned (not in use currently) [OUTDATED]
+    Inactive //Projectile was spawned, then was destroyed
 }
 
 
 single struct ProjectileArgs
 {
-    public ProjectileEffect ProjectileType;
+    public ProjFX ProjFX;
     public Vector StartPosition;
     public Vector Direction;
     public Player[] AffectedPlayers;
@@ -125,15 +125,18 @@ single struct ProjectileArgs
     public Number Knockback;
     public Vector Gravity;
     //private Number ProjID;
-    public Number ProjID;
-    //public void SetID(in Number ID) {this.ProjID = ID;}
-    public Number GetID(): ProjID;
-    public static ProjectileArgs Construct(): {ProjectileType: ProjectileEffect.OrbProjectile, StartPosition: Vector.Zero, Direction: Vector.Zero, AffectedPlayers: null, DamageAmount: 0, Oversize: 0, Speed: 0, Lifetime: projDataInitLifetime, Knockback: 0, Gravity: Vector.Zero, ProjID: 0};
-    public static ProjectileArgs Default(): {ProjectileType: ProjectileEffect.OrbProjectile, StartPosition: EyePosition(EventPlayer()) + EventPlayer().FacingDirection(), Direction: VerticalFacingAngleOf(EventPlayer()) <= -88.9 ? Up() : (VerticalFacingAngleOf(EventPlayer()) >= 88.9 ? Down() : EventPlayer().FacingDirection()), AffectedPlayers: AllPlayers(OppositeTeamOf(TeamOf(EventPlayer()))), DamageAmount: 50, Oversize: 0, Speed: 20, Lifetime: projDataInitLifetime, Knockback: 0, Gravity: Vector(Y: -5), ProjID: 0};
+    private Number _ProjID;
+    public Number _GetID() {return _ProjID;}
+    public ref void _SetID(in Number ID) {_ProjID = ID;}
+    private Number _TimeOfCall;
+    public Number _GetTOC() {return _TimeOfCall;}
+    public ref void _SetTOC(in Number time) {_TimeOfCall = time;} 
+    public static ProjectileArgs Construct(): {ProjFX: ProjFX.OrbProjectile, StartPosition: Vector.Zero, Direction: Vector.Zero, AffectedPlayers: null, DamageAmount: 0, Oversize: 0, Speed: 0, Lifetime: projDataInitLifetime, Knockback: 0, Gravity: Vector.Zero, _ProjID: 0, _TimeOfCall: 0};
+    public static ProjectileArgs Default(): {ProjFX: ProjFX.OrbProjectile, StartPosition: EyePosition(EventPlayer()) + EventPlayer().FacingDirection(), Direction: VerticalFacingAngleOf(EventPlayer()) <= -88.9 ? Up() : (VerticalFacingAngleOf(EventPlayer()) >= 88.9 ? Down() : EventPlayer().FacingDirection()), AffectedPlayers: AllPlayers(OppositeTeamOf(TeamOf(EventPlayer()))), DamageAmount: 50, Oversize: 0, Speed: 20, Lifetime: projDataInitLifetime, Knockback: 0, Gravity: Vector(Y: -5), _ProjID: 0, _TimeOfCall: null};
     public static void Queue(in ProjectileArgs args) {projConstructor.ModAppend(args);}
 }
 
-enum ProjectileEffect
+enum ProjFX
 {
     BaptisteBioticLauncher,
     BastionA36TacticalGrenade,

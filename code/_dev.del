@@ -1,6 +1,7 @@
-import "../../../Other/extraFunctions.ostw";
-import "projDestructor.del";
+//import "../../../Other/extraFunctions.ostw";
+import "BMPW/projDestructor.del";
 
+void _CreateDevText(in String str) {CreateHudText(HostPlayer(), str, null, null, Location.Left);}
 rule: '[DEV] Spawn Dummies'
 Event.OngoingGlobal
 if (HostPlayer().IsButtonHeld(Button.Crouch) && HostPlayer().IsButtonHeld(Button.PrimaryFire))
@@ -17,12 +18,9 @@ if (HostPlayer().IsButtonHeld(Button.Crouch) && HostPlayer().IsButtonHeld(Button
 
 rule: '[DEV] Text'
 {
-    Number[] aliveProjIDs: projData.Map(v => CurrentArrayIndex()).Filter(v => projData[v].ProjState != projectileStates.Inactive);
     _CreateDevText("Load Avg: " + ServerLoadAverage());
     _CreateDevText("Data Array Size: " + projData.Length);
     _CreateDevText("Destructor Size: " + projDestructor.Length);
-    _CreateDevText("Living Projs: " + aliveProjIDs.Length);
-    _CreateDevText("Wipe Data? - " + cond);
     _CreateDevText("TII: " + TotalTimeElapsed()%interval);
     _CreateDevText("[1] Time: " + timeInInterval.First.Time);
     _CreateDevText($"Entity Count: {EntityCount()}");
@@ -52,3 +50,23 @@ if (currentTick != EvaluateOnce(currentTick))
     LoopIfConditionIsTrue();
 }
 
+globalvar Number count;
+globalvar Number conCount;
+disabled rule: '[DEV] show inactive projstate'
+if (conCount != projConstructor.Length || count != projData.Map(v => v.ProjState).Filter(v => v == ProjState.Inactive).Length)
+{
+    count = projData.Map(v => v.ProjState).Filter(v => v == ProjState.Inactive).Length;
+    conCount = projConstructor.Length;
+    LogToInspector($"Size: {projData.Length} ({projData.Map(v => v.ProjState).Filter(v => v == ProjState.Active).Length} Active {count} Inactive {projData.Map(v => v.ProjState).Filter(v => v == ProjState.NULL).Length} Null)
+    {projConstructor.Length} Con Requests");
+    Wait(0.016, WaitBehavior.RestartWhenTrue);
+    LoopIfConditionIsTrue();
+}
+
+disabled rule: '[DEV] show ticks'
+if (projData.Length > 1)
+{
+    LogToInspector($"Tick {(TotalTimeElapsed()/0.016).Floor()}");
+    MinWait();
+    LoopIfConditionIsTrue();
+}
