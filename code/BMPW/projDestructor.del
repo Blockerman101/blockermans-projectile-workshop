@@ -2,23 +2,28 @@ import "structs.del";
 
 globalvar ProjDestructor[] projDestructor = []; 
 
-rule: '[BMPW] Destructor - Add filler values'
+rule: '[BMPW] Destructor - Destruct Proj'
 Event.OngoingGlobal
-if (TotalTimeElapsed() >= projDestructor.First.time && projDestructor.Length)
+if (tte >= projDestructor.First.time && projDestructor.Length)
 {
     Number ID: projDestructor.First.ID;
+
     DestroyEffect(projData_VFX[ID]);
     projData[ID].ProjState = ProjState.Inactive;
     complexProjs.ModRemoveByValue(ID);
+
     Boolean[] reqsForDec: [
     timeInInterval.Length > 1,
-    currentTick >= timeInInterval[timeInInterval.Map(v => v.ID).IndexOf(ID)].Time
+    currentTick >= timeInInterval[timeInInterval.Map(v => v.ID).IndexOf(ID)].Time,
+    intervalIndex //make sure it isnt 0, because if it was it would go to index -1
 ];
     if (IsTrueForAll(reqsForDec, ArrayElement())) {LogToInspector($"Dec'd Index. (Index {timeInInterval.Map(v => v.ID).IndexOf(ID)} with ID {ID}, Index: {intervalIndex} -> {intervalIndex + 1})"); intervalIndex--;}
     TimeInInterval.ClearFromQueue(ID);
 
-    ProjDestructor.ClearFromQueue(ID); //Do this last, ID is tied to ProjDestructor
+    //Do this last, ID is tied to ProjDestructor
+    ProjDestructor.ClearFromQueue(ID); 
     MinWait();
+
     LoopIfConditionIsTrue();
 }
 
@@ -31,12 +36,17 @@ if (cond && !projConstructor.Length)
     DestroyEffect(projData_VFX);
     projData = [ProjData.Construct()];
     projData_VFX = [0];
+
     projConstructor = [];
     projDestructor = [];
+
     timeInInterval = [];
-    complexProjs = [];
-    lastProjectileID = 0;
     intervalIndex = 0;
+
+    complexProjs = [];
+    
+    lastProjectileID = 0;
+
     MinWait();
     LoopIfConditionIsTrue();
 }

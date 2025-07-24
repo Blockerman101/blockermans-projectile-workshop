@@ -7,6 +7,7 @@ globalvar Number intervalIndex;
 
 rule: '[BMPW] Reset intervalIndex on lap end'
 if (timeInInterval.Length)
+//if (currentTick == 0 || currentTick == 1)
 if (!currentTick)
 {
     intervalIndex = 0;
@@ -15,7 +16,8 @@ if (!currentTick)
 
 Boolean diff(in Number ID): (timeInInterval[ID].Time == currentTick);
 rule: '[BMPW] Detect Collision'
-if (timeInInterval.Length)
+//This might fix a (potential?) bug
+if (intervalIndex < timeInInterval.Length)
 if (diff(intervalIndex))
 {
     checkECollision(timeInInterval[intervalIndex].ID, interval, Color.White, BeamType.BadBeam); //Check this projectile
@@ -35,31 +37,34 @@ Number currentTick: ((TotalTimeElapsed()%interval) / 0.016).Floor();
 Number rayCastCount: 2;
 
 private void checkECollision(in Number ID, in Number interval, in Color color, BeamType beamType) {
-    //LogToInspector($"coll checked! (ID: {ID}, CurrentTII: {currentTick}, interval: {interval}, TTE: {TotalTimeElapsed()})");
+    LogToInspector($"coll checked! (ID: {ID}, CurrentTII: {currentTick}, interval: {interval}, TTE: {TotalTimeElapsed()})");
     for (j = 1; j <= rayCastCount; j++) //how many raycasts to use/what raycast your on
     {
 
         tempPositions.StartPosition = projData[ID].PositionAtTime(LinearInterpolate(0, interval, (j-1)/rayCastCount));
         tempPositions.EndPosition = projData[ID].PositionAtTime(LinearInterpolate(0, interval, j/rayCastCount));
         //This will need to include targets in order for their objects to be tracked
-        tempPositions.RaycastPosition = RayCastHitPosition(tempPositions.StartPosition, tempPositions.EndPosition, null, null, true);
+        tempPositions.RaycastPosition = RayCastHitPosition(tempPositions.StartPosition, tempPositions.EndPosition, projData[ID].ReadOnly.Targets, null, true);
         Vector position: tempPositions.StartPosition;
         Vector endPosition: tempPositions.EndPosition;
         Vector raycast: tempPositions.RaycastPosition;
 
+
         if (j == 1)
         {
             //Structuring the state check like this allows us to reuse the projs position instead of recalculating it
-            stateCheck(ID, position);
+            StateCheck(ID, position);
         }
 
         if (IsTrueForAny([position, endPosition, raycast], ArrayElement() == Vector.Zero)) {LogToInspector("!--POSITIONS REGISTERED ZERO--!");}
 
-        Boolean subdividedCollided: raycast != endPosition;
-        //CreateBeamEffect(HostPlayer(), beamType, position, raycast, Color.Red, EffectRev.None);
-        //CreateEffect(HostPlayer(), Effect.Sphere, color, raycast, 0.25, EffectRev.None);
+        CreateBeamEffect(HostPlayer(), beamType, position, raycast, Color.Red, EffectRev.None);
+        projData_VFX[ID].ModAppend(LastCreatedEntity());
+        CreateEffect(HostPlayer(), Effect.Sphere, color, raycast, 0.25, EffectRev.None);
+        projData_VFX[ID].ModAppend(LastCreatedEntity());
+
 //        if ([position, endPosition, raycast].IsTrueForAny(v => v == Vector.Zero)) {LogToInspector($"POSITIONS REGISTERED ZERO");}
-        if (subdividedCollided) 
+        if (raycast != endPosition) 
         {
             ProjDestructor.Queue(ID, interval * LinearInterpolate(((j-1)/rayCastCount), (j/rayCastCount), (position.DistanceTo(raycast)/position.DistanceTo(endPosition)))); //Cant add an offset for visuals because it would mess up ricochets
             //LogToInspector($"Collided! (Proj ${ID} queued with ${interval * LinearInterpolate((j-1)/rayCastCount, j/rayCastCount, (position.DistanceTo(raycast)/position.DistanceTo(endPosition)))} time)");
@@ -69,15 +74,15 @@ private void checkECollision(in Number ID, in Number interval, in Color color, B
 }
 
 
+
 Number speed(in Number ID): projData[ID].ReadOnly.Velocity.Magnitude;
 Number rad(in Number ID): projData[ID].ReadOnly.Radius + 4 + 0.5 * speed(ID) * 0.5; 
 Vector pos(in Number ID): projData[ID].PositionAtTime(0.5 * Min(1, speed(ID) / 85) * 0.5);
-private void stateCheck(in Number ID, in Vector position)
+private void StateCheck(in Number ID, in Vector position)
 {
     //Criteria for complex state
     if (projData[ID].ReadOnly.Targets.Any(v => v.DistanceTo(pos(ID)) <= rad(ID)))
     {
-        projData[ID].ProjState = ProjState.Complex;
         if (complexProjs.All(v => v != ID))
         {
             complexProjs.ModAppend(ID);
@@ -85,7 +90,6 @@ private void stateCheck(in Number ID, in Vector position)
     }
     else
     {
-        projData[ID].ProjState = ProjState.Simple;
         complexProjs.ModRemoveByValue(ID);
     }
 }

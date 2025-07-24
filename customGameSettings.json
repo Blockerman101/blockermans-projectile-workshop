@@ -22,7 +22,11 @@
         {
             "General":
             {
-                "Enabled Heroes": ["Soldier: 76"]
+                "Enabled Heroes": ["Soldier: 76"],
+                "Soldier: 76": {
+                    "Biotic Field Cooldown Time": 0,
+                    "Helix Rockets Cooldown Time": 0
+                }
             }
             
         },

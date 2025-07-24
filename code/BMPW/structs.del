@@ -1,6 +1,22 @@
 import "projConstructor.del";
 import "projDestructor.del";
 
+globalvar Number tte;
+rule: '[BMPW] Initialize TTE var'
+{
+    ChaseVariableAtRate(tte, 9999, 1, RateChaseReevaluation.None);
+}
+rule: '[BMPW] Sync TTE var (interval)'
+{
+    SyncTTE();
+    Wait(0.5);
+    Loop();
+}
+void SyncTTE() {
+    tte = TotalTimeElapsed();
+}
+
+
 //struct ProjConstructor
 //{
 //    //this struct currently uses 2 vars (parallel)
@@ -20,8 +36,8 @@ single struct ProjDestructor
     public Number time; //The relative time to destroy this projectile
     //Queue proj to be destroyed, the proj will be destroyed `time` seconds from when the method is called
 
-    //public static void Queue(in Number ID, in Number time) {projDestructor = projDestructor.Append({ID: ID, time: TotalTimeElapsed() + time}).Sort(v => v.time);} //TTE() is automatically included, so the extra time is relative
-    public static void Queue(in Number ID, in Number time) {projDestructor = projDestructor.Append({ID: ID, time: TotalTimeElapsed() + time}).Sort(v => v.time);}
+    //public static void Queue(in Number ID, in Number time) {projDestructor = projDestructor.Append({ID: ID, time: tte + time}).Sort(v => v.time);} //TTE() is automatically included, so the extra time is relative
+    public static void Queue(in Number ID, in Number time) {projDestructor = projDestructor.Append({ID: ID, time: tte + time}).Sort(v => v.time);}
     public static void QueueRaw(in Number ID, in Number time) {projDestructor = projDestructor.Append({ID: ID, time: time}).Sort(v => v.time);} //Queue without the automated TTE, letting you have full control over when, specifically, the proj is deleted
     //Destroy proj ASAP
     public static void Destroy(in Number ID) {projDestructor = projDestructor.Append({ID: ID, time: null}).Sort(v => v.time);}
@@ -29,7 +45,7 @@ single struct ProjDestructor
 }
 struct ProjData
 {
-    public Number time: (TotalTimeElapsed() - this.TimeOfCreation);
+    public Number time: (tte - this.TimeOfCreation);
     public ProjState ProjState;
 
     //public PositionsForProjData ControlPoints;
@@ -37,9 +53,9 @@ struct ProjData
     public ReadOnlyProjData ReadOnly;
     public Number TimeOfCreation;
 
-    public Player HitPlayer;
+    public Player HitPlayer; //this is for testing, not intended for user
     //public Vector Position: (
-    //    ((this.ReadOnly.Lifetime - (TotalTimeElapsed() - this.TimeOfCreation))/this.ReadOnly.Lifetime)*(((this.ReadOnly.Lifetime - (TotalTimeElapsed() - this.TimeOfCreation))/this.ReadOnly.Lifetime)*(this.RarelyChange.Bezierp0) + ((TotalTimeElapsed() - this.TimeOfCreation)/this.ReadOnly.Lifetime)*this.RarelyChange.Bezierp1) + ((TotalTimeElapsed() - this.TimeOfCreation)/this.ReadOnly.Lifetime)*(((this.ReadOnly.Lifetime - (TotalTimeElapsed() - this.TimeOfCreation))/this.ReadOnly.Lifetime)*this.RarelyChange.Bezierp1 + ((TotalTimeElapsed() - this.TimeOfCreation)/this.ReadOnly.Lifetime)*this.RarelyChange.Bezierp2)
+    //    ((this.ReadOnly.Lifetime - (tte - this.TimeOfCreation))/this.ReadOnly.Lifetime)*(((this.ReadOnly.Lifetime - (tte - this.TimeOfCreation))/this.ReadOnly.Lifetime)*(this.RarelyChange.Bezierp0) + ((tte - this.TimeOfCreation)/this.ReadOnly.Lifetime)*this.RarelyChange.Bezierp1) + ((tte - this.TimeOfCreation)/this.ReadOnly.Lifetime)*(((this.ReadOnly.Lifetime - (tte - this.TimeOfCreation))/this.ReadOnly.Lifetime)*this.RarelyChange.Bezierp1 + ((tte - this.TimeOfCreation)/this.ReadOnly.Lifetime)*this.RarelyChange.Bezierp2)
     //);
     //public Vector Position: b0;
 
@@ -116,9 +132,9 @@ Number projDataInitLifetime: 10;
 enum ProjState
 {
     NULL, //Debugging
-    Simple, //Projectile is processing passively/simply - run EC, update ProjState
-    Inactive, //Projectile was spawned, then was destroyed
-    Complex //Projectile is processing special things - player collision
+    Active, //Projectile is processing passively/simply - run EC, update ProjState
+    Inactive //Projectile was spawned, then was destroyed
+    //Complex //Projectile is processing special things - player collision
 
 }
 

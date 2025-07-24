@@ -19,10 +19,11 @@ if (HostPlayer().IsButtonHeld(Button.Crouch) && HostPlayer().IsButtonHeld(Button
 
 rule: '[DEV] Text'
 {
+    _CreateDevText($"tte: {tte}");
     _CreateDevText("Load Avg: " + ServerLoadAverage());
     _CreateDevText("Data Array Size: " + projData.Length);
     _CreateDevText("Destructor Size: " + projDestructor.Length);
-    _CreateDevText("TII: " + TotalTimeElapsed()%interval);
+    _CreateDevText("TII: " + tte%interval);
     _CreateDevText("[1] Time: " + timeInInterval.First.Time);
     _CreateDevText($"Entity Count: {EntityCount()}");
 }
@@ -58,7 +59,7 @@ if (conCount != projConstructor.Length || count != projData.Map(v => v.ProjState
 {
     count = projData.Map(v => v.ProjState).Filter(v => v == ProjState.Inactive).Length;
     conCount = projConstructor.Length;
-    LogToInspector($"Size: {projData.Length} ({projData.Map(v => v.ProjState).Filter(v => v == ProjState.Simple).Length} Active {count} Inactive {projData.Map(v => v.ProjState).Filter(v => v == ProjState.NULL).Length} Null)
+    LogToInspector($"Size: {projData.Length} ({projData.Map(v => v.ProjState).Filter(v => v == ProjState.Active).Length} Active {count} Inactive {projData.Map(v => v.ProjState).Filter(v => v == ProjState.NULL).Length} Null)
     {projConstructor.Length} Con Requests");
     Wait(0.016, WaitBehavior.RestartWhenTrue);
     LoopIfConditionIsTrue();
@@ -67,7 +68,7 @@ if (conCount != projConstructor.Length || count != projData.Map(v => v.ProjState
 disabled rule: '[DEV] show ticks'
 if (projData.Length > 1)
 {
-    LogToInspector($"Tick {(TotalTimeElapsed()/0.016).Floor()}");
+    LogToInspector($"Tick {(tte/0.016).Floor()}");
     MinWait();
     LoopIfConditionIsTrue();
 }
@@ -77,9 +78,35 @@ rule: '[DEV] show state criteria'
     for (Number i = 0; i < 10; i++)
     {
         Number ie: EvaluateOnce(i);
-        CreateEffect((projData[ie].ProjState == ProjState.Simple || projData[ie].ProjState == ProjState.Complex) ? AllPlayers() : null, Effect.Sphere, projData[ie].ProjState == ProjState.Complex ? Color.Blue : Color.Red, pos(ie), rad(ie), EffectRev.VisibleToPositionRadiusAndColor);
-        CreateEffect((projData[ie].ProjState == ProjState.Simple || projData[ie].ProjState == ProjState.Complex) ? AllPlayers() : null, Effect.Sphere, Color.Red, projData[ie].Position, 0.5, EffectRev.VisibleToPositionRadiusAndColor);
-        CreateEffect((projData[ie].ProjState == ProjState.Simple || projData[ie].ProjState == ProjState.Complex) ? AllPlayers() : null, Effect.Sphere, Color.White, projData[ie].PositionAtTime(0.016), 0.5, EffectRev.VisibleToPositionRadiusAndColor);
+        CreateEffect((projData[ie].ProjState == ProjState.Active) ? AllPlayers() : null, Effect.Sphere, complexProjs.Any(v => v == ie) ? Color.Blue : Color.Red, pos(ie), rad(ie), EffectRev.VisibleToPositionRadiusAndColor);
+        CreateEffect((projData[ie].ProjState == ProjState.Active) ? AllPlayers() : null, Effect.Sphere, Color.Red, projData[ie].Position, 0.5, EffectRev.VisibleToPositionRadiusAndColor);
+        CreateEffect((projData[ie].ProjState == ProjState.Active) ? AllPlayers() : null, Effect.Sphere, Color.White, projData[ie].PositionAtTime(0.016), 0.5, EffectRev.VisibleToPositionRadiusAndColor);
     
     }
 }
+globalvar Boolean slowmo;
+rule: '[DEV] slowdown'
+if (HostPlayer().IsButtonHeld(Button.Crouch))
+{
+    slowmo = !slowmo;
+    if (slowmo) {
+        SetSlowMotion(0);
+    }
+    else {
+        SetSlowMotion(100);
+    }
+}
+
+Player hp: HostPlayer();
+rule: 'Create test proj'
+if (hp.IsFiringSecondary())
+{
+    //Vector ogPos: (EvaluateOnce(EyePosition(hp) + 10 * WorldVectorOf(Forward(), hp, LocalVector.Rotation)) + Up() * 40 * (tte - EvaluateOnce(<Vector>tte)));
+    StopCamera(hp);
+    StartCamera(hp, projData[1].Position + hp.FacingDirection() * 3, projData[1].Position, 0);
+    Wait(2);
+    StopCamera(hp);
+}
+
+
+

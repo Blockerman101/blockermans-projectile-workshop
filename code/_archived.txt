@@ -433,3 +433,9 @@ if (EventPlayer().IsButtonHeld(Button.PrimaryFire))
 
 structs.del
 //    Open, //Projectile was never spawned (not in use currently) [OUTDATED]
+
+simpleProcessing.del
+    //Number rubberbandedTime: TotalTimeElapsed() - (0.016*11 * Args.Speed / 100);
+    //experiment with this ^
+    //Number rubberbandedTime: (TotalTimeElapsed() - deltaT); //buffer current time using deltaT for reason above ^
+    //Number rubberbandedTime: (TotalTimeElapsed());

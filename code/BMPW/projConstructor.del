@@ -9,7 +9,7 @@ Vector | Number lerp2(in Vector | Number a, in Vector | Number b, in Number t, i
 
 globalvar Number lastProjectileID = 0;
 globalvar ProjData[] projData = [ProjData.Construct()];
-globalvar Number[] projData_VFX = [null];
+globalvar (Number|Number[])[] projData_VFX = [null];
 globalvar ProjectileArgs[] projConstructor = [];
 //globalvar ProjectileArgs[] constructorData = [EmptyArray()];  //This var isnt be needed with 1 constructor, you can just ref `projConstructor.First`
 globalvar TimeInInterval[] timeInInterval = [];
@@ -27,7 +27,7 @@ void CreateCustomProjectile(ProjectileArgs Args) "[BMPW] CreateProj Sub"
     }
     //Args.ProjID = lastProjectileID;
     Args._SetID(lastProjectileID);
-    Args._SetTOC(TotalTimeElapsed());
+    Args._SetTOC(tte);
     projData[lastProjectileID].ProjState = ProjState.NULL; //setting a projstate value so `lastProjectileID = projData.Length` increments correctly with >1 proj in a single tick
     
 
@@ -39,30 +39,37 @@ rule: '[BMPW] Constructor'
 Event.OngoingGlobal
 if (projConstructor.Length > 0)
 {
+
     LogToInspector("Constructor Fired!");
     ProjectileArgs Args: projConstructor.First;
     Any ID: Args._GetID();
-    Number deltaT: (TotalTimeElapsed() - Args._GetTOC()); //deltaT is not the time since the last tick, but the time that passed since this proj was called
+
+    //deltaT is not the time since the last tick, but the time that passed since this proj was called
     //This is useful because instead of making the projectile at the current time, I can buffer it to act as if it was created at its time of call
-
-
-    Number ModdedTimeToMaxHeight: Max(0, -1 * Args.Speed * DotProduct(Args.Direction, Args.Gravity)/DotProduct(Args.Gravity, Args.Gravity))%interval;
-
-    //Number rubberbandedTime: TotalTimeElapsed() - (0.016*11 * Args.Speed / 100);
-    //experiment with this ^
-    Number rubberbandedTime: (TotalTimeElapsed() - deltaT); //buffer current time using deltaT for reason above ^
-    Number time: (rubberbandedTime - projData[EvaluateOnce(ID)].TimeOfCreation);
-    if (CountOf(Args)) //ensure projectile has info
+    Number deltaT: (tte - Args._GetTOC()); 
+    
+    //ensure projectile has info
+    if (CountOf(Args)) 
     {
-        projConstructor[0].Direction = projConstructor[0].Direction.Normalize(); //Normalize dir internally (redundancy) //For reference, if you do .First instead of [0] OSTW throws an error
-        ProjData data: {
-            TimeOfCreation: rubberbandedTime,  //This is used as the reference for other time-based values, so by modifying this, you modify everything else
+        //Normalize dir internally (redundancy) //For reference, if you do .First instead of [0] OSTW throws an error
+        projConstructor[0].Direction = projConstructor[0].Direction.Normalize();
+
+        Number buffer: 0.016*2;
+        projData[ID] = <ProjData> {
+            //This is used as the reference for other time-based values, so by modifying this, you modify everything else
+            //The lower this value is, the greater the time/position is
+            //the 0.016*18 buffer is because of a weird bug involving TTE with createFX/createProjFX. Since TTE is referenced twice in the position macro, the TimeOfCreation needs to be buffered by 9 ticks, twice (0.288 = 0.016*9*2)
+            
+            TimeOfCreation:  Args._GetTOC() - buffer - (ServerLoadAverage() >= 200 ? 0.032 : 0.016),
+            
             //RarelyChange: {
             //    Bezierp0: (Args.StartPosition), 
             //    Bezierp1: (Args.StartPosition) + (Args.Lifetime)*(Args.Speed * Args.Direction) * 0.5, 
             //    Bezierp2: (Args.StartPosition) + (Args.Lifetime)*(Args.Speed * Args.Direction) + (Args.Lifetime)^2 * (Args.Gravity / 2),
             //    }, 
-            ProjState: ProjState.Simple, 
+
+            ProjState: ProjState.Active, 
+
             ReadOnly: {
                 InitPos: Args.StartPosition,
                 Radius: 0,
@@ -70,44 +77,49 @@ if (projConstructor.Length > 0)
                 Velocity: Args.Speed * Args.Direction,
                 Gravity: Args.Gravity
                 },
-            HitPlayer: null
-            };
 
-        projData[ID] = data;
-        Number ProjTime: (TotalTimeElapsed() + Max(0, -1 * Args.Speed * DotProduct(Args.Direction, Args.Gravity)/DotProduct(Args.Gravity, Args.Gravity)));
-        Number ProjTick: (((ProjTime%interval) / 0.016).Floor());
-        TimeInInterval.Queue(ID, ProjTick);
-        LogToInspector($"\nAdded to TII (ID: {ID})\nCurrentTick: {currentTick}, ProjTick: {ProjTick}\nCurrentIndex: {intervalIndex}, ProjIndex: {timeInInterval.Map(v => v.ID).IndexOf(ID)}]\n");
-        if (timeInInterval.Length > 1 && currentTick > ProjTick) {LogToInspector($"Inc'd Index. (Index {timeInInterval.Map(v => v.ID).IndexOf(ID)} with ID {ID}, Index: {intervalIndex} -> {intervalIndex + 1})"); intervalIndex++;}
+            //this is for testing, not intended for user
+            HitPlayer: null
+        };
+
+        
+        Number timeToMaxHeight: (tte + Max(0, -1 * Args.Speed * DotProduct(Args.Direction, Args.Gravity)/DotProduct(Args.Gravity, Args.Gravity)));
+        Number ticksToMaxHeight: (((timeToMaxHeight%interval) / 0.016).Floor());
+        TimeInInterval.Queue(ID, ticksToMaxHeight);
+        LogToInspector($"\nAdded to TII (ID: {ID})\nCurrentTick: {currentTick}, ProjTick: {ticksToMaxHeight}\nCurrentIndex: {intervalIndex}, ProjIndex: {timeInInterval.Map(v => v.ID).IndexOf(ID)}]\n");
+        if (timeInInterval.Length > 1 && currentTick > ticksToMaxHeight) {LogToInspector($"Inc'd Index. (Index {timeInInterval.Map(v => v.ID).IndexOf(ID)} with ID {ID}, Index: {intervalIndex} -> {intervalIndex + 1})"); intervalIndex++;}
         
         Wait(ServerLoadAverage() >= 200 ? 0.032 : 0.016);
-        
-
+        SyncTTE();
         CastPFX(
             pfx: Args.ProjFX,
             fx => {
                 CreateProjectileEffect(AllPlayers(), fx, AllPlayers(), UpdateEveryFrame(projData[EvaluateOnce(ID)].Position), projData[EvaluateOnce(ID)].ReadOnly.Velocity + projData[EvaluateOnce(ID)].ReadOnly.Gravity * projData[EvaluateOnce(ID)].time, EvaluateOnce(Args.Oversize), ProjectileEffectReeval.PositionDirectionAndSize);
                 }
         );
-        
-        
         projData_VFX[ID] = LastCreatedEntity();
-        LogToInspector($"Proj {ID} Created\ndeltaT: {deltaT}");
 
+        Number ModdedTimeToMaxHeight: Max(0, -1 * Args.Speed * DotProduct(Args.Direction, Args.Gravity)/DotProduct(Args.Gravity, Args.Gravity))%interval;
         checkECollision(ID, (!ModdedTimeToMaxHeight ? interval : ModdedTimeToMaxHeight), Color.SkyBlue, BeamType.GoodBeam); //First EC. If there is no TTMH (the proj is created past its apex), run a full interval EC check
-        stateCheck(ID, projData[ID].Position); //First stateCheck. If the proj spawns close to a player, it should be in the complex state
+        
+        //First StateCheck. If the proj spawns close to a player, it should be in the complex state
+        StateCheck(ID, projData[ID].Position);
+        
         ProjDestructor.Queue(ID, Args.Lifetime - deltaT);
 
-        
-        Wait(ServerLoadAverage() >= 150 ? 0.032 : 0.016); //If the server load is on the higher side, limit the constructor rate so THE BUG happens less
+        //If the server load is on the higher side, limit the constructor rate so THE BUG happens less
+        Wait(ServerLoadAverage() >= 150 ? 0.032 : 0.016);
     
     }
     else
     {
-        LogToInspector("\n\n!--ELSE FIRED--!\n\n"); //This else will happen if a proj is queued without any info for args
+        //This else will happen if a proj is queued without any info for args
+        LogToInspector("\n\n!--ELSE FIRED--!\n\n");
     }
 
-    projConstructor.ModRemoveByIndex(0); //All done with first in queue, get ready for next
+    //All done with first in queue, get ready for next
+    projConstructor.ModRemoveByIndex(0); 
+
     LoopIfConditionIsTrue();
     LogToInspector($"NO LOOP ({projConstructor.Length} Con Queues)");
     MinWait();

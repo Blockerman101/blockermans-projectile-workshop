@@ -4,6 +4,7 @@ globalvar Number[] complexProjs = EmptyArray();
 rule: '[BMPW] Player Collision'
 if (complexProjs.Length)
 {
+    Number time: 0.016*2;
     for (_waitlessIterator = 0; _waitlessIterator < complexProjs.Length; _waitlessIterator++)
     {
 
@@ -11,13 +12,15 @@ if (complexProjs.Length)
         Number ID: complexProjs[_waitlessIterator]; 
         ProjData proj: projData[ID];
 
-        projData[ID].HitPlayer = RayCastHitPlayer(proj.Position, proj.PositionAtTime(0.016), proj.ReadOnly.Targets, null, false);
+        projData[ID].HitPlayer = RayCastHitPlayer(proj.Position, proj.PositionAtTime(time), proj.ReadOnly.Targets, null, false);
+        //PlayEffect(HostPlayer(), PlayEffect.GoodExplosion, Color.White, proj.Position, 0.5);
+        //PlayEffect(HostPlayer(), PlayEffect.GoodExplosion, Color.White, proj.PositionAtTime(time), 0.5);
         if (proj.HitPlayer)
         {
             ProjDestructor.Destroy(ID);
             LogToInspector($"Proj {ID} hit {proj.HitPlayer}!");
         }
     }
-    MinWait();
+    Wait(time);
     LoopIfConditionIsTrue();
 }
