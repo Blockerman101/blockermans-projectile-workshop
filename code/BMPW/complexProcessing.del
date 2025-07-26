@@ -1,26 +1,45 @@
 import "simpleProcessing.del";
 globalvar Number _waitlessIterator;
 globalvar Number[] complexProjs = EmptyArray();
+
 rule: '[BMPW] Player Collision'
 if (complexProjs.Length)
 {
-    Number time: 0.016*2;
-    for (_waitlessIterator = 0; _waitlessIterator < complexProjs.Length; _waitlessIterator++)
+    Number ticks: 5;
+    for (Number i = 1; i <= ticks; i++)
     {
+        Number startingIndexOfTick: LinearInterpolate(0, complexProjs.Length, (i - 1)/ticks).Floor();
+        Number endingIndexOfTick: LinearInterpolate(0, complexProjs.Length, i/ticks).Floor() ;
 
-        //Number ID: complexProjs[EvaluateOnce(_waitlessIterator)]; 
-        Number ID: complexProjs[_waitlessIterator]; 
-        ProjData proj: projData[ID];
-
-        projData[ID].HitPlayer = RayCastHitPlayer(proj.Position, proj.PositionAtTime(time), proj.ReadOnly.Targets, null, false);
-        //PlayEffect(HostPlayer(), PlayEffect.GoodExplosion, Color.White, proj.Position, 0.5);
-        //PlayEffect(HostPlayer(), PlayEffect.GoodExplosion, Color.White, proj.PositionAtTime(time), 0.5);
-        if (proj.HitPlayer)
+        //If theres <= complex projs than ticks, just use the tick as the index to avoid bugs with the math
+        if (complexProjs.Length >= i)
         {
-            ProjDestructor.Destroy(ID);
-            LogToInspector($"Proj {ID} hit {proj.HitPlayer}!");
+            //i starts at index 1, not index 0, because its incrementing through ticks, which also start at index 1
+            checkPCollision(complexProjs[i - 1], ticks);
+    
         }
+        else
+        {
+            for (_waitlessIterator = startingIndexOfTick; _waitlessIterator < endingIndexOfTick; _waitlessIterator++)
+            {
+                checkPCollision(complexProjs[_waitlessIterator], ticks);
+            }
+        }
+        //LogToInspector($"Checked tick {i} (TTE: {TotalTimeElapsed()})\nstart: {startingIndexOfTick}\nend: {endingIndexOfTick}\nSize: {complexProjs.Length}");
+        MinWait();
     }
-    Wait(time);
     LoopIfConditionIsTrue();
 }
+
+private void checkPCollision(in Number ID, in Number ticks) {
+    ProjData proj: projData[ID];
+    projData[ID].HitPlayer = RayCastHitPlayer(proj.Position, proj.PositionAtTime(0.016*ticks), proj.ReadOnly.Targets, null, false);
+    PlayEffect(HostPlayer(), PlayEffect.GoodExplosion, Color.White, proj.Position, 0.5);
+    PlayEffect(HostPlayer(), PlayEffect.GoodExplosion, Color.White, proj.PositionAtTime(0.016*ticks), 0.5);
+    if (proj.HitPlayer)
+    {
+        ProjDestructor.Destroy(ID);
+        LogToInspector($"Proj {ID} hit {proj.HitPlayer}!");
+    }
+}
+
