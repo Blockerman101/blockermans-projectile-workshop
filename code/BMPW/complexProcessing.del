@@ -6,16 +6,16 @@ rule: '[BMPW] Player Collision'
 if (complexProjs.Length)
 {
     Number ticks: 5;
-    for (Number i = 1; i <= ticks; i++)
+    for (Number fl_i = 1; fl_i <= ticks; fl_i++)
     {
-        Number startingIndexOfTick: LinearInterpolate(0, complexProjs.Length, (i - 1)/ticks).Floor();
-        Number endingIndexOfTick: LinearInterpolate(0, complexProjs.Length, i/ticks).Floor() ;
+        Number startingIndexOfTick: LinearInterpolate(0, complexProjs.Length, (fl_i - 1)/ticks).Floor();
+        Number endingIndexOfTick: LinearInterpolate(0, complexProjs.Length, fl_i/ticks).Floor() ;
 
         //If theres <= complex projs than ticks, just use the tick as the index to avoid bugs with the math
-        if (complexProjs.Length >= i)
+        if (complexProjs.Length >= fl_i)
         {
-            //i starts at index 1, not index 0, because its incrementing through ticks, which also start at index 1
-            checkPCollision(complexProjs[i - 1], ticks);
+            //fl_i starts at index 1, not index 0, because its incrementing through ticks, which also start at index 1
+            checkPCollision(complexProjs[fl_i - 1], ticks);
     
         }
         else
@@ -25,7 +25,7 @@ if (complexProjs.Length)
                 checkPCollision(complexProjs[_waitlessIterator], ticks);
             }
         }
-        //LogToInspector($"Checked tick {i} (TTE: {TotalTimeElapsed()})\nstart: {startingIndexOfTick}\nend: {endingIndexOfTick}\nSize: {complexProjs.Length}");
+        //LogToInspector($"Checked tick {fl_i} (TTE: {TotalTimeElapsed()})\nstart: {startingIndexOfTick}\nend: {endingIndexOfTick}\nSize: {complexProjs.Length}");
         MinWait();
     }
     LoopIfConditionIsTrue();

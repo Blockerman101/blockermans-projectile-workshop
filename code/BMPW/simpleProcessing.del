@@ -2,7 +2,7 @@ import "projConstructor.del";
 import "complexProcessing.del";
 
 globalvar private RaycastPositions tempPositions;
-globalvar private Number j;
+globalvar private Number fl_j;
 globalvar Number intervalIndex;
 
 rule: '[BMPW] Reset intervalIndex on lap end'
@@ -38,11 +38,11 @@ Number rayCastCount: 2;
 
 private void checkECollision(in Number ID, in Number interval, in Color color, BeamType beamType) {
     LogToInspector($"coll checked! (ID: {ID}, CurrentTII: {currentTick}, interval: {interval}, TTE: {TotalTimeElapsed()})");
-    for (j = 1; j <= rayCastCount; j++) //how many raycasts to use/what raycast your on
+    for (fl_j = 1; fl_j <= rayCastCount; fl_j++) //how many raycasts to use/what raycast your on
     {
 
-        tempPositions.StartPosition = projData[ID].PositionAtTime(LinearInterpolate(0, interval, (j-1)/rayCastCount));
-        tempPositions.EndPosition = projData[ID].PositionAtTime(LinearInterpolate(0, interval, j/rayCastCount));
+        tempPositions.StartPosition = projData[ID].PositionAtTime(LinearInterpolate(0, interval, (fl_j-1)/rayCastCount));
+        tempPositions.EndPosition = projData[ID].PositionAtTime(LinearInterpolate(0, interval, fl_j/rayCastCount));
         //This will need to include targets in order for their objects to be tracked
         tempPositions.RaycastPosition = RayCastHitPosition(tempPositions.StartPosition, tempPositions.EndPosition, projData[ID].ReadOnly.Targets, null, true);
         Vector position: tempPositions.StartPosition;
@@ -50,7 +50,7 @@ private void checkECollision(in Number ID, in Number interval, in Color color, B
         Vector raycast: tempPositions.RaycastPosition;
 
 
-        if (j == 1)
+        if (fl_j == 1)
         {
             //Structuring the state check like this allows us to reuse the projs position instead of recalculating it
             StateCheck(ID, position);
@@ -66,8 +66,8 @@ private void checkECollision(in Number ID, in Number interval, in Color color, B
 //        if ([position, endPosition, raycast].IsTrueForAny(v => v == Vector.Zero)) {LogToInspector($"POSITIONS REGISTERED ZERO");}
         if (raycast != endPosition) 
         {
-            ProjDestructor.Queue(ID, interval * LinearInterpolate(((j-1)/rayCastCount), (j/rayCastCount), (position.DistanceTo(raycast)/position.DistanceTo(endPosition)))); //Cant add an offset for visuals because it would mess up ricochets
-            //LogToInspector($"Collided! (Proj ${ID} queued with ${interval * LinearInterpolate((j-1)/rayCastCount, j/rayCastCount, (position.DistanceTo(raycast)/position.DistanceTo(endPosition)))} time)");
+            ProjDestructor.Queue(ID, interval * LinearInterpolate(((fl_j-1)/rayCastCount), (fl_j/rayCastCount), (position.DistanceTo(raycast)/position.DistanceTo(endPosition)))); //Cant add an offset for visuals because it would mess up ricochets
+            //LogToInspector($"Collided! (Proj ${ID} queued with ${interval * LinearInterpolate((fl_j-1)/rayCastCount, fl_j/rayCastCount, (position.DistanceTo(raycast)/position.DistanceTo(endPosition)))} time)");
             break;
         } //stop raycasting if the latest one hit
     }
