@@ -141,6 +141,7 @@ enum ProjState
 
 single struct ProjectileArgs
 {
+    private Number _ProjID;
     public ProjFX ProjFX;
     public Vector StartPosition;
     public Vector Direction;
@@ -152,7 +153,6 @@ single struct ProjectileArgs
     public Number Knockback;
     public Vector Gravity;
     //private Number ProjID;
-    private Number _ProjID;
     public Number _GetID() {return _ProjID;}
     public ref void _SetID(in Number ID) {_ProjID = ID;}
     private Number _TimeOfCall;
