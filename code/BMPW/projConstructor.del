@@ -33,6 +33,9 @@ void CreateCustomProjectile(ProjectileArgs Args) "[BMPW] CreateProj Sub"
 
     //LogToInspector($"Last ID: {lastProjectileID}");
     projConstructor.ModAppend(Args); //Add this proj call to the construction queue
+
+    //DEV
+    Args = null;
 }
 
 rule: '[BMPW] Constructor'

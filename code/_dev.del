@@ -20,7 +20,7 @@ if (HostPlayer().IsButtonHeld(Button.Crouch) && HostPlayer().IsButtonHeld(Button
 rule: '[DEV] Text'
 {
     _CreateDevText($"tte: {tte}");
-    _CreateDevText("Load Avg: " + ServerLoadAverage());
+    CreateHudText(HostPlayer(), "Load Avg: " + ServerLoadAverage(), null, null, Location.Right, -1, ServerLoadAverage() >= 100 ? (ServerLoadAverage() >= 200 ? Color.Red : Color.Yellow) : Color.Green, null, null, HudTextRev.VisibleToSortOrderStringAndColor, Spectators.DefaultVisibility);
     _CreateDevText("Data Array Size: " + projData.Length);
     _CreateDevText("Destructor Size: " + projDestructor.Length);
     _CreateDevText("TII: " + tte%interval);

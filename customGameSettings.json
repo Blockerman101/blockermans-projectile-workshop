@@ -4,7 +4,7 @@
         "Lobby":
         {
             "Max Team 1 Players": 1,
-            "Max Team 2 Players": 1
+            "Max Team 2 Players": 5
         },
 
         "Modes":
@@ -22,10 +22,22 @@
         {
             "General":
             {
+            
+
+
+            },
+
+            
+            "Team 1":
+            {
                 "Enabled Heroes": ["Soldier: 76"],
                 "Soldier: 76": {
                     "Biotic Field Cooldown Time": 0,
                     "Helix Rockets Cooldown Time": 0
+                },
+                "General": {
+                    "Health": 500,
+                    "Damage Received": 10
                 }
             }
             

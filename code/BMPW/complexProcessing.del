@@ -1,34 +1,52 @@
 import "simpleProcessing.del";
-globalvar Number _waitlessIterator;
 globalvar Number[] complexProjs = EmptyArray();
 
-rule: '[BMPW] Player Collision'
+disabled rule: '[BMPW] Player Collision'
 if (complexProjs.Length)
 {
     Number ticks: 5;
-    for (Number fl_i = 1; fl_i <= ticks; fl_i++)
+    //go from 0 -> ticks - 1
+    for (Number fl_i = 0; fl_i < ticks; fl_i++)
     {
         Number startingIndexOfTick: LinearInterpolate(0, complexProjs.Length, (fl_i - 1)/ticks).Floor();
         Number endingIndexOfTick: LinearInterpolate(0, complexProjs.Length, fl_i/ticks).Floor() ;
 
         //If theres <= complex projs than ticks, just use the tick as the index to avoid bugs with the math
-        if (complexProjs.Length >= fl_i)
+        if (complexProjs.Length <= ticks)
         {
-            //fl_i starts at index 1, not index 0, because its incrementing through ticks, which also start at index 1
-            checkPCollision(complexProjs[fl_i - 1], ticks);
-    
+            //LogToInspector($"first if went through ({complexProjs.Length} <= {ticks})");
+            //ensure theres a projectile at the current tick
+            if (complexProjs.Length >= fl_i) {
+
+                //fl_i starts at index 1, not index 0, because its incrementing through ticks, which also start at index 1
+                checkPCollision(complexProjs[fl_i - 1], ticks);
+
+                //LogToInspector($"PC checked\nID {complexProjs[fl_i - 1]} on tick {fl_i}");
+            }
+            //else {LogToInspector($"did NOT check PC (ID {complexProjs[fl_i - 1]} on tick {fl_i})");}
         }
-        else
         {
+            //The second if isnt needed, since if theres more projs than ticks, there will always be at least 1 per tick
             for (_waitlessIterator = startingIndexOfTick; _waitlessIterator < endingIndexOfTick; _waitlessIterator++)
             {
                 checkPCollision(complexProjs[_waitlessIterator], ticks);
             }
         }
+
         //LogToInspector($"Checked tick {fl_i} (TTE: {TotalTimeElapsed()})\nstart: {startingIndexOfTick}\nend: {endingIndexOfTick}\nSize: {complexProjs.Length}");
         MinWait();
+
     }
     LoopIfConditionIsTrue();
+}
+
+rule: '[BMPW] Player Collision'
+if (complexProjs.Length)
+{
+    SpreadOverTicks(complexProjs, 5, tte, i => {
+        checkPCollision(i, 5);
+        if (projData[i].Position == Vector.Zero) {LogToInspector($"\n\n\n!-- REGISTERED ZERO (PC) --!\n\n\n");}
+    });
 }
 
 private void checkPCollision(in Number ID, in Number ticks) {
@@ -43,3 +61,54 @@ private void checkPCollision(in Number ID, in Number ticks) {
     }
 }
 
+
+public void SpreadOverTicks<T>(in T[] Array, in Number NumberOfTicks, in Number time, const T => void func) {
+    
+    //Ticks start at 0 (end at NumberOfTicks - 1), so they easily convert to indices
+
+    //CAN be a macro, but higher element count (and harder to read in inspector for debugging)
+    //Put it in extendedCollection to make every instance part of an array rather their own variable
+    Number currentTick! = (time/0.016).Floor()%NumberOfTicks;
+
+    
+    Number start: LinearInterpolate(0, Array.Length, currentTick/NumberOfTicks).Floor();
+    Number end: LinearInterpolate(0, Array.Length, (currentTick+1)/NumberOfTicks).Floor();
+
+    //if the length is smaller than or equal to the number of ticks, just reference the tick for the index
+    if (Array.Length <= NumberOfTicks) {
+
+        //ensure the 'index' (currentTick) is not less than the array size. array lengths start at index 1, ticks at index 0, so they cant be equal, as ArrayLength 3 has a max index of 2, so it shouldnt be checking index 3 (when the ticks and length are equal)
+        if (Array.Length > currentTick) {
+            func(Array[currentTick]);
+        }
+
+    //if there are more projs than ticks
+    } else {
+
+        //iterate through every proj in that tick, already buffered to be startingIndex 0 (see above)
+        WaitlessForLoop(start, v => v < end, 1, i => {
+            func(Array[i]);
+        });
+    }
+    MinWait();
+    LoopIfConditionIsTrue();
+}
+
+globalvar (Number|Number[]) _waitlessIterator;
+public void NestedWaitlessForLoop(in Number start, const Number => Boolean end, in Number step, const (Number|Number[]) => void func, in Number nestedLevel=0) {
+    _waitlessIterator[nestedLevel] = start;
+    while (end(_waitlessIterator[nestedLevel]))
+    {
+        func(_waitlessIterator[nestedLevel]);
+        _waitlessIterator[nestedLevel] += step;
+    }  
+}
+
+public void WaitlessForLoop(in Number start, const Number => Boolean end, in Number step, const (Number|Number[]) => void func) {
+    _waitlessIterator = start;
+    while (end(_waitlessIterator))
+    {
+        func(_waitlessIterator);
+        _waitlessIterator += step;
+    }  
+}
