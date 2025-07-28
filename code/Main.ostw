@@ -8,17 +8,6 @@ import "BMPW/structs.del";
 import "_flight.del";
 import "_dev.del";
 
-disabled rule: '[DEV] Text'
-{
-    CreateHudText(HostPlayer(), "Load Avg: " + ServerLoadAverage(), null, null, Location.Right, -1, ServerLoadAverage() >= 100 ? (ServerLoadAverage() >= 200 ? Color.Red : Color.Yellow) : Color.Green, null, null, HudTextRev.VisibleToSortOrderStringAndColor, Spectators.DefaultVisibility);
-    CreateHudText(HostPlayer(), "Size: " + projData.Length, null, null, Location.Right, -1, Color.White, null, null, HudTextRev.VisibleToSortOrderStringAndColor, Spectators.DefaultVisibility);
-}
-
-disabled rule: '[DEV] log changes'
-{
-    
-}
-
 rule: 'Make my projectile'
 Event.OngoingPlayer
 if (EventPlayer().IsButtonHeld(Button.Interact))
