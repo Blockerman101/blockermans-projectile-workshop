@@ -43,7 +43,7 @@ Event.OngoingGlobal
 if (projConstructor.Length > 0)
 {
 
-    LogToInspector("Constructor Fired!");
+    //LogToInspector("Constructor Fired!");
     ProjectileArgs Args: projConstructor.First;
     Any ID: Args._GetID();
 
@@ -89,8 +89,10 @@ if (projConstructor.Length > 0)
         Number timeToMaxHeight: (tte + Max(0, -1 * Args.Speed * DotProduct(Args.Direction, Args.Gravity)/DotProduct(Args.Gravity, Args.Gravity)));
         Number ticksToMaxHeight: (((timeToMaxHeight%interval) / 0.016).Floor());
         TimeInInterval.Queue(ID, ticksToMaxHeight);
-        LogToInspector($"\nAdded to TII (ID: {ID})\nCurrentTick: {currentTick}, ProjTick: {ticksToMaxHeight}\nCurrentIndex: {intervalIndex}, ProjIndex: {timeInInterval.Map(v => v.ID).IndexOf(ID)}]\n");
-        if (timeInInterval.Length > 1 && currentTick > ticksToMaxHeight) {LogToInspector($"Inc'd Index. (Index {timeInInterval.Map(v => v.ID).IndexOf(ID)} with ID {ID}, Index: {intervalIndex} -> {intervalIndex + 1})"); intervalIndex++;}
+        //LogToInspector($"\nAdded to TII (ID: {ID})\nCurrentTick: {currentTick}, ProjTick: {ticksToMaxHeight}\nCurrentIndex: {intervalIndex}, ProjIndex: {timeInInterval.Map(v => v.ID).IndexOf(ID)}]\n");
+        if (timeInInterval.Length > 1 && currentTick > ticksToMaxHeight) {
+            //LogToInspector($"Inc'd Index. (Index {timeInInterval.Map(v => v.ID).IndexOf(ID)} with ID {ID}, Index: {intervalIndex} -> {intervalIndex + 1})"); 
+            intervalIndex++;}
         
         Wait(ServerLoadAverage() >= 200 ? 0.032 : 0.016);
         SyncTTE();
@@ -117,14 +119,14 @@ if (projConstructor.Length > 0)
     else
     {
         //This else will happen if a proj is queued without any info for args
-        LogToInspector("\n\n!--ELSE FIRED--!\n\n");
+        //LogToInspector("\n\n!--ELSE FIRED--!\n\n");
     }
 
     //All done with first in queue, get ready for next
     projConstructor.ModRemoveByIndex(0); 
 
     LoopIfConditionIsTrue();
-    LogToInspector($"NO LOOP ({projConstructor.Length} Con Queues)");
+    //LogToInspector($"NO LOOP ({projConstructor.Length} Con Queues)");
     MinWait();
     LoopIfConditionIsTrue();
 }

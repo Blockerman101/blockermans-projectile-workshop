@@ -6,24 +6,40 @@ import "BMPW/projConstructor.del";
 import "BMPW/projDestructor.del";
 import "BMPW/structs.del";
 import "_flight.del";
-import "_dev.del";
+//import "_dev.del";
 
-disabled rule: '[DEV] Text'
+rule: '[DEV] Text'
 {
-    CreateHudText(HostPlayer(), "Load Avg: " + ServerLoadAverage(), null, null, Location.Right, -1, ServerLoadAverage() >= 100 ? (ServerLoadAverage() >= 200 ? Color.Red : Color.Yellow) : Color.Green, null, null, HudTextRev.VisibleToSortOrderStringAndColor, Spectators.DefaultVisibility);
+    CreateHudText(HostPlayer(), "Load: " + ServerLoad(), null, null, Location.Right, -1, ServerLoad() >= 100 ? (ServerLoad() >= 200 ? Color.Red : Color.Yellow) : Color.Green, null, null, HudTextRev.VisibleToSortOrderStringAndColor, Spectators.DefaultVisibility);
     CreateHudText(HostPlayer(), "Size: " + projData.Length, null, null, Location.Right, -1, Color.White, null, null, HudTextRev.VisibleToSortOrderStringAndColor, Spectators.DefaultVisibility);
 }
 
-disabled rule: '[DEV] log changes'
+globalvar Number length;
+rule: '[DEV] log changes'
+//if (projData.Length != length)
 {
-    
+    //length = projData.Length;
+    //length \t load
+    LogToInspector($"{TotalTimeElapsed()}\n{ServerLoad()}\n\n");
+    Wait(0.1);
+    LoopIfConditionIsTrue();
 }
+
+rule: '[DEV] remove dmg'
+//if (AllPlayers().Length != EvaluateOnce(AllPlayers().Length))
+if (HasSpawned(HostPlayer()))
+{
+    StartDamageModification(HostPlayer(), AllPlayers(OppositeTeamOf(HostPlayer().Team())), 0.5, DamageModificationRev.ReceiversAndDamagers);
+    SetKnockbackReceived(HostPlayer(), 0);
+}
+
+
 
 rule: 'Make my projectile'
 Event.OngoingPlayer
 if (EventPlayer().IsButtonHeld(Button.Interact))
 {
-    ProjectileArgs shortProj: {ProjFX: ProjFX.GenjiShuriken, Lifetime: 7, ..ProjectileArgs.Default()};
+    ProjectileArgs shortProj: {ProjFX: ProjFX.GenjiShuriken, Lifetime: 5, ..ProjectileArgs.Default()};
     CreateCustomProjectile(shortProj);
     Number myID = lastProjectileID;
     Wait(0.25, WaitBehavior.AbortWhenFalse);
@@ -35,7 +51,7 @@ rule: 'Make big proj'
 Event.OngoingPlayer
 if (EventPlayer().IsButtonHeld(Button.PrimaryFire))
 {
-    ProjectileArgs bigProj: {ProjFX: ProjFX.BaptisteBioticLauncher, Oversize: 0.2, Speed: 50, Lifetime: 7, ..ProjectileArgs.Default()};
+    ProjectileArgs bigProj: {ProjFX: ProjFX.BaptisteBioticLauncher, Oversize: 0.2, Speed: 50, Lifetime: 5, ..ProjectileArgs.Default()};
     CreateCustomProjectile(bigProj);
     bigProjIDs.ModAppend(lastProjectileID);
     MinWait();
