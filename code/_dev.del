@@ -24,8 +24,9 @@ rule: '[DEV] Text'
     _CreateDevText("Data Array Size: " + projData.Length);
     _CreateDevText("Destructor Size: " + projDestructor.Length);
     _CreateDevText("TII: " + tte%interval);
-    _CreateDevText("[1] Time: " + timeInInterval.First.Time);
+    //_CreateDevText("[1] Time: " + timeInInterval.First.Time);
     _CreateDevText($"Entity Count: {EntityCount()}");
+    //_CreateDevText($"Proj 1 Pos: {projData[1].Position}");
 }
 
 
@@ -73,14 +74,14 @@ if (projData.Length > 1)
     LoopIfConditionIsTrue();
 }
 
-rule: '[DEV] show state criteria'
+disabled rule: '[DEV] show state criteria'
 {
     for (Number fl_i = 1; fl_i <= 10; fl_i++)
     {
         Number ie: EvaluateOnce(fl_i);
         CreateEffect((projData[ie].ProjState == ProjState.Active) ? AllPlayers() : null, Effect.Sphere, complexProjs.Contains(ie) ? Color.Blue : Color.Red, pos(ie), rad(ie), EffectRev.VisibleToPositionRadiusAndColor);
         CreateEffect((projData[ie].ProjState == ProjState.Active) ? AllPlayers() : null, Effect.Sphere, Color.Red, projData[ie].Position, 0.5, EffectRev.VisibleToPositionRadiusAndColor);
-        CreateEffect((projData[ie].ProjState == ProjState.Active) ? AllPlayers() : null, Effect.Sphere, Color.White, projData[ie].PositionAtTime(0.016), 0.5, EffectRev.VisibleToPositionRadiusAndColor);
+        //CreateEffect((projData[ie].ProjState == ProjState.Active) ? AllPlayers() : null, Effect.Sphere, Color.White, projData[ie].PositionAtTime(0.016), 0.5, EffectRev.VisibleToPositionRadiusAndColor);
     
     }
 }
@@ -107,6 +108,3 @@ if (hp.IsFiringSecondary())
     Wait(2);
     StopCamera(hp);
 }
-
-
-

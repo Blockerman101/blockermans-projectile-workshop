@@ -88,9 +88,10 @@ single struct ReadOnlyProjData
     public Number Radius;
     public Player[] Targets;
     public Vector Velocity;
+    public (Number|Number[]) VFX;
     public Vector Gravity;
     //public static ReadOnlyProjData Construct(): {Lifetime: projDataInitLifetime, Targets: null, ProjSteepness: 0, Velocity: Vector.Zero, Gravity: Vector.Zero};
-    public static ReadOnlyProjData Construct(): {InitPos: Vector.Zero, Radius: 0, Targets: null, Velocity: Vector.Zero, Gravity: Vector.Zero};
+    public static ReadOnlyProjData Construct(): {InitPos: Vector.Zero, Radius: 0, Targets: null, Velocity: Vector.Zero, VFX: EmptyArray(), Gravity: Vector.Zero};
 }
 
 single struct RaycastPositions

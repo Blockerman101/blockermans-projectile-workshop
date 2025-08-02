@@ -95,7 +95,8 @@ public void SpreadOverTicks<T>(in T[] Array, in Number NumberOfTicks, in Number 
     LoopIfConditionIsTrue();
 }
 
-globalvar (Number|Number[]) _waitlessIterator;
+//If you need to store a value to use it multiple times in the same tick, this var can be used for that as well
+globalvar (Any|Any[]) _waitlessIterator;
 public void NestedWaitlessForLoop(in Number start, const Number => Boolean end, in Number step, const (Number|Number[]) => void func, in Number nestedLevel=0) {
     _waitlessIterator[nestedLevel] = start;
     while (end(_waitlessIterator[nestedLevel]))

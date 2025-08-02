@@ -9,7 +9,7 @@ Vector | Number lerp2(in Vector | Number a, in Vector | Number b, in Number t, i
 
 globalvar Number lastProjectileID = 0;
 globalvar ProjData[] projData = [ProjData.Construct()];
-globalvar (Number|Number[])[] projData_VFX = [null];
+//globalvar (Number|Number[])[] projData_VFX = [null];
 globalvar ProjectileArgs[] projConstructor = [];
 //globalvar ProjectileArgs[] constructorData = [EmptyArray()];  //This var isnt be needed with 1 constructor, you can just ref `projConstructor.First`
 globalvar TimeInInterval[] timeInInterval = [];
@@ -31,7 +31,7 @@ void CreateCustomProjectile(ProjectileArgs Args) "[BMPW] CreateProj Sub"
     projData[lastProjectileID].ProjState = ProjState.NULL; //setting a projstate value so `lastProjectileID = projData.Length` increments correctly with >1 proj in a single tick
     
 
-    //LogToInspector($"Last ID: {lastProjectileID}");
+    LogToInspector($"Last ID: {lastProjectileID}");
     projConstructor.ModAppend(Args); //Add this proj call to the construction queue
 
     //DEV
@@ -78,7 +78,8 @@ if (projConstructor.Length > 0)
                 Radius: 0,
                 Targets: Args.Targets,
                 Velocity: Args.Speed * Args.Direction,
-                Gravity: Args.Gravity
+                Gravity: Args.Gravity,
+                VFX: null
                 },
 
             //this is for testing, not intended for user
@@ -100,7 +101,8 @@ if (projConstructor.Length > 0)
                 CreateProjectileEffect(AllPlayers(), fx, AllPlayers(), UpdateEveryFrame(projData[EvaluateOnce(ID)].Position), projData[EvaluateOnce(ID)].ReadOnly.Velocity + projData[EvaluateOnce(ID)].ReadOnly.Gravity * projData[EvaluateOnce(ID)].time, EvaluateOnce(Args.Oversize), ProjectileEffectReeval.PositionDirectionAndSize);
                 }
         );
-        projData_VFX[ID] = LastCreatedEntity();
+        //projData_VFX[ID] = LastCreatedEntity();
+        projData[ID].ReadOnly.VFX = LastCreatedEntity();
 
         Number ModdedTimeToMaxHeight: Max(0, -1 * Args.Speed * DotProduct(Args.Direction, Args.Gravity)/DotProduct(Args.Gravity, Args.Gravity))%interval;
         checkECollision(ID, (!ModdedTimeToMaxHeight ? interval : ModdedTimeToMaxHeight), Color.SkyBlue, BeamType.GoodBeam); //First EC. If there is no TTMH (the proj is created past its apex), run a full interval EC check

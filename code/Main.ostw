@@ -12,7 +12,7 @@ rule: 'Make my projectile'
 Event.OngoingPlayer
 if (EventPlayer().IsButtonHeld(Button.Interact))
 {
-    ProjectileArgs shortProj: {ProjFX: ProjFX.GenjiShuriken, Lifetime: 7, ..ProjectileArgs.Default()};
+    ProjectileArgs shortProj: {ProjFX: ProjFX.GenjiShuriken, Lifetime: 5, Speed: ProjectileArgs.Default().Speed, Gravity: ProjectileArgs.Default().Gravity/10, ..ProjectileArgs.Default()};
     CreateCustomProjectile(shortProj);
     Number myID = lastProjectileID;
     Wait(0.25, WaitBehavior.AbortWhenFalse);
@@ -24,7 +24,7 @@ rule: 'Make big proj'
 Event.OngoingPlayer
 if (EventPlayer().IsButtonHeld(Button.PrimaryFire))
 {
-    ProjectileArgs bigProj: {ProjFX: ProjFX.BaptisteBioticLauncher, Oversize: 0.2, Speed: 50, Lifetime: 7, ..ProjectileArgs.Default()};
+    ProjectileArgs bigProj: {ProjFX: ProjFX.BaptisteBioticLauncher, Oversize: 0.2, Speed: 50, Lifetime: 5, Gravity: ProjectileArgs.Default().Gravity/10, ..ProjectileArgs.Default()};
     CreateCustomProjectile(bigProj);
     bigProjIDs.ModAppend(lastProjectileID);
     MinWait();

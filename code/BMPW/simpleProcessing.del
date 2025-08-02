@@ -36,7 +36,7 @@ if (timeInInterval.Length)
     SpreadOverTicks(timeInInterval, 15, tte, i => {
         //i is the index of the array entered
         StateCheck(i.ID, projData[i.ID].Position);
-        LogToInspector($"Checked state of proj {i} (TTE: {TotalTimeElapsed()})");
+        //LogToInspector($"Checked state of proj {i} (TTE: {TotalTimeElapsed()})");
     });
 }
 
@@ -47,7 +47,7 @@ Number currentTick: ((TotalTimeElapsed()%interval) / 0.016).Floor();
 Number rayCastCount: 2;
 
 private void checkECollision(in Number ID, in Number interval, in Color color, BeamType beamType) {
-    LogToInspector($"coll checked! (ID: {ID}, CurrentTII: {currentTick}, interval: {interval}, TTE: {TotalTimeElapsed()})");
+    //LogToInspector($"coll checked! (ID: {ID}, CurrentTII: {currentTick}, interval: {interval}, TTE: {TotalTimeElapsed()})");
     for (fl_j = 1; fl_j <= rayCastCount; fl_j++) //how many raycasts to use/what raycast your on
     {
 
@@ -68,10 +68,11 @@ private void checkECollision(in Number ID, in Number interval, in Color color, B
 
         if (IsTrueForAny([position, endPosition, raycast], ArrayElement() == Vector.Zero)) {LogToInspector("!--POSITIONS REGISTERED ZERO--!");}
 
-        //CreateBeamEffect(HostPlayer(), beamType, position, raycast, Color.Red, EffectRev.None);
-        //projData_VFX[ID].ModAppend(LastCreatedEntity());
-        //CreateEffect(HostPlayer(), Effect.Sphere, color, raycast, 0.25, EffectRev.None);
-        //projData_VFX[ID].ModAppend(LastCreatedEntity());
+        CreateBeamEffect(HostPlayer(), beamType, position, raycast, Color.Red, EffectRev.None);
+        projData[ID].ReadOnly.VFX.ModAppend(LastCreatedEntity());
+        CreateEffect(HostPlayer(), Effect.Sphere, color, raycast, 0.25, EffectRev.None);
+        projData[ID].ReadOnly.VFX.ModAppend(LastCreatedEntity());
+        
 
 //        if ([position, endPosition, raycast].IsTrueForAny(v => v == Vector.Zero)) {LogToInspector($"POSITIONS REGISTERED ZERO");}
         if (raycast != endPosition) 
@@ -82,9 +83,6 @@ private void checkECollision(in Number ID, in Number interval, in Color color, B
         } //stop raycasting if the latest one hit
     }
 }
-
-
-
 Number speed(in Number ID): projData[ID].ReadOnly.Velocity.Magnitude;
 Number rad(in Number ID): projData[ID].ReadOnly.Radius + 4 + 0.5 * speed(ID) * 0.5; 
 Vector pos(in Number ID): projData[ID].PositionAtTime(0.5 * Min(1, speed(ID) / 85) * 0.5);

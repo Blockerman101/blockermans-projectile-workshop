@@ -2,13 +2,14 @@ import "structs.del";
 
 globalvar ProjDestructor[] projDestructor = []; 
 
-rule: '[BMPW] Destructor - Destruct Proj'
+rule: '[BMPW] Destructor - Destroy Proj'
 Event.OngoingGlobal
 if (tte >= projDestructor.First.time && projDestructor.Length)
 {
     Number ID: projDestructor.First.ID;
 
-    DestroyEffect(projData_VFX[ID]);
+    //DestroyEffect(projData_VFX[ID]);
+    DestroyEffect(projData[ID].ReadOnly.VFX);
     projData[ID].ProjState = ProjState.Inactive;
     complexProjs.ModRemoveByValue(ID);
 
@@ -21,22 +22,42 @@ if (tte >= projDestructor.First.time && projDestructor.Length)
     TimeInInterval.ClearFromQueue(ID);
 
     //LogToInspector($"Destroyed Proj {ID} (Tick {(TotalTimeElapsed()/0.016).Floor()})");
+
     //Do this last, ID is tied to ProjDestructor
     ProjDestructor.ClearFromQueue(ID); 
-    MinWait();
 
+    MinWait();
+    LoopIfConditionIsTrue();
+}
+
+rule: '[BMPW] Destructor - Remove Hanging Indices'
+if (projData.Last.ProjState == ProjState.Inactive)
+if (projData.Length > 1)
+{
+    Wait(0.016, WaitBehavior.AbortWhenFalse);
+
+    //using as a temp var
+    _waitlessIterator = (projData.Map(v => v.HitPlayer).Length - 1);
+    Number last: _waitlessIterator;
+
+    //projData_VFX.ModRemoveByIndex(last);
+
+    //If the last index is inactive, remove it. Minimizes array size
+    DestroyEffect(projData[last].ReadOnly.VFX);
+    projData.ModRemoveByIndex(last);
+    LogToInspector($"\n\nRemoved hanging index\n\n");
     LoopIfConditionIsTrue();
 }
 
 Any cond: projData.All(v => v.ProjState == ProjState.Inactive || !CurrentArrayIndex()) && projData.Length > 1; //If all real projectiles are Inactive
-rule: '[BMPW] Destructor - Clear Projectile Data'
+disabled rule: '[BMPW] Destructor - Clear Projectile Data'
 Event.OngoingGlobal
 if (cond && !projConstructor.Length)
 {
     Wait(0.25, WaitBehavior.AbortWhenFalse);
-    DestroyEffect(projData_VFX);
+    DestroyEffect(projData.Map(v => v.ReadOnly.VFX));
     projData = [ProjData.Construct()];
-    projData_VFX = [0];
+    //projData_VFX = [0];
 
     projConstructor = [];
     projDestructor = [];
