@@ -11,7 +11,7 @@ if (timeInInterval.Length)
 if (!currentTick)
 {
     intervalIndex = 0;
-    LogToInspector($"Lap ended. (Index returned to 0) (TTE: {TotalTimeElapsed()})");
+    LogToInspector($"Lap ended. (Index returned to 0) (TTE: {time})");
 }
 
 Boolean diff(in Number ID): (timeInInterval[ID].Time == currentTick);
@@ -36,18 +36,19 @@ if (timeInInterval.Length)
     SpreadOverTicks(timeInInterval, 15, tte, i => {
         //i is the index of the array entered
         StateCheck(i.ID, projData[i.ID].Position);
-        //LogToInspector($"Checked state of proj {i} (TTE: {TotalTimeElapsed()})");
+        //LogToInspector($"Checked state of proj {i} (TTE: {time})");
     });
 }
 
 Boolean approxEqual(in Number one, in Number two, in Number leniency): ((one - two).Abs() <= leniency);
 Number rawInterval: 0.5; //How often to check for collision
 Number interval: ((rawInterval / 0.016).Ceil() * 0.016); //Rounded up to the nearest multiple of 0.016 (Rounded up to the nearest tick)
-Number currentTick: ((TotalTimeElapsed()%interval) / 0.016).Floor();
+Number time: TotalTimeElapsed();
+Number currentTick: ((time%interval) / 0.016).Floor();
 Number rayCastCount: 2;
 
 private void checkECollision(in Number ID, in Number interval, in Color color, BeamType beamType) {
-    //LogToInspector($"coll checked! (ID: {ID}, CurrentTII: {currentTick}, interval: {interval}, TTE: {TotalTimeElapsed()})");
+    //LogToInspector($"coll checked! (ID: {ID}, CurrentTII: {currentTick}, interval: {interval}, TTE: {time})");
     for (fl_j = 1; fl_j <= rayCastCount; fl_j++) //how many raycasts to use/what raycast your on
     {
 
