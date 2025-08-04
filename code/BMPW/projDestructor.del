@@ -21,7 +21,7 @@ if (tte >= projDestructor.First.time && projDestructor.Length)
     if (IsTrueForAll(reqsForDec, ArrayElement())) {LogToInspector($"Dec'd Index. (Index {timeInInterval.Map(v => v.ID).IndexOf(ID)} with ID {ID}, Index: {intervalIndex} -> {intervalIndex + 1})"); intervalIndex--;}
     TimeInInterval.ClearFromQueue(ID);
 
-    //LogToInspector($"Destroyed Proj {ID} (Tick {(TotalTimeElapsed()/0.016).Floor()})");
+    LogToInspector($"Destroyed Proj {ID} (Tick {(time/0.016).Floor()})");
 
     //Do this last, ID is tied to ProjDestructor
     ProjDestructor.ClearFromQueue(ID); 
