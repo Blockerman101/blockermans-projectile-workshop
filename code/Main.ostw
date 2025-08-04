@@ -20,7 +20,7 @@ rule: '[DEV] log changes'
 {
     //length = projData.Length;
     //length \t load
-    LogToInspector($"{TotalTimeElapsed()}\n{ServerLoad()}\n\n");
+    LogToInspector($"{TotalTimeElapsed()}\n{ServerLoad() / projData.Length}\n\n");
     Wait(0.1);
     LoopIfConditionIsTrue();
 }
