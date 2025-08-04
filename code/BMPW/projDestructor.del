@@ -48,6 +48,11 @@ if (projData.Length > 1)
     DestroyEffect(projData[last].ReadOnly.VFX);
     projData.ModRemoveByIndex(last);
     //LogToInspector($"\n\nRemoved hanging index\n\n");
+
+    //Reset system if there are no active projectiles
+    if (projData.Length == 1) {
+        WipeData();
+    }
     LoopIfConditionIsTrue();
 }
 
@@ -58,6 +63,13 @@ if (cond && !projConstructor.Length)
 {
     Wait(0.25, WaitBehavior.AbortWhenFalse);
     DestroyEffect(projData.Map(v => v.ReadOnly.VFX));
+    WipeData();
+
+    MinWait();
+    LoopIfConditionIsTrue();
+}
+
+private void WipeData() {
     projData = [ProjData.Construct()];
     //projData_VFX = [0];
 
@@ -70,7 +82,4 @@ if (cond && !projConstructor.Length)
     complexProjs = [];
     
     lastProjectileID = 0;
-
-    MinWait();
-    LoopIfConditionIsTrue();
 }
