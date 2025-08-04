@@ -88,9 +88,10 @@ single struct ReadOnlyProjData
     public Number Radius;
     public Player[] Targets;
     public Vector Velocity;
+    public (Number|Number[]) VFX;
     public Vector Gravity;
     //public static ReadOnlyProjData Construct(): {Lifetime: projDataInitLifetime, Targets: null, ProjSteepness: 0, Velocity: Vector.Zero, Gravity: Vector.Zero};
-    public static ReadOnlyProjData Construct(): {InitPos: Vector.Zero, Radius: 0, Targets: null, Velocity: Vector.Zero, Gravity: Vector.Zero};
+    public static ReadOnlyProjData Construct(): {InitPos: Vector.Zero, Radius: 0, Targets: null, Velocity: Vector.Zero, VFX: EmptyArray(), Gravity: Vector.Zero};
 }
 
 single struct RaycastPositions
@@ -120,7 +121,7 @@ single struct TimeInInterval
 //}
 
 
-Number projDataInitLifetime: 10;
+Number projDataInitLifetime: 5;
 
 
 //A good design philosophy is to reference specific states, rather "Not" states
@@ -146,11 +147,11 @@ single struct ProjectileArgs
     public Vector StartPosition;
     public Vector Direction;
     public Player[] Targets;
-    public Number DamageAmount;
+    //public Number DamageAmount;
     public Number Oversize;
     public Number Speed;
     public Number Lifetime;
-    public Number Knockback;
+    //public Number Knockback;
     public Vector Gravity;
     //private Number ProjID;
     public Number _GetID() {return _ProjID;}
@@ -158,8 +159,20 @@ single struct ProjectileArgs
     private Number _TimeOfCall;
     public Number _GetTOC() {return _TimeOfCall;}
     public ref void _SetTOC(in Number time) {_TimeOfCall = time;} 
-    public static ProjectileArgs Construct(): {ProjFX: ProjFX.OrbProjectile, StartPosition: Vector.Zero, Direction: Vector.Zero, Targets: null, DamageAmount: 0, Oversize: 0, Speed: 0, Lifetime: projDataInitLifetime, Knockback: 0, Gravity: Vector.Zero, _ProjID: 0, _TimeOfCall: 0};
-    public static ProjectileArgs Default(): {ProjFX: ProjFX.OrbProjectile, StartPosition: EyePosition(EventPlayer()) + EventPlayer().FacingDirection(), Direction: VerticalFacingAngleOf(EventPlayer()) <= -88.9 ? Up() : (VerticalFacingAngleOf(EventPlayer()) >= 88.9 ? Down() : EventPlayer().FacingDirection()), Targets: AllPlayers(OppositeTeamOf(TeamOf(EventPlayer()))), DamageAmount: 50, Oversize: 0, Speed: 20, Lifetime: projDataInitLifetime, Knockback: 0, Gravity: Vector(Y: -5), _ProjID: 0, _TimeOfCall: null};
+    public static ProjectileArgs Construct(): {ProjFX: ProjFX.OrbProjectile, StartPosition: Vector.Zero, Direction: Vector.Zero, Targets: null, Oversize: 0, Speed: 0, Lifetime: projDataInitLifetime, Gravity: Vector.Zero, _ProjID: 0, _TimeOfCall: 0};
+    public static ProjectileArgs Default(): {
+        ProjFX: ProjFX.OrbProjectile, 
+        StartPosition: EyePosition(EventPlayer()), 
+        Direction: VerticalFacingAngleOf(EventPlayer()) <= -88.9 ? Up() : (VerticalFacingAngleOf(EventPlayer()) >= 88.9 ? Down() : EventPlayer().FacingDirection()), 
+        Targets: AllPlayers(OppositeTeamOf(TeamOf(EventPlayer()))), 
+        Oversize: 0, 
+        Speed: 20, 
+        Lifetime: 
+        projDataInitLifetime, 
+        Gravity: Vector(Y: -5), 
+        _ProjID: null, 
+        _TimeOfCall: null
+        };
     public static void Queue(in ProjectileArgs args) {projConstructor.ModAppend(args);}
 }
 
