@@ -30,7 +30,7 @@ if (tte >= projDestructor.First.time && projDestructor.Length)
     LoopIfConditionIsTrue();
 }
 
-rule: '[BMPW] Destructor - Remove Hanging Indices'
+disabled rule: '[BMPW] Destructor - Remove Hanging Indices'
 if (projData.Last.ProjState == ProjState.Inactive)
 if (projData.Length > 1)
 {
@@ -55,7 +55,7 @@ if (projData.Length > 1)
 }
 
 Any cond: projData.All(v => v.ProjState == ProjState.Inactive || !CurrentArrayIndex()) && projData.Length > 1; //If all real projectiles are Inactive
-disabled rule: '[BMPW] Destructor - Clear Projectile Data'
+rule: '[BMPW] Destructor - Clear Projectile Data'
 Event.OngoingGlobal
 if (cond && !projConstructor.Length)
 {
