@@ -50,7 +50,7 @@ Number currentTick: ((time%interval) / 0.016).Floor();
 Number rayCastCount: 2;
 
 private void checkECollision(in Number ID, in Number interval, in Color color, BeamType beamType) {
-    LogToInspector($"coll checked! (ID: {ID}, CurrentTII: {currentTick}, interval: {interval}, TTE: {time})");
+    //LogToInspector($"coll checked! (ID: {ID}, CurrentTII: {currentTick}, interval: {interval}, TTE: {time})");
     for (fl_j = 1; fl_j <= rayCastCount; fl_j++) //how many raycasts to use/what raycast your on
     {
 

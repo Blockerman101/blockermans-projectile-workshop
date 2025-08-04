@@ -31,7 +31,7 @@ void CreateCustomProjectile(ProjectileArgs Args) "[BMPW] CreateProj Sub"
     projData[lastProjectileID].ProjState = ProjState.NULL; //setting a projstate value so `lastProjectileID = projData.Length` increments correctly with >1 proj in a single tick
     
 
-    LogToInspector($"Last ID: {lastProjectileID}");
+    //LogToInspector($"Last ID: {lastProjectileID}");
     projConstructor.ModAppend(Args); //Add this proj call to the construction queue
 
     //DEV
@@ -91,7 +91,10 @@ if (projConstructor.Length > 0)
         Number ticksToMaxHeight: (((timeToMaxHeight%interval) / 0.016).Floor());
         TimeInInterval.Queue(ID, ticksToMaxHeight);
         //LogToInspector($"\nAdded to TII (ID: {ID})\nCurrentTick: {currentTick}, ProjTick: {ticksToMaxHeight}\nCurrentIndex: {intervalIndex}, ProjIndex: {timeInInterval.Map(v => v.ID).IndexOf(ID)}]\n");
-        if (timeInInterval.Length > 1 && currentTick >= ticksToMaxHeight) {LogToInspector($"Inc'd Index. (Index {timeInInterval.Map(v => v.ID).IndexOf(ID)} with ID {ID}, Index: {intervalIndex} -> {intervalIndex + 1})"); intervalIndex++;}
+        if (timeInInterval.Length > 1 && currentTick >= ticksToMaxHeight) {
+            //LogToInspector($"Inc'd Index. (Index {timeInInterval.Map(v => v.ID).IndexOf(ID)} with ID {ID}, Index: {intervalIndex} -> {intervalIndex + 1})"); 
+            intervalIndex++;
+            }
         
         Wait(ServerLoadAverage() >= 200 ? 0.032 : 0.016);
         SyncTTE();
