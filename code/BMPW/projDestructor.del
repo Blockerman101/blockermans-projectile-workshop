@@ -53,6 +53,9 @@ if (projData.Length > 1)
     if (projData.Length == 1) {
         WipeData();
     }
+
+    //LogToInspector($"asdfasdf");
+    
     LoopIfConditionIsTrue();
 }
 
