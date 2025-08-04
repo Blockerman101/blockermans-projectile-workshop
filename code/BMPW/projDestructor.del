@@ -18,9 +18,7 @@ if (tte >= projDestructor.First.time && projDestructor.Length)
     currentTick >= timeInInterval[timeInInterval.Map(v => v.ID).IndexOf(ID)].Time,
     intervalIndex //make sure it isnt 0, because if it was it would go to index -1
 ];
-    if (IsTrueForAll(reqsForDec, ArrayElement())) {
-        //LogToInspector($"Dec'd Index. (Index {timeInInterval.Map(v => v.ID).IndexOf(ID)} with ID {ID}, Index: {intervalIndex} -> {intervalIndex + 1})");
-        intervalIndex--;}
+    if (IsTrueForAll(reqsForDec, ArrayElement())) {LogToInspector($"Dec'd Index. (Index {timeInInterval.Map(v => v.ID).IndexOf(ID)} with ID {ID}, Index: {intervalIndex} -> {intervalIndex + 1})"); intervalIndex--;}
     TimeInInterval.ClearFromQueue(ID);
 
     LogToInspector($"Destroyed Proj {ID} (Tick {(time/0.016).Floor()})");

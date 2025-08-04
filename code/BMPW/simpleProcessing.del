@@ -11,7 +11,7 @@ if (timeInInterval.Length)
 if (!currentTick)
 {
     intervalIndex = 0;
-    //LogToInspector($"Lap ended. (Index returned to 0) (TTE: {time})");
+    LogToInspector($"Lap ended. (Index returned to 0) (TTE: {time})");
 }
 
 Boolean diff(in Number ID): (timeInInterval[ID].Time == currentTick);
@@ -69,7 +69,7 @@ private void checkECollision(in Number ID, in Number interval, in Color color, B
         //    StateCheck(ID, position);
         //}
 
-        //if (IsTrueForAny([position, endPosition, raycast], ArrayElement() == Vector.Zero)) {LogToInspector("!--POSITIONS REGISTERED ZERO--!");}
+        if (IsTrueForAny([position, endPosition, raycast], ArrayElement() == Vector.Zero)) {LogToInspector("!--POSITIONS REGISTERED ZERO--!");}
 
         CreateBeamEffect(HostPlayer(), beamType, position, raycast, Color.Red, EffectRev.None);
         projData[ID].ReadOnly.VFX.ModAppend(LastCreatedEntity());

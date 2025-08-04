@@ -6,34 +6,7 @@ import "BMPW/projConstructor.del";
 import "BMPW/projDestructor.del";
 import "BMPW/structs.del";
 import "_flight.del";
-//import "_dev.del";
-
-rule: '[DEV] Text'
-{
-    CreateHudText(HostPlayer(), "Load: " + ServerLoad(), null, null, Location.Right, -1, ServerLoad() >= 100 ? (ServerLoad() >= 200 ? Color.Red : Color.Yellow) : Color.Green, null, null, HudTextRev.VisibleToSortOrderStringAndColor, Spectators.DefaultVisibility);
-    CreateHudText(HostPlayer(), "Size: " + projData.Length, null, null, Location.Right, -1, Color.White, null, null, HudTextRev.VisibleToSortOrderStringAndColor, Spectators.DefaultVisibility);
-}
-
-globalvar Number length;
-rule: '[DEV] log changes'
-//if (projData.Length != length)
-{
-    //length = projData.Length;
-    //length \t load
-    LogToInspector($"{TotalTimeElapsed()}\n{ServerLoad()}\n\n");
-    Wait(0.1);
-    LoopIfConditionIsTrue();
-}
-
-rule: '[DEV] remove dmg'
-//if (AllPlayers().Length != EvaluateOnce(AllPlayers().Length))
-if (HasSpawned(HostPlayer()))
-{
-    StartDamageModification(HostPlayer(), AllPlayers(OppositeTeamOf(HostPlayer().Team())), 0.5, DamageModificationRev.ReceiversAndDamagers);
-    SetKnockbackReceived(HostPlayer(), 0);
-}
-
-
+import "_dev.del";
 
 rule: 'Make my projectile'
 Event.OngoingPlayer

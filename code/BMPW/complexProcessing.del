@@ -46,7 +46,7 @@ if (complexProjs.Length)
     Number ticks: 5;
     SpreadOverTicks(complexProjs, ticks, tte, i => {
         checkPCollision(i, ticks);
-        //if (projData[i].Position == Vector.Zero) {LogToInspector($"\n\n\n!-- REGISTERED ZERO (PC) --!\n\n\n");}
+        if (projData[i].Position == Vector.Zero) {LogToInspector($"\n\n\n!-- REGISTERED ZERO (PC) --!\n\n\n");}
     });
 }
 
@@ -58,7 +58,7 @@ private void checkPCollision(in Number ID, in Number ticks) {
     if (proj.HitPlayer)
     {
         ProjDestructor.Destroy(ID);
-        //LogToInspector($"Proj {ID} hit {proj.HitPlayer}!");
+        LogToInspector($"Proj {ID} hit {proj.HitPlayer}! (Tick {(TotalTimeElapsed()/0.016).Floor()})");
     }
 }
 
