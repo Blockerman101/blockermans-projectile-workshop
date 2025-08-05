@@ -2,7 +2,6 @@ import "projConstructor.del";
 import "complexProcessing.del";
 
 globalvar private RaycastPositions tempPositions;
-globalvar private Number fl_j;
 globalvar Number intervalIndex;
 
 rule: '[BMPW] Reset intervalIndex on lap end'
@@ -20,7 +19,7 @@ rule: '[BMPW] Detect Collision'
 if (intervalIndex < timeInInterval.Length)
 if (diff(intervalIndex))
 {
-    checkECollision(timeInInterval[intervalIndex].ID, interval, Color.White, BeamType.BadBeam); //Check this projectile
+    simpleProcessing(timeInInterval[intervalIndex].ID, interval, Color.White, BeamType.BadBeam); //Check this projectile
     intervalIndex++; //Traverse to the next projectile
     WaitUntil((diff(intervalIndex) || !intervalIndex) && intervalIndex < timeInInterval.Length , interval - (time%interval)); //Wait until the next proj is ready to be checked, and if either if the loop ends, or until there is a value at timeInInterval[intervalIndex].Time
     //Heres the reason why '&& intervalIndex < timeInInterval.Lengh' is needed: First off, this code makes sure that your not reading an out-of-scope index.
@@ -30,7 +29,7 @@ if (diff(intervalIndex))
     LoopIfConditionIsTrue();
 }
 
-rule: '[BMPW] Update State'
+disabled rule: '[BMPW] Update State'
 if (timeInInterval.Length)
 {
     SpreadOverTicks(timeInInterval, 15, tte, i => {
@@ -41,50 +40,44 @@ if (timeInInterval.Length)
 }
 
 Boolean approxEqual(in Number one, in Number two, in Number leniency): ((one - two).Abs() <= leniency);
-Number rawInterval: 0.5; //How often to check for collision
+Number rawInterval: 0.25; //How often to check for collision
 Number interval: ((rawInterval / 0.016).Ceil() * 0.016); //Rounded up to the nearest multiple of 0.016 (Rounded up to the nearest tick)
 
 //Cant use tte because of the bug with chased vars in conditions
 Number time: TotalTimeElapsed();
 Number currentTick: ((time%interval) / 0.016).Floor();
-Number rayCastCount: 2;
+Number rayCastCount: 1;
 
-private void checkECollision(in Number ID, in Number interval, in Color color, BeamType beamType) {
+private void simpleProcessing(in Number ID, in Number interval, in Color color, BeamType beamType) {
     LogToInspector($"coll checked! (ID: {ID}, CurrentTII: {currentTick}, interval: {interval}, TTE: {time})");
-    for (fl_j = 1; fl_j <= rayCastCount; fl_j++) //how many raycasts to use/what raycast your on
-    {
 
-        tempPositions.StartPosition = projData[ID].PositionAtTime(LinearInterpolate(0, interval, (fl_j-1)/rayCastCount));
-        tempPositions.EndPosition = projData[ID].PositionAtTime(LinearInterpolate(0, interval, fl_j/rayCastCount));
-        //This will need to include targets in order for their objects to be tracked
-        tempPositions.RaycastPosition = RayCastHitPosition(tempPositions.StartPosition, tempPositions.EndPosition, projData[ID].ReadOnly.Targets, null, true);
-        Vector position: tempPositions.StartPosition;
-        Vector endPosition: tempPositions.EndPosition;
-        Vector raycast: tempPositions.RaycastPosition;
+    tempPositions.StartPosition = projData[ID].Position;
+    tempPositions.EndPosition = projData[ID].PositionAtTime(interval);
+    //This will need to include targets in order for their objects to be tracked
+    tempPositions.RaycastPosition = RayCastHitPosition(tempPositions.StartPosition, tempPositions.EndPosition, projData[ID].ReadOnly.Targets, null, true);
+    Vector position: tempPositions.StartPosition;
+    Vector endPosition: tempPositions.EndPosition;
+    Vector raycast: tempPositions.RaycastPosition;
 
 
-        //if (fl_j == 1)
-        //{
-        //    //Structuring the state check like this allows us to reuse the projs position instead of recalculating it
-        //    StateCheck(ID, position);
-        //}
+    //Structuring the state check like this allows us to reuse the projs position instead of recalculating it
+    StateCheck(ID, position);
 
-        if (IsTrueForAny([position, endPosition, raycast], ArrayElement() == Vector.Zero)) {LogToInspector("!--POSITIONS REGISTERED ZERO--!");}
+    if (IsTrueForAny([position, endPosition, raycast], ArrayElement() == Vector.Zero)) {LogToInspector("!--POSITIONS REGISTERED ZERO--!");}
 
-        CreateBeamEffect(HostPlayer(), beamType, position, raycast, Color.Red, EffectRev.None);
-        projData[ID].ReadOnly.VFX.ModAppend(LastCreatedEntity());
-        CreateEffect(HostPlayer(), Effect.Sphere, color, raycast, 0.25, EffectRev.None);
-        projData[ID].ReadOnly.VFX.ModAppend(LastCreatedEntity());
-        
+    CreateBeamEffect(HostPlayer(), beamType, position, raycast, Color.Red, EffectRev.None);
+    projData[ID].ReadOnly.VFX.ModAppend(LastCreatedEntity());
+    CreateEffect(HostPlayer(), Effect.Sphere, color, raycast, 0.25, EffectRev.None);
+    projData[ID].ReadOnly.VFX.ModAppend(LastCreatedEntity());
+    
 
 //        if ([position, endPosition, raycast].IsTrueForAny(v => v == Vector.Zero)) {LogToInspector($"POSITIONS REGISTERED ZERO");}
-        if (raycast != endPosition) 
-        {
-            ProjDestructor.Queue(ID, interval * LinearInterpolate(((fl_j-1)/rayCastCount), (fl_j/rayCastCount), (position.DistanceTo(raycast)/position.DistanceTo(endPosition)))); //Cant add an offset for visuals because it would mess up ricochets
-            //LogToInspector($"Collided! (Proj ${ID} queued with ${interval * LinearInterpolate((fl_j-1)/rayCastCount, fl_j/rayCastCount, (position.DistanceTo(raycast)/position.DistanceTo(endPosition)))} time)");
-            break;
-        } //stop raycasting if the latest one hit
-    }
+    if (raycast != endPosition) 
+    {
+        ProjDestructor.Queue(ID, interval * LinearInterpolate(0, 1, (position.DistanceTo(raycast)/position.DistanceTo(endPosition)))); //Cant add an offset for visuals because it would mess up ricochets
+        //LogToInspector($"Collided! (Proj ${ID} queued with ${interval * LinearInterpolate((fl_j-1)/rayCastCount, fl_j/rayCastCount, (position.DistanceTo(raycast)/position.DistanceTo(endPosition)))} time)");
+        //break;
+    } //stop raycasting if the latest one hit
 }
 Number speed(in Number ID): projData[ID].ReadOnly.Velocity.Magnitude;
 Number rad(in Number ID): projData[ID].ReadOnly.Radius + 4 + 0.5 * speed(ID) * 0.5; 

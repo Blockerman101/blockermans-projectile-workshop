@@ -105,10 +105,10 @@ if (projConstructor.Length > 0)
         projData[ID].ReadOnly.VFX = LastCreatedEntity();
 
         Number ModdedTimeToMaxHeight: Max(0, -1 * Args.Speed * DotProduct(Args.Direction, Args.Gravity)/DotProduct(Args.Gravity, Args.Gravity))%interval;
-        checkECollision(ID, (!ModdedTimeToMaxHeight ? interval : ModdedTimeToMaxHeight), Color.SkyBlue, BeamType.GoodBeam); //First EC. If there is no TTMH (the proj is created past its apex), run a full interval EC check
+        simpleProcessing(ID, (!ModdedTimeToMaxHeight ? interval : ModdedTimeToMaxHeight), Color.SkyBlue, BeamType.GoodBeam); //First EC. If there is no TTMH (the proj is created past its apex), run a full interval EC check
         
         //First StateCheck. If the proj spawns close to a player, it should be in the complex state
-        StateCheck(ID, projData[ID].Position);
+        //StateCheck(ID, projData[ID].Position);
         
         ProjDestructor.Queue(ID, Args.Lifetime - deltaT);
 
