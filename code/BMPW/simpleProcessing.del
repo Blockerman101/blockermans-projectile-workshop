@@ -14,7 +14,7 @@ if (!currentTick)
 }
 
 Boolean diff(in Number ID): (timeInInterval[ID].Time == currentTick);
-rule: '[BMPW] Detect Collision'
+rule: '[BMPW] Simple Processing'
 //This might fix a (potential?) bug
 if (intervalIndex < timeInInterval.Length)
 if (diff(intervalIndex))
@@ -27,16 +27,6 @@ if (diff(intervalIndex))
     //Because there is no Proj 2, diff(1) corresponds to timeInInterval[1].Time == 0 -> null == 0 -> true. Therefore, the WaitUntil never happens, and it loops to the next check.
     //This happens an infinite amount of times (with 0 waits inbetween), crashing the server.
     LoopIfConditionIsTrue();
-}
-
-disabled rule: '[BMPW] Update State'
-if (timeInInterval.Length)
-{
-    SpreadOverTicks(timeInInterval, 15, tte, i => {
-        //i is the index of the array entered
-        StateCheck(i.ID, projData[i.ID].Position);
-        //LogToInspector($"Checked state of proj {i} (TTE: {time})");
-    });
 }
 
 Boolean approxEqual(in Number one, in Number two, in Number leniency): ((one - two).Abs() <= leniency);
@@ -74,8 +64,10 @@ private void simpleProcessing(in Number ID, in Number interval, in Color color, 
 //        if ([position, endPosition, raycast].IsTrueForAny(v => v == Vector.Zero)) {LogToInspector($"POSITIONS REGISTERED ZERO");}
     if (raycast != endPosition) 
     {
-        ProjDestructor.Queue(ID, interval * LinearInterpolate(0, 1, (position.DistanceTo(raycast)/position.DistanceTo(endPosition)))); //Cant add an offset for visuals because it would mess up ricochets
-        //LogToInspector($"Collided! (Proj ${ID} queued with ${interval * LinearInterpolate((fl_j-1)/rayCastCount, fl_j/rayCastCount, (position.DistanceTo(raycast)/position.DistanceTo(endPosition)))} time)");
+        //By making the queue time {offset} shorter, you avoid false positives with PC (take the case of a projectile hitting reins shield)
+        Number offset: 0.016*5;
+        ProjDestructor.Queue(ID, interval * LinearInterpolate(0, 1, (position.DistanceTo(raycast)/position.DistanceTo(endPosition))) - offset); //Cant add an offset for visuals because it would mess up ricochets
+        LogToInspector($"Collided! (Proj {ID} queued with {interval * LinearInterpolate(0, 1, (position.DistanceTo(raycast)/position.DistanceTo(endPosition))) - offset} seconds\n(Current Tick {currentTick} with {((interval * LinearInterpolate(0, 1, (position.DistanceTo(raycast)/position.DistanceTo(endPosition))) - offset) / 0.016).Floor()} ticks to destruction\nExpected to be destroyed at tick {((time + (interval * LinearInterpolate(0, 1, (position.DistanceTo(raycast)/position.DistanceTo(endPosition))) - offset)) / 0.016).Floor()}))");
         //break;
     } //stop raycasting if the latest one hit
 }

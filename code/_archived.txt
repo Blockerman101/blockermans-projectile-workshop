@@ -505,3 +505,13 @@ private void OLD_checkECollision(in Number ID, in Number interval, in Color colo
         } //stop raycasting if the latest one hit
     }
 }
+
+disabled rule: '[BMPW] Update State'
+if (timeInInterval.Length)
+{
+    SpreadOverTicks(timeInInterval, 15, tte, i => {
+        //i is the index of the array entered
+        StateCheck(i.ID, projData[i.ID].Position);
+        //LogToInspector($"Checked state of proj {i} (TTE: {time})");
+    });
+}

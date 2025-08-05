@@ -11,6 +11,7 @@ import "_dev.del";
 rule: 'Make my projectile'
 Event.OngoingPlayer
 if (EventPlayer().IsButtonHeld(Button.Interact))
+if (!EventPlayer().IsButtonHeld(Button.Crouch))
 {
     ProjectileArgs shortProj: {ProjFX: ProjFX.GenjiShuriken, Lifetime: 5, Speed: ProjectileArgs.Default().Speed, Gravity: ProjectileArgs.Default().Gravity/10, ..ProjectileArgs.Default()};
     CreateCustomProjectile(shortProj);
@@ -23,6 +24,7 @@ private playervar Number[] bigProjIDs = [];
 rule: 'Make big proj'
 Event.OngoingPlayer
 if (EventPlayer().IsButtonHeld(Button.PrimaryFire))
+if (!EventPlayer().IsButtonHeld(Button.Crouch))
 {
     ProjectileArgs bigProj: {ProjFX: ProjFX.BaptisteBioticLauncher, Oversize: 0.2, Speed: 50, Lifetime: 5, Gravity: ProjectileArgs.Default().Gravity/10, ..ProjectileArgs.Default()};
     CreateCustomProjectile(bigProj);
@@ -50,6 +52,7 @@ if (bigProjIDs.Any(v => projData[v].ProjState == ProjState.Inactive))
 rule: 'Track helix rockets'
 Event.OngoingPlayer
 if (EventPlayer().IsFiringSecondary())
+if (!EventPlayer().IsButtonHeld(Button.Crouch))
 {
     ProjectileArgs myArgs = {ProjFX: ProjFX.PharahRocket, StartPosition: EventPlayer().EyePosition(), Speed: 50, Gravity: Vector.Zero, Lifetime: 2, ..ProjectileArgs.Default()};
     CreateCustomProjectile(myArgs);
