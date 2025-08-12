@@ -20,13 +20,34 @@ if (tte >= projDestructor.First.time && projDestructor.Length)
 ];
     if (IsTrueForAll(reqsForDec, ArrayElement())) {
         //LogToInspector($"Dec'd Index. (Index {timeInInterval.Map(v => v.ID).IndexOf(ID)} with ID {ID}, Index: {intervalIndex} -> {intervalIndex + 1})");
-        intervalIndex--;}
+        intervalIndex--;
+        }
+
+    //This doesnt need to maintain indices like projData, so when a projectile is made Inactive, its simply removed from this array
     TimeInInterval.ClearFromQueue(ID);
 
     //LogToInspector($"Destroyed Proj {ID} (Tick {(time/0.016).Floor()})");
 
     //Do this last, ID is tied to ProjDestructor
     ProjDestructor.ClearFromQueue(ID); 
+
+    //The closest power of 2 to the size of projData, rounded down (so if length is 25, this is 16, so you can check)
+    _waitlessIterator = [2, 4, 8, 16, 32, 64, 128, 256].Filter((v, idx) => projData.Length - 1 > v).Last;
+    Number floorPowerOfTwo = _waitlessIterator;
+
+    //Half the size of the database, if possible
+    if (projData.All(v => v.ProjState == ProjState.Inactive || CurrentArrayIndex() <= floorPowerOfTwo))
+    {
+        //LogToInspector($"size: {projData.Length}, FPOT: {floorPowerOfTwo}");
+
+        //want the indices from 0 through floorPowerOfTwo
+        _waitlessIterator = projData.Map(v => CurrentArrayIndex() <= floorPowerOfTwo ? CurrentArrayIndex() : -1).Filter(i => i != -1);
+        Number[] indexes: _waitlessIterator;
+        projData = indexes.Map(v => projData[v]);
+        //projData = projData[indexes];
+        //projData = projData.Filter((v, idx) => idx < floorPowerOfTwo);
+        //LogToInspector($"Made size smaller! (shrank to {floorPowerOfTwo}, from {indexes.First} through {indexes.Last})");
+    }
 
     MinWait();
     LoopIfConditionIsTrue();

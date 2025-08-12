@@ -11,7 +11,10 @@ import "_flight.del";
 rule: '[DEV] Text'
 {
     CreateHudText(HostPlayer(), "Load: " + ServerLoad(), null, null, Location.Right, -1, ServerLoad() >= 100 ? (ServerLoad() >= 200 ? Color.Red : Color.Yellow) : Color.Green, null, null, HudTextRev.VisibleToSortOrderStringAndColor, Spectators.DefaultVisibility);
-    CreateHudText(HostPlayer(), "Size: " + projData.Length, null, null, Location.Right, -1, Color.White, null, null, HudTextRev.VisibleToSortOrderStringAndColor, Spectators.DefaultVisibility);
+    CreateHudText(HostPlayer(), UpdateEveryFrame("Size (Fake): " + projData.Length), null, null, Location.Right, -1, Color.White, null, null, HudTextRev.VisibleToSortOrderStringAndColor, Spectators.DefaultVisibility);
+    CreateHudText(HostPlayer(), UpdateEveryFrame("Size (Real): " + projData.Map(v => v.HitPlayer).Length), null, null, Location.Right, -1, Color.White, null, null, HudTextRev.VisibleToSortOrderStringAndColor, Spectators.DefaultVisibility);
+    CreateHudText(HostPlayer(), UpdateEveryFrame("E-Count: " + EntityCount()), null, null, Location.Right, -1, Color.White, null, null, HudTextRev.VisibleToSortOrderStringAndColor, Spectators.DefaultVisibility);
+    CreateHudText(HostPlayer(), UpdateEveryFrame("Inactive: " + projData.Filter(v => v.ProjState == ProjState.Inactive).Length), null, null, Location.Right, -1, Color.White, null, null, HudTextRev.VisibleToSortOrderStringAndColor, Spectators.DefaultVisibility);
 }
 
 globalvar Number length;

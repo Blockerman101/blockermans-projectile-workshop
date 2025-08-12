@@ -49,7 +49,9 @@ if (projConstructor.Length > 0)
 
     //deltaT is not the time since the last tick, but the time that passed since this proj was called
     //This is useful because instead of making the projectile at the current time, I can buffer it to act as if it was created at its time of call
-    Number deltaT: (tte - Args._GetTOC()); 
+    Number deltaTMax: 0.5;
+    Number deltaT: Min(deltaTMax, tte - Args._GetTOC()); 
+    //LogToInspector($"proj {ID} has {Args.Lifetime}s LT and {deltaT} deltaT");
     
     //ensure projectile has info
     if (CountOf(Args)) 
@@ -96,7 +98,29 @@ if (projConstructor.Length > 0)
             intervalIndex++;
             }
         
-        Wait(ServerLoadAverage() >= 200 ? 0.032 : 0.016);
+        //Number maxWait_1: 0.016*4;
+        //Number maxWait_2: 0.016*5;
+
+        Number p0: 31.25;
+        Number p1: 5;
+        Number p2: 5;
+
+        Number a0: (LinearInterpolate(p0, p1, ServerLoadPeak()/255));
+        Number a1: (LinearInterpolate(p1, p2, ServerLoadPeak()/255));
+
+        Number b0: (LinearInterpolate(a0, a1, ServerLoadPeak()/255));
+        
+        //Wait(ServerLoadPeak() >= 200 ? 0.032 : 0.016);
+        //Wait(LinearInterpolate(0.016, maxWait_1, ServerLoadAverage()/255));
+        if (deltaT < deltaTMax) {
+            Wait(0.5/b0);
+        }
+        else {
+            //MinWait();
+            //LogToInspector($"proj {ID} fired w/o waits");
+        }
+
+
         SyncTTE();
         CastPFX(
             pfx: Args.ProjFX,
@@ -116,12 +140,29 @@ if (projConstructor.Length > 0)
         ProjDestructor.Queue(ID, Args.Lifetime - deltaT);
 
         //If the server load is on the higher side, limit the constructor rate so THE BUG happens less
-        Wait(ServerLoadAverage() >= 150 ? 0.032 : 0.016);
-    
+        //Wait(ServerLoadPeak() >= 150 ? 0.032 : 0.016);
+        //Wait(LinearInterpolate(0.016, maxWait_2, ServerLoadAverage()/255));
+        if (deltaT < deltaTMax) {
+            Wait(0.5/b0);
+        }
+        else {
+            //MinWait();
+        }
     }
     else
     {
         //This else will happen if a proj is queued without any info for args
+        if (!CountOf(Args))
+        {
+
+        }
+
+        //This will happen if the proj has a deltaT >= lifetime
+        else
+        {
+            projData[ID].ProjState = ProjState.Inactive;
+        }
+
         //LogToInspector("\n\n!--ELSE FIRED--!\n\n");
     }
 

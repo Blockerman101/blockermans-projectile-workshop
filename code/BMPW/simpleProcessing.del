@@ -14,7 +14,7 @@ if (!currentTick)
 }
 
 Boolean diff(in Number ID): (timeInInterval[ID].Time == currentTick);
-rule: '[BMPW] Simple Processing'
+rule: '[BMPW] Check EC'
 //This might fix a (potential?) bug
 if (intervalIndex < timeInInterval.Length)
 if (diff(intervalIndex))
@@ -29,14 +29,24 @@ if (diff(intervalIndex))
     LoopIfConditionIsTrue();
 }
 
+rule: '[BMPW] Update State'
+if (timeInInterval.Length)
+{
+    SpreadOverTicks(timeInInterval, 15, tte, i => {
+        //i is the index of the array entered
+        StateCheck(i.ID, projData[i.ID].Position);
+        //LogToInspector($"Checked state of proj {i} (TTE: {time})");
+    });
+}
+
 Boolean approxEqual(in Number one, in Number two, in Number leniency): ((one - two).Abs() <= leniency);
-Number rawInterval: 0.25; //How often to check for collision
+Number rawInterval: 0.5; //How often to check for collision
 Number interval: ((rawInterval / 0.016).Ceil() * 0.016); //Rounded up to the nearest multiple of 0.016 (Rounded up to the nearest tick)
 
 //Cant use tte because of the bug with chased vars in conditions
 Number time: TotalTimeElapsed();
 Number currentTick: ((time%interval) / 0.016).Floor();
-Number rayCastCount: 1;
+//Number rayCastCount: 1;
 
 private void simpleProcessing(in Number ID, in Number interval, in Color color, BeamType beamType) {
     //LogToInspector($"coll checked! (ID: {ID}, CurrentTII: {currentTick}, interval: {interval}, TTE: {time})");
@@ -51,7 +61,7 @@ private void simpleProcessing(in Number ID, in Number interval, in Color color, 
 
 
     //Structuring the state check like this allows us to reuse the projs position instead of recalculating it
-    StateCheck(ID, position);
+    //StateCheck(ID, position);
 
         //if (IsTrueForAny([position, endPosition, raycast], ArrayElement() == Vector.Zero)) {LogToInspector("!--POSITIONS REGISTERED ZERO--!");}
 
