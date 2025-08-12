@@ -26,14 +26,14 @@ if (tte >= projDestructor.First.time && projDestructor.Length)
     //This doesnt need to maintain indices like projData, so when a projectile is made Inactive, its simply removed from this array
     TimeInInterval.ClearFromQueue(ID);
 
-    //LogToInspector($"Destroyed Proj {ID} (Tick {(time/0.016).Floor()})");
+    LogToInspector($"Destroyed Proj {ID} (Tick {(time/0.016).Floor()})");
 
     //Do this last, ID is tied to ProjDestructor
     ProjDestructor.ClearFromQueue(ID); 
 
     //The closest power of 2 to the size of projData, rounded down (so if length is 25, this is 16, so you can check)
     _waitlessIterator = [2, 4, 8, 16, 32, 64, 128, 256].Filter((v, idx) => projData.Length - 1 > v).Last;
-    Number floorPowerOfTwo = _waitlessIterator;
+    Number floorPowerOfTwo: _waitlessIterator;
 
     //Half the size of the database, if possible
     if (projData.All(v => v.ProjState == ProjState.Inactive || CurrentArrayIndex() <= floorPowerOfTwo))
@@ -50,33 +50,6 @@ if (tte >= projDestructor.First.time && projDestructor.Length)
     }
 
     MinWait();
-    LoopIfConditionIsTrue();
-}
-
-disabled rule: '[BMPW] Destructor - Remove Hanging Indices'
-if (projData.Last.ProjState == ProjState.Inactive)
-if (projData.Length > 1)
-{
-    Wait(0.016, WaitBehavior.AbortWhenFalse);
-
-    //using as a temp var
-    _waitlessIterator = (projData.Map(v => v.HitPlayer).Length - 1);
-    Number last: _waitlessIterator;
-
-    //projData_VFX.ModRemoveByIndex(last);
-
-    //If the last index is inactive, remove it. Minimizes array size
-    DestroyEffect(projData[last].ReadOnly.VFX);
-    projData.ModRemoveByIndex(last);
-    //LogToInspector($"\n\nRemoved hanging index\n\n");
-
-    //Reset system if there are no active projectiles
-    if (projData.Length == 1) {
-        WipeData();
-    }
-
-    LogToInspector($"asdfasdf");
-    
     LoopIfConditionIsTrue();
 }
 

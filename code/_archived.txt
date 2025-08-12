@@ -515,3 +515,31 @@ if (timeInInterval.Length)
         //LogToInspector($"Checked state of proj {i} (TTE: {time})");
     });
 }
+
+projDestructor.del
+disabled rule: '[BMPW] Destructor - Remove Hanging Indices'
+if (projData.Last.ProjState == ProjState.Inactive)
+if (projData.Length > 1)
+{
+    Wait(0.016, WaitBehavior.AbortWhenFalse);
+
+    //using as a temp var
+    _waitlessIterator = (projData.Map(v => v.HitPlayer).Length - 1);
+    Number last: _waitlessIterator;
+
+    //projData_VFX.ModRemoveByIndex(last);
+
+    //If the last index is inactive, remove it. Minimizes array size
+    DestroyEffect(projData[last].ReadOnly.VFX);
+    projData.ModRemoveByIndex(last);
+    //LogToInspector($"\n\nRemoved hanging index\n\n");
+
+    //Reset system if there are no active projectiles
+    if (projData.Length == 1) {
+        WipeData();
+    }
+
+    LogToInspector($"asdfasdf");
+    
+    LoopIfConditionIsTrue();
+}
