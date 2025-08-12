@@ -39,6 +39,11 @@
                     "Health": 500,
                     "Damage Received": 10
                 }
+            },
+
+            "Team 2":
+            {
+                "Reinhardt": {"Charge": false}
             }
             
         },

@@ -65,10 +65,10 @@ private void simpleProcessing(in Number ID, in Number interval, in Color color, 
 
         //if (IsTrueForAny([position, endPosition, raycast], ArrayElement() == Vector.Zero)) {LogToInspector("!--POSITIONS REGISTERED ZERO--!");}
 
-        //CreateBeamEffect(HostPlayer(), beamType, position, raycast, Color.Red, EffectRev.None);
-        //projData[ID].ReadOnly.VFX.ModAppend(LastCreatedEntity());
-        //CreateEffect(HostPlayer(), Effect.Sphere, color, raycast, 0.25, EffectRev.None);
-        //projData[ID].ReadOnly.VFX.ModAppend(LastCreatedEntity());
+        CreateBeamEffect(HostPlayer(), beamType, position, raycast, Color.Red, EffectRev.None);
+        projData[ID].ReadOnly.VFX.ModAppend(LastCreatedEntity());
+        CreateEffect(HostPlayer(), Effect.Sphere, color, raycast, 0.25, EffectRev.None);
+        projData[ID].ReadOnly.VFX.ModAppend(LastCreatedEntity());
         
 
 //        if ([position, endPosition, raycast].IsTrueForAny(v => v == Vector.Zero)) {LogToInspector($"POSITIONS REGISTERED ZERO");}
@@ -77,13 +77,18 @@ private void simpleProcessing(in Number ID, in Number interval, in Color color, 
         //By making the queue time {offset} shorter, you avoid false positives with PC (take the case of a projectile hitting reins shield)
         Number offset: 0.016*5;
         ProjDestructor.Queue(ID, interval * LinearInterpolate(0, 1, (position.DistanceTo(raycast)/position.DistanceTo(endPosition))) - offset); //Cant add an offset for visuals because it would mess up ricochets
-        //LogToInspector($"Collided! (Proj {ID} queued with {interval * LinearInterpolate(0, 1, (position.DistanceTo(raycast)/position.DistanceTo(endPosition))) - offset} seconds\n(Current Tick {currentTick} with {((interval * LinearInterpolate(0, 1, (position.DistanceTo(raycast)/position.DistanceTo(endPosition))) - offset) / 0.016).Floor()} ticks to destruction\nExpected to be destroyed at tick {((time + (interval * LinearInterpolate(0, 1, (position.DistanceTo(raycast)/position.DistanceTo(endPosition))) - offset)) / 0.016).Floor()}))");
+        LogToInspector($"Collided! (Proj {ID} queued with {interval * LinearInterpolate(0, 1, (position.DistanceTo(raycast)/position.DistanceTo(endPosition))) - offset} seconds\n(Current Tick {currentTick} with {((interval * LinearInterpolate(0, 1, (position.DistanceTo(raycast)/position.DistanceTo(endPosition))) - offset) / 0.016).Floor()} ticks to destruction\nExpected to be destroyed at tick {((time + (interval * LinearInterpolate(0, 1, (position.DistanceTo(raycast)/position.DistanceTo(endPosition))) - offset)) / 0.016).Floor()}))");
         //break;
     } //stop raycasting if the latest one hit
 }
-Number speed(in Number ID): projData[ID].ReadOnly.Velocity.Magnitude;
-Number rad(in Number ID): projData[ID].ReadOnly.Radius + 4 + 0.5 * speed(ID) * 0.5; 
-Vector pos(in Number ID): projData[ID].PositionAtTime(0.5 * Min(1, speed(ID) / 85) * 0.5);
+protected private Number speed(in Number ID): projData[ID].ReadOnly.Velocity.Magnitude;
+Number inter: 0.24;
+
+//projRad + baseRad + scalar * speed * intervalOfSC
+Number rad(in Number ID): projData[ID].ReadOnly.Radius + 4 + 0.5 * speed(ID) * inter;
+
+//The faster a proj is going, the more you can assume ahead of it to be the checked position
+Vector pos(in Number ID): projData[ID].PositionAtTime(inter * Min(1, speed(ID) / 85));
 private void StateCheck(in Number ID, in Vector position)
 {
     //Criteria for complex state

@@ -58,7 +58,7 @@ private void checkPCollision(in Number ID, in Number ticks) {
     if (proj.HitPlayer)
     {
         ProjDestructor.Destroy(ID);
-        //LogToInspector($"Proj {ID} hit {proj.HitPlayer}!");
+        LogToInspector($"Proj {ID} hit {proj.HitPlayer}!");
     }
 }
 

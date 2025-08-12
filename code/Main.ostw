@@ -6,20 +6,21 @@ import "BMPW/projConstructor.del";
 import "BMPW/projDestructor.del";
 import "BMPW/structs.del";
 import "_flight.del";
-//import "_dev.del";
+import "_dev.del";
 
-rule: '[DEV] Text'
+disabled rule: '[DEV] Text'
 {
     CreateHudText(HostPlayer(), "Load: " + ServerLoad(), null, null, Location.Right, -1, ServerLoad() >= 100 ? (ServerLoad() >= 200 ? Color.Red : Color.Yellow) : Color.Green, null, null, HudTextRev.VisibleToSortOrderStringAndColor, Spectators.DefaultVisibility);
     CreateHudText(HostPlayer(), UpdateEveryFrame("Size (Fake): " + projData.Length), null, null, Location.Right, -1, Color.White, null, null, HudTextRev.VisibleToSortOrderStringAndColor, Spectators.DefaultVisibility);
     CreateHudText(HostPlayer(), UpdateEveryFrame("Size (Real): " + projData.Map(v => v.HitPlayer).Length), null, null, Location.Right, -1, Color.White, null, null, HudTextRev.VisibleToSortOrderStringAndColor, Spectators.DefaultVisibility);
     CreateHudText(HostPlayer(), UpdateEveryFrame("E-Count: " + EntityCount()), null, null, Location.Right, -1, Color.White, null, null, HudTextRev.VisibleToSortOrderStringAndColor, Spectators.DefaultVisibility);
     CreateHudText(HostPlayer(), UpdateEveryFrame("Inactive: " + projData.Filter(v => v.ProjState == ProjState.Inactive).Length), null, null, Location.Right, -1, Color.White, null, null, HudTextRev.VisibleToSortOrderStringAndColor, Spectators.DefaultVisibility);
+    speed(2);
 }
 
 globalvar Number length;
-rule: '[DEV] log changes'
-//if (projData.Length != length)
+disabled rule: '[DEV] log changes'
+//if (projData.Length != length)g
 {
     //length = projData.Length;
     //length \t load
@@ -42,6 +43,7 @@ rule: 'Make my projectile'
 Event.OngoingPlayer
 if (EventPlayer().IsButtonHeld(Button.Interact))
 if (!EventPlayer().IsButtonHeld(Button.Crouch))
+if (EventPlayer() == HostPlayer())
 {
     ProjectileArgs shortProj: {ProjFX: ProjFX.GenjiShuriken, Lifetime: 5, Speed: ProjectileArgs.Default().Speed, Gravity: ProjectileArgs.Default().Gravity/10, ..ProjectileArgs.Default()};
     CreateCustomProjectile(shortProj);
@@ -55,6 +57,7 @@ rule: 'Make big proj'
 Event.OngoingPlayer
 if (EventPlayer().IsButtonHeld(Button.PrimaryFire))
 if (!EventPlayer().IsButtonHeld(Button.Crouch))
+if (EventPlayer() == HostPlayer())
 {
     ProjectileArgs bigProj: {ProjFX: ProjFX.BaptisteBioticLauncher, Oversize: 0.2, Speed: 50, Lifetime: 5, Gravity: ProjectileArgs.Default().Gravity/10, ..ProjectileArgs.Default()};
     CreateCustomProjectile(bigProj);
@@ -63,19 +66,22 @@ if (!EventPlayer().IsButtonHeld(Button.Crouch))
     //LoopIfConditionIsTrue();
 }
 
-disabled rule: 'Explode big projs!'
+rule: 'Explode big projs!'
 Event.OngoingPlayer
 if (bigProjIDs.Any(v => projData[v].ProjState == ProjState.Inactive))
 {
     LogToInspector("Kaboom!");
-    _waitlessIterator = 0;
-    while (_waitlessIterator < bigProjIDs.Length) {
-        if (projData[bigProjIDs].ProjState == ProjState.Inactive) {
-            PlayEffect(AllPlayers(), PlayEffect.GoodExplosion, Color.Red, projData[bigProjIDs[_waitlessIterator]].Position, 15);
-            PlayEffect(AllPlayers(), PlayEffect.BuffExplosionSound, TeamOf(EventPlayer()), projData[bigProjIDs[_waitlessIterator]].Position, 150);
-            bigProjIDs.ModRemoveByIndex(_waitlessIterator);
+    for (_waitlessIterator = 0; _waitlessIterator < bigProjIDs.Length; _waitlessIterator++) {
+        ProjData current: projData[bigProjIDs[_waitlessIterator]];
+        if (current.ProjState == ProjState.Inactive)
+        {
+            //PlayEffect(AllPlayers(), PlayEffect.GoodExplosion, Color.Red, projData[bigProjIDs[_waitlessIterator]].Position, 15);
+            //PlayEffect(AllPlayers(), PlayEffect.BuffExplosionSound, TeamOf(EventPlayer()), projData[bigProjIDs[_waitlessIterator]].Position, 150);
+            SetStatus(current.HitPlayer, EventPlayer(), Status.KnockedDown, 0.5);
+            LogToInspector($"proj {bigProjIDs[_waitlessIterator]} hit!");
+            Damage(current.HitPlayer, EventPlayer(), 50);
         }
-        else {_waitlessIterator++;}
+        bigProjIDs.ModRemoveByIndex(_waitlessIterator);
     }
 }
 
@@ -83,6 +89,7 @@ rule: 'Track helix rockets'
 Event.OngoingPlayer
 if (EventPlayer().IsFiringSecondary())
 if (!EventPlayer().IsButtonHeld(Button.Crouch))
+if (EventPlayer() == HostPlayer())
 {
     ProjectileArgs myArgs = {ProjFX: ProjFX.PharahRocket, StartPosition: EventPlayer().EyePosition(), Speed: 50, Gravity: Vector.Zero, Lifetime: 2, ..ProjectileArgs.Default()};
     CreateCustomProjectile(myArgs);
