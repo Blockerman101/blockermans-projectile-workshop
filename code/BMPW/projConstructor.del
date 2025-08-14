@@ -50,22 +50,28 @@ if (projConstructor.Length > 0)
     //deltaT is not the time since the last tick, but the time that passed since this proj was called
     //This is useful because instead of making the projectile at the current time, I can buffer it to act as if it was created at its time of call
     Number deltaTMax: 0.5;
+    //This also kind of updates (because its a macro), so it doesnt need to be reevaled manually after waits
     Number deltaT: Min(deltaTMax, tte - Args._GetTOC()); 
+    //Number deltaT: 0.45;
     //LogToInspector($"proj {ID} has {Args.Lifetime}s LT and {deltaT} deltaT");
     
     //ensure projectile has info
     if (CountOf(Args)) 
     {
+
+        //dataAdd -> TII add -> first ED -> first SD -> WAIT
+
         //Normalize dir internally (redundancy) //For reference, if you do .First instead of [0] OSTW throws an error
         projConstructor[0].Direction = projConstructor[0].Direction.Normalize();
 
-        Number buffer: 0.016*2;
+        Number buffer: (deltaT + 0.016*2 + (ServerLoadPeak() >= 200 ? 0.032 : 0.016));
         projData[ID] = <ProjData> {
             //This is used as the reference for other time-based values, so by modifying this, you modify everything else
             //The lower this value is, the greater the time/position is
             //the 0.016*18 buffer is because of a weird bug involving TTE with createFX/createProjFX. Since TTE is referenced twice in the position macro, the TimeOfCreation needs to be buffered by 9 ticks, twice (0.288 = 0.016*9*2)
             
-            TimeOfCreation:  Args._GetTOC() - buffer - (ServerLoadAverage() >= 200 ? 0.032 : 0.016),
+            //TimeOfCreation:  Args._GetTOC() - buffer - (ServerLoadAverage() >= 200 ? 0.032 : 0.016),
+            TimeOfCreation: Args._GetTOC() - deltaT,
             
             //RarelyChange: {
             //    Bezierp0: (Args.StartPosition), 
@@ -88,7 +94,6 @@ if (projConstructor.Length > 0)
             HitPlayer: null
         };
 
-        
         Number timeToMaxHeight: (tte + Max(0, -1 * Args.Speed * DotProduct(Args.Direction, Args.Gravity)/DotProduct(Args.Gravity, Args.Gravity)));
         Number ticksToMaxHeight: (((timeToMaxHeight%interval) / 0.016).Floor());
         TimeInInterval.Queue(ID, ticksToMaxHeight);
@@ -100,8 +105,11 @@ if (projConstructor.Length > 0)
 
         //first ED Check
         Number ModdedTimeToMaxHeight: Max(0, -1 * Args.Speed * DotProduct(Args.Direction, Args.Gravity)/DotProduct(Args.Gravity, Args.Gravity))%interval;
-        simpleProcessing(ID, (!ModdedTimeToMaxHeight ? interval : ModdedTimeToMaxHeight), Color.SkyBlue, BeamType.GoodBeam); //First EC. If there is no TTMH (the proj is created past its apex), run a full interval EC check
+        simpleProcessing(ID, (!ModdedTimeToMaxHeight ? interval : ModdedTimeToMaxHeight) + deltaT, Color.SkyBlue, BeamType.GoodBeam, i => {return Args.StartPosition;}); //First EC. If there is no TTMH (the proj is created past its apex), run a full interval EC check
         
+        //First StateCheck. If the proj spawns close to a player, it should be in the complex state
+        StateCheck(ID, Args.StartPosition);
+
         //Number maxWait_1: 0.016*4;
         //Number maxWait_2: 0.016*5;
 
@@ -119,37 +127,38 @@ if (projConstructor.Length > 0)
         if (deltaT < deltaTMax) {
             Wait(0.5/b0);
         }
-        else {
+//        else {
             //MinWait();
             //LogToInspector($"proj {ID} fired w/o waits");
-        }
+//        }
 
+        //The projectile can be destroyed very early, if it collides with smth before the first wait is over. If that happens, dont bother with creating it
+        if (projData[ID].ProjState != ProjState.Inactive && projData[ID].ProjState != ProjState.NULL)
+        {
+            SyncTTE();
+            LogToInspector($"Kept Creation! (proj {ID}, tick {(tte / 0.016).Floor()})");
+            CastPFX(
+                pfx: Args.ProjFX,
+                fx => {
+                    CreateProjectileEffect(AllPlayers(), fx, AllPlayers(), UpdateEveryFrame(projData[EvaluateOnce(ID)].Position), projData[EvaluateOnce(ID)].ReadOnly.Velocity + projData[EvaluateOnce(ID)].ReadOnly.Gravity * projData[EvaluateOnce(ID)].time, EvaluateOnce(Args.Oversize), ProjectileEffectReeval.PositionDirectionAndSize);
+                    }
+            );
+            //projData_VFX[ID] = LastCreatedEntity();
+            //projData[ID].ReadOnly.VFX = LastCreatedEntity();
+            projData[ID].ReadOnly.VFX.ModAppend(LastCreatedEntity());
 
-        SyncTTE();
-        CastPFX(
-            pfx: Args.ProjFX,
-            fx => {
-                CreateProjectileEffect(AllPlayers(), fx, AllPlayers(), UpdateEveryFrame(projData[EvaluateOnce(ID)].Position), projData[EvaluateOnce(ID)].ReadOnly.Velocity + projData[EvaluateOnce(ID)].ReadOnly.Gravity * projData[EvaluateOnce(ID)].time, EvaluateOnce(Args.Oversize), ProjectileEffectReeval.PositionDirectionAndSize);
-                }
-        );
-        //projData_VFX[ID] = LastCreatedEntity();
-        //projData[ID].ReadOnly.VFX = LastCreatedEntity();
-        projData[ID].ReadOnly.VFX.ModAppend(LastCreatedEntity());
-        
-        //First StateCheck. If the proj spawns close to a player, it should be in the complex state
-        StateCheck(ID, projData[ID].Position);
+            ProjDestructor.Queue(ID, Args.Lifetime - deltaT);
 
-        ProjDestructor.Queue(ID, Args.Lifetime - deltaT);
-
-        //If the server load is on the higher side, limit the constructor rate so THE BUG happens less
-        //Wait(ServerLoadPeak() >= 150 ? 0.032 : 0.016);
-        //Wait(LinearInterpolate(0.016, maxWait_2, ServerLoadAverage()/255));
-        if (deltaT < deltaTMax) {
-            Wait(0.5/b0);
-        }
-        else {
-            //MinWait();
-        }
+            //If the server load is on the higher side, limit the constructor rate so THE BUG happens less
+            //Wait(ServerLoadPeak() >= 150 ? 0.032 : 0.016);
+            //Wait(LinearInterpolate(0.016, maxWait_2, ServerLoadAverage()/255));
+            if (deltaT < deltaTMax) {
+                Wait(0.5/b0);
+            }
+    //        else {
+                //MinWait();
+    //        }
+        } else {LogToInspector($"Skipped creation! (proj {ID}, tick {(tte / 0.016).Floor()})");}
     }
     else
     {

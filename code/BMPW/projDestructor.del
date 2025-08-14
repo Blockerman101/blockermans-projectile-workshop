@@ -10,6 +10,7 @@ if (TotalTimeElapsed() >= projDestructor.First.time && projDestructor.Length)
 
     //DestroyEffect(projData_VFX[ID]);
     DestroyEffect(projData[ID].ReadOnly.VFX);
+    LogToInspector($"Destroyed fx {projData[ID].ReadOnly.VFX} from proj {ID}");
     projData[ID].ProjState = ProjState.Inactive;
     complexProjs.ModRemoveByValue(ID);
 
@@ -37,7 +38,7 @@ if (TotalTimeElapsed() >= projDestructor.First.time && projDestructor.Length)
     Number floorPowerOfTwo: _waitlessIterator;
 
     //Half the size of the database, if possible
-    if (projData.All(v => v.ProjState == ProjState.Inactive || CurrentArrayIndex() <= floorPowerOfTwo))
+    if (projData.All(v => v.ProjState == ProjState.Inactive || CurrentArrayIndex() <= floorPowerOfTwo) && floorPowerOfTwo)
     {
         //LogToInspector($"size: {projData.Length}, FPOT: {floorPowerOfTwo}");
 

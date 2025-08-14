@@ -66,6 +66,8 @@ struct ProjData
     public Vector PositionAtTime(in Number extraTime): this.ReadOnly.InitPos + (time + extraTime) * (this.ReadOnly.Velocity + this.ReadOnly.Gravity * (time + extraTime) / 2);
     //public Vector PositionAtTime(in Number time): b0Time(time); //The above macro, "Position", assumes that "time" is 0. Inputting 0.5 for this will get you the position of the projectile 0.5s in the future
 
+    public Vector PositionAtRawTime(in Number time): this.ReadOnly.InitPos + time * (this.ReadOnly.Velocity + this.ReadOnly.Gravity * time / 2);
+
    
     public static ProjData Construct(): {ProjState: ProjState.NULL, ReadOnly: ReadOnlyProjData.Construct(), TimeOfCreation: 0, HitPlayer: null};  
     //public static void AddArgs(in ProjectileArgs args) {projData.Map(v => projData[CurrentArrayIndex()].ProjArgs).ModAppend(args);}
