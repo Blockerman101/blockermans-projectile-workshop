@@ -10,7 +10,7 @@ if (timeInInterval.Length)
 if (!currentTick)
 {
     intervalIndex = 0;
-    //LogToInspector($"Lap ended. (Index returned to 0) (TTE: {time})");
+    LogToInspector($"Lap ended. (Index returned to 0) (TTE: {time})");
 }
 
 Boolean diff(in Number ID): (timeInInterval[ID].Time == currentTick);
@@ -19,7 +19,8 @@ rule: '[BMPW] Check EC'
 if (intervalIndex < timeInInterval.Length)
 if (diff(intervalIndex))
 {
-    simpleProcessing(timeInInterval[intervalIndex].ID, interval, Color.White, BeamType.BadBeam); //Check this projectile
+    //Adding a bit to interval so the checks slightly overlap, prevents edgecase bugs
+    simpleProcessing(timeInInterval[intervalIndex].ID, (interval + 0.032), Color.White, BeamType.BadBeam); //Check this projectile
     intervalIndex++; //Traverse to the next projectile
     WaitUntil((diff(intervalIndex) || !intervalIndex) && intervalIndex < timeInInterval.Length , interval - (time%interval)); //Wait until the next proj is ready to be checked, and if either if the loop ends, or until there is a value at timeInInterval[intervalIndex].Time
     //Heres the reason why '&& intervalIndex < timeInInterval.Lengh' is needed: First off, this code makes sure that your not reading an out-of-scope index.
@@ -49,7 +50,7 @@ Number currentTick: ((time%interval) / 0.016).Floor();
 //Number rayCastCount: 1;
 
 private void simpleProcessing(in Number ID, in Number interval, in Color color, BeamType beamType) {
-    //LogToInspector($"coll checked! (ID: {ID}, CurrentTII: {currentTick}, interval: {interval}, TTE: {time})");
+    LogToInspector($"coll checked! (ID: {ID}, CurrentTII: {currentTick}, interval: {interval}, TTE: {time})");
 
     tempPositions.StartPosition = projData[ID].Position;
     tempPositions.EndPosition = projData[ID].PositionAtTime(interval);
@@ -75,13 +76,15 @@ private void simpleProcessing(in Number ID, in Number interval, in Color color, 
     if (raycast != endPosition) 
     {
         //By making the queue time {offset} shorter, you avoid false positives with PC (take the case of a projectile hitting reins shield)
-        Number offset: 0.016*5;
-        ProjDestructor.Queue(ID, interval * LinearInterpolate(0, 1, (position.DistanceTo(raycast)/position.DistanceTo(endPosition))) - offset); //Cant add an offset for visuals because it would mess up ricochets
-        LogToInspector($"Collided! (Proj {ID} queued with {interval * LinearInterpolate(0, 1, (position.DistanceTo(raycast)/position.DistanceTo(endPosition))) - offset} seconds\n(Current Tick {currentTick} with {((interval * LinearInterpolate(0, 1, (position.DistanceTo(raycast)/position.DistanceTo(endPosition))) - offset) / 0.016).Floor()} ticks to destruction\nExpected to be destroyed at tick {((time + (interval * LinearInterpolate(0, 1, (position.DistanceTo(raycast)/position.DistanceTo(endPosition))) - offset)) / 0.016).Floor()}))");
+        //^ not needed if you just include objs in PD
+        Number offset: 0.016*0;
+        Number timeToDestroy: interval * Min(1, Max(0, LinearInterpolate(0, 1, (position.DistanceTo(raycast)/position.DistanceTo(endPosition))))) - offset;
+        ProjDestructor.Queue(ID, timeToDestroy); //Cant add an offset for visuals because it would mess up ricochets
+        LogToInspector($"Collided! (Proj {ID} queued with {timeToDestroy} seconds\n(Current Tick {currentTick} with {((timeToDestroy) / 0.016).Floor()} ticks to destruction\nExpected to be destroyed at tick {((time + timeToDestroy) / 0.016).Floor()}))");
         //break;
     } //stop raycasting if the latest one hit
 }
-protected private Number speed(in Number ID): projData[ID].ReadOnly.Velocity.Magnitude;
+Number speed(in Number ID): projData[ID].ReadOnly.Velocity.Magnitude;
 Number inter: 0.24;
 
 //projRad + baseRad + scalar * speed * intervalOfSC

@@ -4,7 +4,7 @@ globalvar ProjDestructor[] projDestructor = [];
 
 rule: '[BMPW] Destructor - Destroy Proj'
 Event.OngoingGlobal
-if (tte >= projDestructor.First.time && projDestructor.Length)
+if (TotalTimeElapsed() >= projDestructor.First.time && projDestructor.Length)
 {
     Number ID: projDestructor.First.ID;
 
@@ -14,7 +14,7 @@ if (tte >= projDestructor.First.time && projDestructor.Length)
     complexProjs.ModRemoveByValue(ID);
 
     Boolean[] reqsForDec: [
-    timeInInterval.Length > 1,
+    //timeInInterval.Length > 1,
     currentTick >= timeInInterval[timeInInterval.Map(v => v.ID).IndexOf(ID)].Time,
     intervalIndex //make sure it isnt 0, because if it was it would go to index -1
 ];
@@ -31,8 +31,9 @@ if (tte >= projDestructor.First.time && projDestructor.Length)
     //Do this last, ID is tied to ProjDestructor
     ProjDestructor.ClearFromQueue(ID); 
 
+    MinWait();
     //The closest power of 2 to the size of projData, rounded down (so if length is 25, this is 16, so you can check)
-    _waitlessIterator = [2, 4, 8, 16, 32, 64, 128, 256].Filter((v, idx) => projData.Length - 1 > v).Last;
+    _waitlessIterator = [4, 8, 16, 32, 64, 128, 256].Filter((v, idx) => projData.Length - 1 > v).Last;
     Number floorPowerOfTwo: _waitlessIterator;
 
     //Half the size of the database, if possible
@@ -48,8 +49,6 @@ if (tte >= projDestructor.First.time && projDestructor.Length)
         //projData = projData.Filter((v, idx) => idx < floorPowerOfTwo);
         //LogToInspector($"Made size smaller! (shrank to {floorPowerOfTwo}, from {indexes.First} through {indexes.Last})");
     }
-
-    MinWait();
     LoopIfConditionIsTrue();
 }
 

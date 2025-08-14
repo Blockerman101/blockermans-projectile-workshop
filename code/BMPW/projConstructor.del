@@ -92,11 +92,15 @@ if (projConstructor.Length > 0)
         Number timeToMaxHeight: (tte + Max(0, -1 * Args.Speed * DotProduct(Args.Direction, Args.Gravity)/DotProduct(Args.Gravity, Args.Gravity)));
         Number ticksToMaxHeight: (((timeToMaxHeight%interval) / 0.016).Floor());
         TimeInInterval.Queue(ID, ticksToMaxHeight);
-        //LogToInspector($"\nAdded to TII (ID: {ID})\nCurrentTick: {currentTick}, ProjTick: {ticksToMaxHeight}\nCurrentIndex: {intervalIndex}, ProjIndex: {timeInInterval.Map(v => v.ID).IndexOf(ID)}]\n");
+        LogToInspector($"\nAdded to TII (ID: {ID})\nCurrentTick: {currentTick}, ProjTick: {ticksToMaxHeight}\nCurrentIndex: {intervalIndex}, ProjIndex: {timeInInterval.Map(v => v.ID).IndexOf(ID)}]\n");
         if (timeInInterval.Length > 1 && currentTick >= ticksToMaxHeight) {
             //LogToInspector($"Inc'd Index. (Index {timeInInterval.Map(v => v.ID).IndexOf(ID)} with ID {ID}, Index: {intervalIndex} -> {intervalIndex + 1})"); 
             intervalIndex++;
-            }
+        }
+
+        //first ED Check
+        Number ModdedTimeToMaxHeight: Max(0, -1 * Args.Speed * DotProduct(Args.Direction, Args.Gravity)/DotProduct(Args.Gravity, Args.Gravity))%interval;
+        simpleProcessing(ID, (!ModdedTimeToMaxHeight ? interval : ModdedTimeToMaxHeight), Color.SkyBlue, BeamType.GoodBeam); //First EC. If there is no TTMH (the proj is created past its apex), run a full interval EC check
         
         //Number maxWait_1: 0.016*4;
         //Number maxWait_2: 0.016*5;
@@ -129,14 +133,12 @@ if (projConstructor.Length > 0)
                 }
         );
         //projData_VFX[ID] = LastCreatedEntity();
-        projData[ID].ReadOnly.VFX = LastCreatedEntity();
-
-        Number ModdedTimeToMaxHeight: Max(0, -1 * Args.Speed * DotProduct(Args.Direction, Args.Gravity)/DotProduct(Args.Gravity, Args.Gravity))%interval;
-        simpleProcessing(ID, (!ModdedTimeToMaxHeight ? interval : ModdedTimeToMaxHeight), Color.SkyBlue, BeamType.GoodBeam); //First EC. If there is no TTMH (the proj is created past its apex), run a full interval EC check
+        //projData[ID].ReadOnly.VFX = LastCreatedEntity();
+        projData[ID].ReadOnly.VFX.ModAppend(LastCreatedEntity());
         
         //First StateCheck. If the proj spawns close to a player, it should be in the complex state
-        //StateCheck(ID, projData[ID].Position);
-        
+        StateCheck(ID, projData[ID].Position);
+
         ProjDestructor.Queue(ID, Args.Lifetime - deltaT);
 
         //If the server load is on the higher side, limit the constructor rate so THE BUG happens less

@@ -17,8 +17,6 @@ disabled rule: '[DEV] Text'
     CreateHudText(HostPlayer(), UpdateEveryFrame("Inactive: " + projData.Filter(v => v.ProjState == ProjState.Inactive).Length), null, null, Location.Right, -1, Color.White, null, null, HudTextRev.VisibleToSortOrderStringAndColor, Spectators.DefaultVisibility);
     speed(2);
 }
-
-globalvar Number length;
 disabled rule: '[DEV] log changes'
 //if (projData.Length != length)g
 {
@@ -45,9 +43,9 @@ if (EventPlayer().IsButtonHeld(Button.Interact))
 if (!EventPlayer().IsButtonHeld(Button.Crouch))
 if (EventPlayer() == HostPlayer())
 {
-    ProjectileArgs shortProj: {ProjFX: ProjFX.GenjiShuriken, Lifetime: 5, Speed: ProjectileArgs.Default().Speed, Gravity: ProjectileArgs.Default().Gravity/10, ..ProjectileArgs.Default()};
+    ProjectileArgs shortProj: {ProjFX: ProjFX.GenjiShuriken, Lifetime: 5, Speed: ProjectileArgs.Default().Speed, ..ProjectileArgs.Default()};
     CreateCustomProjectile(shortProj);
-    Number myID = lastProjectileID;
+    //Number myID = lastProjectileID;
     Wait(0.25, WaitBehavior.AbortWhenFalse);
     LoopIfConditionIsTrue();
 }
@@ -59,7 +57,7 @@ if (EventPlayer().IsButtonHeld(Button.PrimaryFire))
 if (!EventPlayer().IsButtonHeld(Button.Crouch))
 if (EventPlayer() == HostPlayer())
 {
-    ProjectileArgs bigProj: {ProjFX: ProjFX.BaptisteBioticLauncher, Oversize: 0.2, Speed: 50, Lifetime: 5, Gravity: ProjectileArgs.Default().Gravity/10, ..ProjectileArgs.Default()};
+    ProjectileArgs bigProj: {ProjFX: ProjFX.BaptisteBioticLauncher, Oversize: 0.2, Speed: 50, Lifetime: 5, ..ProjectileArgs.Default()};
     CreateCustomProjectile(bigProj);
     bigProjIDs.ModAppend(lastProjectileID);
     MinWait();
@@ -71,18 +69,30 @@ Event.OngoingPlayer
 if (bigProjIDs.Any(v => projData[v].ProjState == ProjState.Inactive))
 {
     LogToInspector("Kaboom!");
-    for (_waitlessIterator = 0; _waitlessIterator < bigProjIDs.Length; _waitlessIterator++) {
+    _waitlessIterator = 0;
+    while (_waitlessIterator <= bigProjIDs.Length) {
         ProjData current: projData[bigProjIDs[_waitlessIterator]];
         if (current.ProjState == ProjState.Inactive)
         {
-            //PlayEffect(AllPlayers(), PlayEffect.GoodExplosion, Color.Red, projData[bigProjIDs[_waitlessIterator]].Position, 15);
-            //PlayEffect(AllPlayers(), PlayEffect.BuffExplosionSound, TeamOf(EventPlayer()), projData[bigProjIDs[_waitlessIterator]].Position, 150);
-            SetStatus(current.HitPlayer, EventPlayer(), Status.KnockedDown, 0.5);
-            LogToInspector($"proj {bigProjIDs[_waitlessIterator]} hit!");
-            Damage(current.HitPlayer, EventPlayer(), 50);
+            //if the projectile hit a player, do stuff, then traverse to next in line (by removing it)
+            if (current.HitPlayer)
+            {
+                //PlayEffect(AllPlayers(), PlayEffect.GoodExplosion, Color.Red, current.Position, 15);
+                //PlayEffect(AllPlayers(), PlayEffect.BuffExplosionSound, TeamOf(EventPlayer()), current.Position, 150);
+                SetStatus(current.HitPlayer, EventPlayer(), Status.KnockedDown, 0.2);
+                LogToInspector($"registered that proj {bigProjIDs[_waitlessIterator]} hit! (trying to hit {current.HitPlayer})");
+                //Damage(current.HitPlayer, EventPlayer(), 50);
+            }
+                bigProjIDs.ModRemoveByIndex(_waitlessIterator);
         }
-        bigProjIDs.ModRemoveByIndex(_waitlessIterator);
+        //otherwise, traverse to next in line
+        else
+        {
+            _waitlessIterator++;
+        }
     }
+    MinWait();
+    LoopIfConditionIsTrue();
 }
 
 rule: 'Track helix rockets'

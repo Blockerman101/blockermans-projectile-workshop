@@ -7,12 +7,22 @@ Event.OngoingGlobal
 if (HostPlayer().IsButtonHeld(Button.Crouch) && HostPlayer().IsButtonHeld(Button.PrimaryFire))
 {
     //CreateDummyBot(AllHeroes().Random(), OppositeTeamOf(HostPlayer().Team()), -1, PositionOf(HostPlayer()));
-    CreateDummyBot(Hero.Reinhardt, OppositeTeamOf(HostPlayer().Team()), -1, PositionOf(HostPlayer()));
+    CreateDummyBot(Hero.Reinhardt, OppositeTeamOf(HostPlayer().Team()), -1, PositionOf(HostPlayer()), HostPlayer().FacingDirection());
     LogToInspector($"{LastCreatedEntity()} Spawned");
     Wait(0.25);
     StartHoldingButton(LastCreatedEntity(), Button.SecondaryFire);
 }
 
+rule: '[DEV] Spawn Rein'
+Event.OngoingGlobal
+if (HasSpawned(HostPlayer()))
+{
+    //CreateDummyBot(AllHeroes().Random(), OppositeTeamOf(HostPlayer().Team()), -1, PositionOf(HostPlayer()));
+    CreateDummyBot(Hero.Reinhardt, OppositeTeamOf(HostPlayer().Team()), -1, null, null);
+    LogToInspector($"{LastCreatedEntity()} Spawned");
+    //Wait(0.25);
+    //StartHoldingButton(LastCreatedEntity(), Button.SecondaryFire);
+}
 rule: '[DEV] Destroy Dummies'
 Event.OngoingGlobal
 if (HostPlayer().IsButtonHeld(Button.Crouch) && HostPlayer().IsButtonHeld(Button.SecondaryFire))
