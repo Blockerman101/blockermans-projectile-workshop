@@ -14,8 +14,8 @@ if (complexProjs.Length)
 private void checkPCollision(in Number ID, in Number ticks) {
     ProjData proj: projData[ID];
     projData[ID].HitPlayer = RayCastHitPlayer(proj.Position, proj.PositionAtTime(0.016*ticks), proj.ReadOnly.Targets, null, true);
-    PlayEffect(HostPlayer(), PlayEffect.GoodExplosion, Color.White, proj.Position, 0.5);
-    PlayEffect(HostPlayer(), PlayEffect.GoodExplosion, Color.White, proj.PositionAtTime(0.016*ticks), 0.5);
+    //PlayEffect(HostPlayer(), PlayEffect.GoodExplosion, Color.White, proj.Position, 0.5);
+    //PlayEffect(HostPlayer(), PlayEffect.GoodExplosion, Color.White, proj.PositionAtTime(0.016*ticks), 0.5);
     if (proj.HitPlayer)
     {
         ProjDestructor.Destroy(ID);

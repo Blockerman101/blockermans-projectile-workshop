@@ -64,7 +64,7 @@ if (projConstructor.Length > 0)
         //Normalize dir internally (redundancy) //For reference, if you do .First instead of [0] OSTW throws an error
         projConstructor[0].Direction = projConstructor[0].Direction.Normalize();
 
-        Number buffer: (deltaT + 0.016*2 + (ServerLoadPeak() >= 200 ? 0.032 : 0.016));
+        //Number buffer: (deltaT + 0.016*2 + (ServerLoadPeak() >= 200 ? 0.032 : 0.016));
         projData[ID] = <ProjData> {
             //This is used as the reference for other time-based values, so by modifying this, you modify everything else
             //The lower this value is, the greater the time/position is
