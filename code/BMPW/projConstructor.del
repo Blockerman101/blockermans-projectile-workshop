@@ -144,8 +144,8 @@ if (projConstructor.Length > 0)
                     }
             );
             //projData_VFX[ID] = LastCreatedEntity();
-            //projData[ID].ReadOnly.VFX = LastCreatedEntity();
-            projData[ID].ReadOnly.VFX.ModAppend(LastCreatedEntity());
+            projData[ID].ReadOnly.VFX = LastCreatedEntity();
+            //projData[ID].ReadOnly.VFX.ModAppend(LastCreatedEntity());
 
             ProjDestructor.Queue(ID, Args.Lifetime - deltaT);
 

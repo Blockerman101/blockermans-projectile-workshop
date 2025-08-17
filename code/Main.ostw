@@ -37,11 +37,11 @@ if (HasSpawned(HostPlayer()))
 
 
 
-rule: 'Make my projectile'
+disabled rule: 'Make my projectile'
 Event.OngoingPlayer
 if (EventPlayer().IsButtonHeld(Button.Interact))
 if (!EventPlayer().IsButtonHeld(Button.Crouch))
-if (EventPlayer() == HostPlayer())
+//if (EventPlayer() == HostPlayer())
 {
     ProjectileArgs shortProj: {ProjFX: ProjFX.GenjiShuriken, Lifetime: 5, Speed: ProjectileArgs.Default().Speed, ..ProjectileArgs.Default()};
     CreateCustomProjectile(shortProj);
@@ -55,11 +55,12 @@ rule: 'Make big proj'
 Event.OngoingPlayer
 if (EventPlayer().IsButtonHeld(Button.PrimaryFire))
 if (!EventPlayer().IsButtonHeld(Button.Crouch))
-if (EventPlayer() == HostPlayer())
+//if (EventPlayer() == HostPlayer())
 {
     ProjectileArgs bigProj: {ProjFX: ProjFX.BaptisteBioticLauncher, Oversize: 0.2, Speed: 50, Lifetime: 5, ..ProjectileArgs.Default()};
     CreateCustomProjectile(bigProj);
     bigProjIDs.ModAppend(lastProjectileID);
+    LogToInspector("I appended proj " + lastProjectileID);
     MinWait();
     //LoopIfConditionIsTrue();
 }

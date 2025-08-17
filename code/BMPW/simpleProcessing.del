@@ -65,10 +65,10 @@ private void simpleProcessing(in Number ID, in Number interval, in Color color, 
 
         //if (IsTrueForAny([position, endPosition, raycast], ArrayElement() == Vector.Zero)) {LogToInspector("!--POSITIONS REGISTERED ZERO--!");}
 
-        CreateBeamEffect(HostPlayer(), beamType, position, raycast, Color.Red, EffectRev.None);
-        projData[ID].ReadOnly.VFX.ModAppend(LastCreatedEntity());
-        CreateEffect(HostPlayer(), Effect.Sphere, color, raycast, 0.25, EffectRev.None);
-        projData[ID].ReadOnly.VFX.ModAppend(LastCreatedEntity());
+        //CreateBeamEffect(HostPlayer(), beamType, position, raycast, Color.Red, EffectRev.None);
+        //projData[ID].ReadOnly.VFX.ModAppend(LastCreatedEntity());
+        //CreateEffect(HostPlayer(), Effect.Sphere, color, raycast, 0.25, EffectRev.None);
+        //projData[ID].ReadOnly.VFX.ModAppend(LastCreatedEntity());
         
 
 //        if ([position, endPosition, raycast].IsTrueForAny(v => v == Vector.Zero)) {LogToInspector($"POSITIONS REGISTERED ZERO");}

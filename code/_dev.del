@@ -13,7 +13,7 @@ if (HostPlayer().IsButtonHeld(Button.Crouch) && HostPlayer().IsButtonHeld(Button
     StartHoldingButton(LastCreatedEntity(), Button.SecondaryFire);
 }
 
-rule: '[DEV] Spawn Rein'
+disabled rule: '[DEV] Spawn Rein'
 Event.OngoingGlobal
 if (HasSpawned(HostPlayer()))
 {
@@ -22,6 +22,28 @@ if (HasSpawned(HostPlayer()))
     LogToInspector($"{LastCreatedEntity()} Spawned");
     //Wait(0.25);
     //StartHoldingButton(LastCreatedEntity(), Button.SecondaryFire);
+}
+
+globalvar Player ent;
+disabled rule: '[DEV] Spawn Soldier'
+Event.OngoingGlobal
+if (HasSpawned(HostPlayer()))
+{
+    //CreateDummyBot(AllHeroes().Random(), OppositeTeamOf(HostPlayer().Team()), -1, PositionOf(HostPlayer()));
+    CreateDummyBot(Hero.Soldier76, OppositeTeamOf(HostPlayer().Team()), -1, null, null);
+    ent = LastCreatedEntity();
+    LogToInspector($"{ent} Spawned");
+    //Wait(0.25);
+    //StartHoldingButton(LastCreatedEntity(), Button.SecondaryFire);
+}
+disabled rule: '[DEV] Soldier fires'
+if ([ent, HostPlayer()].All(v => HasSpawned(v)))
+{
+    Wait(0.2);
+    StartHoldingButton(ent, Button.PrimaryFire);
+    Wait(0.032);
+    StopHoldingButton(ent, Button.PrimaryFire);
+    LoopIfConditionIsTrue();
 }
 rule: '[DEV] Destroy Dummies'
 Event.OngoingGlobal
