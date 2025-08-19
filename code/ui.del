@@ -11,7 +11,7 @@ single struct _ProjArgData
     public Boolean DefaultIsConstant;
     public String TextForValue;
     public String TextForNotConstantDefault;
-    public Any Arg: args[this.Pointer];
+    public Any Arg(in Player player=EventPlayer()): args(player)[this.Pointer];
 
     public static _ProjArgData Construct(): {
         Pointer: null,
@@ -50,7 +50,7 @@ globalvar Dictionary<String, _ProjArgData> ProjArgDataForUI = {
             Pointer: 1,
             Internal: false,
             DefaultIsConstant: true,
-            TextForValue: $"{PFXToText(args[1])} ({args[1]})",
+            TextForValue: $"{PFXToText(args()[1])} ({args()[1]})",
             .._ProjArgData.Construct()
         },
 
@@ -124,12 +124,30 @@ globalvar Dictionary<String, _ProjArgData> ProjArgDataForUI = {
     ]
 };
 
+Dictionary<Button, () => void> bindings: {
+    Keys: [Button.Crouch, Button.Jump, Button.Ability2, Button.Ability1, Button.PrimaryFire, Button.SecondaryFire],
+    Values: <(() => void)[]>[
+        () => null,
+        () => null,
+        () => changeSize *= 10,
+        () => changeSize /= 10,
+        () => null,
+        () => null
+
+    ],
+};
+playervar Boolean editingArgs;
+playervar Number changeSize = 1;
 
 rule: '[BMPW] Create text showing proj args'
 //if (ProjArgDataForUI.Keys.Length)
 {
+    Player lc: LocalPlayer();
     Wait(0.5);
-    CreateHudText(VisibleTo: HostPlayer(), Header: $"Press {InputBindingString(Button.Crouch)} + {InputBindingString(Button.Interact)} to change args", Location: Location.Left, SortOrder: -1, Reevaluation: HudTextRev.VisibleToAndString, Spectators: Spectators.DefaultVisibility);
+    CreateHudText(VisibleTo: LocalPlayer(),
+        Header: !lc.editingArgs ? $"Press {InputBindingString(Button.Crouch)} + {InputBindingString(Button.Interact)} to change args" :
+        $"Down: {bindings.Keys[0]} | Up: {bindings.Keys[1]}\nSize: {lc.changeSize} | Increase Change: {bindings.Keys[2]} | Decrease Change: {bindings.Keys[3]}\nIncrease By Change: {bindings.Keys[4]} | Decrease By Change: {bindings.Keys[5]}",
+        Location: Location.Left, SortOrder: -1, Reevaluation: HudTextRev.VisibleToAndString, Spectators: Spectators.DefaultVisibility);
     for (_waitlessIterator = 0; _waitlessIterator < ProjArgDataForUI.Keys.Length; _waitlessIterator++)
     {
         Number i: _waitlessIterator;
@@ -138,10 +156,10 @@ rule: '[BMPW] Create text showing proj args'
         if (!ProjArgDataForUI.Values[i].Internal)
         {
             CreateHudText(
-                VisibleTo: HostPlayer(),
+                VisibleTo: LocalPlayer(),
                 //Header: $"Press {InputBindingString(Button.Crouch)} + {InputBindingString(Button.Interact)} to change args",
                 Subheader: null,
-                Text: $"{ProjArgDataForUI.Keys[ie]}: {value.DefaultIsConstant ? (value.TextForValue ? value.TextForValue : value.Arg) : value.TextForNotConstantDefault}",
+                Text: $"{ProjArgDataForUI.Keys[ie]}: {value.DefaultIsConstant ? (value.TextForValue ? value.TextForValue : value.Arg(lc)) : value.TextForNotConstantDefault}",
                 Location: Location.Left,
                 SortOrder: -1,
                 //HeaderColor: ,
@@ -154,9 +172,29 @@ rule: '[BMPW] Create text showing proj args'
     }
 }
 
+
+rule: 'toggle editing args & process inputs'
+Event.OngoingPlayer
+if ((bindings.Keys.Any(v => IsButtonHeld(EventPlayer(), <Button>v)) && editingArgs) || (IsButtonHeld(EventPlayer(), Button.Crouch) && IsButtonHeld(EventPlayer(), Button.Interact)))
+{
+    if (IsButtonHeld(EventPlayer(), Button.Crouch) && IsButtonHeld(EventPlayer(), Button.Interact)) {
+        editingArgs = !editingArgs;
+    } else if (editingArgs) {
+        switch (bindings.Keys.Filter(v => IsButtonHeld(EventPlayer(), <Button>v)).First)
+        {
+            case bindings.Keys[0]: changeSize += null; break;
+            case bindings.Keys[1]: changeSize += null; break;
+            case bindings.Keys[2]: changeSize *= 10; break;
+            case bindings.Keys[3]: changeSize /= 10; break;
+            case bindings.Keys[4]: changeSize += null; break;
+            case bindings.Keys[5]: changeSize += null; break;
+        }
+    }
+}
+
 playervar ProjectileArgs _projArgs;
-ProjectileArgs args: ProjectileArgs.Default(HostPlayer());
-ProjectileArgs defaultArgs: ProjectileArgs.Default(HostPlayer());
+ProjectileArgs args(in Player player=EventPlayer()): ProjectileArgs.Default(player);
+ProjectileArgs defaultArgs: ProjectileArgs.Default();
 globalvar Player copyBot;
 rule: 'Create bot for ui output'
 {
