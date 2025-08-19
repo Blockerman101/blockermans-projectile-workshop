@@ -163,11 +163,11 @@ single struct ProjectileArgs
         public Number _GetTOC() {return _TimeOfCall;}
         public ref void _SetTOC(in Number time) {_TimeOfCall = time;} 
     public static ProjectileArgs Construct(): {ProjFX: ProjFX.OrbProjectile, StartPosition: Vector.Zero, Direction: Vector.Zero, Targets: null, Oversize: 0, Speed: 0, Lifetime: projDataInitLifetime, Gravity: Vector.Zero, _ProjID: 0, _TimeOfCall: 0};
-    public static ProjectileArgs Default(): {
+    public static ProjectileArgs Default(in Player player=EventPlayer()): {
         ProjFX: ProjFX.OrbProjectile, 
-        StartPosition: EyePosition(EventPlayer()), 
-        Direction: VerticalFacingAngleOf(EventPlayer()) <= -88.9 ? Up() : (VerticalFacingAngleOf(EventPlayer()) >= 88.9 ? Down() : EventPlayer().FacingDirection()), 
-        Targets: AllPlayers(OppositeTeamOf(TeamOf(EventPlayer()))), 
+        StartPosition: EyePosition(player), 
+        Direction: VerticalFacingAngleOf(player) <= -88.9 ? Up() : (VerticalFacingAngleOf(player) >= 88.9 ? Down() : player.FacingDirection()), 
+        Targets: AllPlayers(OppositeTeamOf(TeamOf(player))), 
         Oversize: 0, 
         Speed: 20, 
         Lifetime: 
@@ -178,7 +178,7 @@ single struct ProjectileArgs
         };
     public static void Queue(in ProjectileArgs args) {projConstructor.ModAppend(args);}
 
-    public Any _PointerToArg(in Number p) {return <Any[]>this[p];}
+    //public Any _PointerToArg(in Number p) {return <Any[]>this[p];}
 //    public Any _PointerToArg(in Number p) {
 //        switch (p)
 //        {
