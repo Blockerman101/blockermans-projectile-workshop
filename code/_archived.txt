@@ -583,3 +583,151 @@ if (complexProjs.Length)
     }
     LoopIfConditionIsTrue();
 }
+
+ui.del
+enum UITypes
+{
+    NULL,
+    Number,
+    Vector,
+    Boolean,
+    ProjFX
+}
+
+struct UI
+{
+    //public String header: $"Press {InputBindingString(Button.Crouch)} + {InputBindingString(Button.Interact)} to change args";
+    public UITypes type;
+    public ProjectileArgs value;
+    public Boolean include;
+    public String text;
+    public static UI Construct(): {type: UITypes.NULL, value: null, include: false, text: ""};
+    //public String text;
+}
+
+
+globalvar Dictionary<String, UI> ui;
+
+rule: 'Init ui data'
+{
+    ui.Add("StartPosition", <UI> {
+        ..UI.Construct()
+    });
+
+    ui.Add("ProjFX", <UI> {
+        type: UITypes.ProjFX,
+        value: args.ProjFX,
+        include: true,
+        text: "Visual FX",
+        ..UI.Construct()
+    });
+
+    ui.Add("Direction", <UI> {
+        type: UITypes.Vector,
+        value: args.Direction,
+        include: true,
+        text: "Direction",
+        ..UI.Construct()
+    });
+
+    ui.Add("Targets", <UI> {
+        ..UI.Construct()
+    });
+
+    ui.Add("Oversize", <UI> {
+        type: UITypes.Number,
+        value: args.Oversize,
+        include: true,
+        text: "Oversize",
+        ..UI.Construct()
+    });
+
+    ui.Add("Speed", <UI> {
+        type: UITypes.Number,
+        value: args.Speed,
+        include: true,
+        text: "Speed",
+        ..UI.Construct()
+    });
+
+    ui.Add("Lifetime", <UI> {
+        type: UITypes.Number,
+        value: args.Lifetime,
+        include: true,
+        text: "Lifetime",
+        ..UI.Construct()
+    });
+
+    ui.Add("Gravity", <UI> {
+        type: UITypes.Vector,
+        value: args.Gravity,
+        include: true,
+        text: "Oversize",
+        ..UI.Construct()
+    });
+}
+
+playervar ProjectileArgs _projArgs = ProjectileArgs.Default();
+ProjectileArgs args: bot._projArgs;
+
+rule: 'Create ui text'
+{
+    //Header text (how to change args)
+    CreateHudText(VisibleTo: HostPlayer(), Header: $"Press {InputBindingString(Button.Crouch)} + {InputBindingString(Button.Interact)} to change args", Location: Location.Left, SortOrder: -1, Reevaluation: HudTextRev.VisibleToAndString, Spectators: Spectators.DefaultVisibility);
+    
+    for (_waitlessIterator = 0; _waitlessIterator < ui.Keys.Length; _waitlessIterator++)
+    {
+    Number i: _waitlessIterator;
+    Number ie: EvaluateOnce(i);
+    if (ui.Values[i].include)
+    {
+        CreateHudText(
+            VisibleTo: HostPlayer(),
+            //Header: $"Press {InputBindingString(Button.Crouch)} + {InputBindingString(Button.Interact)} to change args",
+            Subheader: null,
+            Text: $"{ui.Values[ie].text}: {ui.Values[ie].value}",
+            Location: Location.Left,
+            SortOrder: -1,
+            //HeaderColor: ,
+            //SubheaderColor: ,
+            //TextColor: ,
+            Reevaluation: HudTextRev.VisibleToAndString,
+            Spectators: Spectators.DefaultVisibility
+            );
+        }
+    }
+}
+
+struct UI
+{
+    public String text;
+    public Any value;
+    public static void Add(in UI ui) {
+        
+        CreateHudText(
+            VisibleTo: HostPlayer(),
+            //Header: $"Press {InputBindingString(Button.Crouch)} + {InputBindingString(Button.Interact)} to change args",
+            Subheader: null,
+            Text: $"{ui.text}: {ui.value}",
+            Location: Location.Left,
+            SortOrder: -1,
+            //HeaderColor: ,
+            //SubheaderColor: ,
+            //TextColor: ,
+            Reevaluation: HudTextRev.VisibleToAndString,
+            Spectators: Spectators.DefaultVisibility
+        );
+    }
+}
+
+disabled rule: '(OLD) create ui'
+{
+    //Header text (how to change args)
+    CreateHudText(VisibleTo: HostPlayer(), Header: $"Press {InputBindingString(Button.Crouch)} + {InputBindingString(Button.Interact)} to change args", Location: Location.Left, SortOrder: -1, Reevaluation: HudTextRev.VisibleToAndString, Spectators: Spectators.DefaultVisibility);
+    
+    UI.Add({text: "Proj FX", value: $"{PFXToText(args.ProjFX)} ({args.ProjFX})"});
+    UI.Add({text: "Oversize", value: args.Oversize});
+    UI.Add({text: "Speed", value: args.Speed});
+    UI.Add({text: "Lifetime", value: args.Lifetime});
+    UI.Add({text: "Gravity", value: args.Gravity});
+}

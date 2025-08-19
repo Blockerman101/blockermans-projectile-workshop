@@ -6,7 +6,8 @@ import "BMPW/projConstructor.del";
 import "BMPW/projDestructor.del";
 import "BMPW/structs.del";
 import "_flight.del";
-import "_dev.del";
+//import "_dev.del";
+import "ui.del";
 
 disabled rule: '[DEV] Text'
 {

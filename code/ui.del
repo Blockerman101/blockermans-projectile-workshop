@@ -1,0 +1,174 @@
+import "BMPW/structs.del";
+
+single struct _ProjArgData
+{
+    //The corresponding index in ProjectileArgs
+    public Number Pointer;
+    //Whether this arg is used internally, or can be set by the player
+    public Boolean Internal;
+
+    //Whether the default value for this arg is constant. ex. startPos = Eye Position is not constant, speed = 20 is
+    public Boolean DefaultIsConstant;
+    public Any Arg: args._PointerToArg(this.Pointer);
+    public static _ProjArgData Construct(): {
+        Pointer: null,
+        Internal: true,
+        DefaultIsConstant: false
+    };
+}
+
+globalvar Dictionary<String, _ProjArgData> ProjArgDataForUI = {
+    Keys: [
+        "_ProjID",
+        "ProjFX",
+        "StartPosition",
+        "Direction",
+        "Targets",
+        "Oversize",
+        "Speed",
+        "Lifetime",
+        "Gravity",
+        "_TimeOfCall"
+    ],
+
+    Values: [
+        //_ProjID
+        {
+            Pointer: 0,
+            Internal: true,
+            DefaultIsConstant: false
+        },
+
+        //ProjFX
+        {
+            Pointer: 1,
+            Internal: true,
+            DefaultIsConstant: false
+        },
+
+        //StartPosition
+        {
+            Pointer: 2,
+            Internal: false,
+            DefaultIsConstant: false
+        },
+
+        //Direction
+        {
+            Pointer: 3,
+            Internal: false,
+            DefaultIsConstant: false
+        },
+
+        //Targets
+        {
+            Pointer: 4,
+            Internal: false,
+            DefaultIsConstant: false
+        },
+
+        //Oversize
+        {
+            Pointer: 5,
+            Internal: false,
+            DefaultIsConstant: true
+        },
+        //Speed
+        {
+            Pointer: 6,
+            Internal: false,
+            DefaultIsConstant: true
+        },
+        
+        //Lifetime
+        {
+            Pointer: 7,
+            Internal: false,
+            DefaultIsConstant: true
+        },
+        
+        //Gravity
+        {
+            Pointer: 8,
+            Internal: false,
+            DefaultIsConstant: true
+        },
+        
+        //_TimeOfCall
+        {
+            Pointer: 9,
+            Internal: true,
+            DefaultIsConstant: false
+        }
+        
+    ]
+};
+rule: '[BMPW] Create text showing proj args'
+//if (ProjArgDataForUI.Keys.Length)
+{
+    CreateHudText(VisibleTo: HostPlayer(), Header: $"Press {InputBindingString(Button.Crouch)} + {InputBindingString(Button.Interact)} to change args", Location: Location.Left, SortOrder: -1, Reevaluation: HudTextRev.VisibleToAndString, Spectators: Spectators.DefaultVisibility);
+    for (_waitlessIterator = 0; _waitlessIterator < ProjArgDataForUI.Keys.Length; _waitlessIterator++)
+    {
+        Number i: _waitlessIterator;
+        Number ie: EvaluateOnce(i);   
+        CreateHudText(
+            VisibleTo: HostPlayer(),
+            //Header: $"Press {InputBindingString(Button.Crouch)} + {InputBindingString(Button.Interact)} to change args",
+            Subheader: null,
+            Text: $"{ProjArgDataForUI.Keys[ie]}: {ProjArgDataForUI.Values[ie].Arg}",
+            Location: Location.Left,
+            SortOrder: -1,
+            //HeaderColor: ,
+            //SubheaderColor: ,
+            //TextColor: ,
+            Reevaluation: HudTextRev.VisibleToAndString,
+            Spectators: Spectators.DefaultVisibility
+        );
+    }
+}
+
+playervar ProjectileArgs _projArgs;
+ProjectileArgs args: bot._projArgs;
+globalvar Player bot;
+rule: 'Create bot for ui output'
+{
+    CreateDummyBot(Hero.Soldier76, TeamOf(HostPlayer()), -1, Vector(0, 9999999999999, 0), null);
+    bot = LastCreatedEntity();
+    StartForcingPlayerPosition(bot, Vector(0, 999, 0), false);
+    SetStatus(bot, null, Status.Unkillable, 999999999999);
+    SetStatus(bot, null, Status.PhasedOut, 999999999999);
+}
+
+rule: 'Set default args'
+Event.OngoingPlayer
+if (EventPlayer() == bot)
+{
+    bot._projArgs = ProjectileArgs.Default();
+}
+
+private String PFXToText(in ProjFX pfx)
+{
+    switch (pfx)
+    {
+        case ProjFX.BaptisteBioticLauncher:         return("Baptiste Biotic Launcher");         break;
+        case ProjFX.BastionA36TacticalGrenade:      return("Bastion A36 Tactical Grenade");     break;
+        case ProjFX.EchoStickyBomb:                 return("Echo Sticky Bomb");                 break;
+        case ProjFX.GenjiShuriken:                  return("Genji Shuriken");                   break;
+        case ProjFX.LucioSonicAmplifier:            return("Lucio Sonic Amplifier");            break;
+        case ProjFX.MeiIcicle:                      return("Mei Icicle");                       break;
+        case ProjFX.MercyCaduceusBlaster:           return("Mercy Caduceus Blaster");           break;
+        case ProjFX.MoiraDamageOrb:                 return("Moira Damage Orb");                 break;
+        case ProjFX.MoiraHealOrb:                   return("Moira Heal Orb");                   break;
+        case ProjFX.OrbProjectile:                  return("Orb Projectile");                   break;
+        case ProjFX.OrisaFusionDriver:              return("Orisa Fusion Driver");              break;
+        case ProjFX.PharahRocket:                   return("Pharah Rocket");                    break;
+        case ProjFX.RamattraRavenousVortexSphere:   return("Ramattra Ravenous Vortex Sphere");  break;
+        case ProjFX.ReinhardtFireStrike:            return("Reinhardt Fire Strike");            break;
+        case ProjFX.RoadhogScrap:                   return("Roadhog Scrap");                    break;
+        case ProjFX.RoadhogScrapBall:               return("Roadhog Scrap Ball");               break;
+        case ProjFX.SigmaHypersphere:               return("Sigma Hypersphere");                break;
+        case ProjFX.SymmetraPhotonProjector:        return("Symmetra Photon Projector");        break;
+        case ProjFX.ZaryaGraviton:                  return("Zarya Graviton");                   break;
+        case ProjFX.ZaryaParticleCannon:            return("Zarya Particle Cannon");            break;
+    }
+}

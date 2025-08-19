@@ -142,9 +142,12 @@ enum ProjState
 }
 
 
+
 single struct ProjectileArgs
 {
     private Number _ProjID;
+        public Number _GetID() {return _ProjID;}
+        public ref void _SetID(in Number ID) {_ProjID = ID;}
     public ProjFX ProjFX;
     public Vector StartPosition;
     public Vector Direction;
@@ -156,11 +159,9 @@ single struct ProjectileArgs
     //public Number Knockback;
     public Vector Gravity;
     //private Number ProjID;
-    public Number _GetID() {return _ProjID;}
-    public ref void _SetID(in Number ID) {_ProjID = ID;}
     private Number _TimeOfCall;
-    public Number _GetTOC() {return _TimeOfCall;}
-    public ref void _SetTOC(in Number time) {_TimeOfCall = time;} 
+        public Number _GetTOC() {return _TimeOfCall;}
+        public ref void _SetTOC(in Number time) {_TimeOfCall = time;} 
     public static ProjectileArgs Construct(): {ProjFX: ProjFX.OrbProjectile, StartPosition: Vector.Zero, Direction: Vector.Zero, Targets: null, Oversize: 0, Speed: 0, Lifetime: projDataInitLifetime, Gravity: Vector.Zero, _ProjID: 0, _TimeOfCall: 0};
     public static ProjectileArgs Default(): {
         ProjFX: ProjFX.OrbProjectile, 
@@ -176,6 +177,23 @@ single struct ProjectileArgs
         _TimeOfCall: null
         };
     public static void Queue(in ProjectileArgs args) {projConstructor.ModAppend(args);}
+
+    public Any _PointerToArg(in Number p) {return <Any[]>this[p];}
+//    public Any _PointerToArg(in Number p) {
+//        switch (p)
+//        {
+//            case 0: return _ProjID;         break;
+//            case 1: return ProjFX;          break;
+//            case 2: return StartPosition;   break;
+//            case 3: return Direction;       break;
+//            case 4: return Targets;         break;
+//            case 5: return Oversize;        break;
+//            case 6: return Speed;           break;
+//            case 7: return Lifetime;        break;
+//            case 8: return Gravity;         break;
+//            case 9: return _TimeOfCall;     break;
+//        }
+//    }
 }
 
 enum ProjFX
@@ -203,3 +221,37 @@ enum ProjFX
 }
 
 enum RicochetTarget {Players, World, PlayersAndWorld}
+
+struct Dictionary<K, V>
+{
+    public K[] Keys;
+    public V[] Values;
+
+    public V Get(K key)
+    {
+        return Values[Keys.IndexOf(key)];
+    }
+    
+    // Sets a value in the dictionary.
+    public ref void Set(in K key, in V value)
+    {
+        Values[Keys.IndexOf(key)] = value;
+    }
+    
+    // Adds a value to the dictionary.
+    public ref void Add(in K key, in V value)
+    {
+        Keys += key;
+        Values += value;
+    }
+
+    // Sets a value in the dictionary. Will add the key if it doesn't exist.
+    public ref void SetOrAdd(in K key, in V value)
+    {
+        Number index = Keys.IndexOf(key);
+        if (index == -1) // Key not found; add it.
+            Add(key, value);
+        else
+            Values[index] = value;
+    }
+}
