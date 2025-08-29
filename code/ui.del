@@ -1,6 +1,8 @@
 import "BMPW/structs.del";
+import "../../../Other/extraFunctions.ostw";
+import "tx.del";
 
-single struct _ProjArgData
+single struct ProjArgData
 {
     //The corresponding index in ProjectileArgs
     public Number Pointer;
@@ -9,40 +11,48 @@ single struct _ProjArgData
 
     //Whether the default value for this arg is constant. ex. startPos = Eye Position is not constant, speed = 20 is
     public Boolean DefaultIsConstant;
+    public String TextForArg;
     public String TextForValue;
     public String TextForNotConstantDefault;
     public Any Arg(in Player player=EventPlayer()): args(player)[this.Pointer];
+    
 
-    public static _ProjArgData Construct(): {
+    public static ProjArgData Construct(): {
         Pointer: null,
         Internal: true,
         DefaultIsConstant: false,
+        TextForArg: null,
         TextForValue: null,
         TextForNotConstantDefault: ""
     };
 }
 
-globalvar Dictionary<String, _ProjArgData> ProjArgDataForUI = {
-    Keys: [
-        "_ProjID",
-        "Proj FX",
-        "Start Position",
-        "Direction",
-        "Targets",
-        "Oversize",
-        "Speed",
-        "Lifetime",
-        "Gravity",
-        "_TimeOfCall"
-    ],
+struct ProjArgDataForUI
+{
+    public ProjArgData[] data;
+    //public Any Arg: ;
+    //public Number Pointer: ;
+}
 
-    Values: [
+//"_ProjID",
+//"Proj FX",
+//"Start Position",
+//"Direction",
+//"Targets",
+//"Oversize",
+//"Speed",
+//"Lifetime",
+//"Gravity",
+//"_TimeOfCall",
+globalvar ProjArgData[] projArgDataForUI = [
+    //data: [
         //_ProjID
         {
             Pointer: 0,
             Internal: true,
             DefaultIsConstant: false,
-            .._ProjArgData.Construct()
+            //TextForArg: "_ProjID",
+            ..ProjArgData.Construct()
         },
 
         //ProjFX
@@ -50,8 +60,9 @@ globalvar Dictionary<String, _ProjArgData> ProjArgDataForUI = {
             Pointer: 1,
             Internal: false,
             DefaultIsConstant: true,
+            TextForArg: "Proj FX",
             TextForValue: $"{PFXToText(args()[1])} ({args()[1]})",
-            .._ProjArgData.Construct()
+            ..ProjArgData.Construct()
         },
 
         //StartPosition
@@ -59,9 +70,10 @@ globalvar Dictionary<String, _ProjArgData> ProjArgDataForUI = {
             Pointer: 2,
             Internal: false,
             DefaultIsConstant: false,
+            TextForArg: "Start Position",
             TextForNotConstantDefault: "Eye Position(EP)",
 
-            .._ProjArgData.Construct()
+            ..ProjArgData.Construct()
         },
 
         //Direction
@@ -69,8 +81,9 @@ globalvar Dictionary<String, _ProjArgData> ProjArgDataForUI = {
             Pointer: 3,
             Internal: false,
             DefaultIsConstant: false,
+            TextForArg: "Direction",
             TextForNotConstantDefault: "Facing Dir(EP)",
-            .._ProjArgData.Construct()
+            ..ProjArgData.Construct()
         },
 
         //Targets
@@ -78,8 +91,9 @@ globalvar Dictionary<String, _ProjArgData> ProjArgDataForUI = {
             Pointer: 4,
             Internal: false,
             DefaultIsConstant: false,
+            TextForArg: "Targets",
             TextForNotConstantDefault: "All Players(Opp Team(Team(EP)))",
-            .._ProjArgData.Construct()
+            ..ProjArgData.Construct()
         },
 
         //Oversize
@@ -87,14 +101,16 @@ globalvar Dictionary<String, _ProjArgData> ProjArgDataForUI = {
             Pointer: 5,
             Internal: false,
             DefaultIsConstant: true,
-            .._ProjArgData.Construct()
+            TextForArg: "Oversize",
+            ..ProjArgData.Construct()
         },
         //Speed
         {
             Pointer: 6,
             Internal: false,
             DefaultIsConstant: true,
-            .._ProjArgData.Construct()
+            TextForArg: "Speed",
+            ..ProjArgData.Construct()
         },
         
         //Lifetime
@@ -102,7 +118,8 @@ globalvar Dictionary<String, _ProjArgData> ProjArgDataForUI = {
             Pointer: 7,
             Internal: false,
             DefaultIsConstant: true,
-            .._ProjArgData.Construct()
+            TextForArg: "Lifetime",
+            ..ProjArgData.Construct()
         },
         
         //Gravity
@@ -110,7 +127,8 @@ globalvar Dictionary<String, _ProjArgData> ProjArgDataForUI = {
             Pointer: 8,
             Internal: false,
             DefaultIsConstant: true,
-            .._ProjArgData.Construct()
+            TextForArg: "Gravity",
+            ..ProjArgData.Construct()
         },
         
         //_TimeOfCall
@@ -118,48 +136,78 @@ globalvar Dictionary<String, _ProjArgData> ProjArgDataForUI = {
             Pointer: 9,
             Internal: true,
             DefaultIsConstant: false,
-            .._ProjArgData.Construct()
+            //TextForArg: "_TimeOfCall",
+            ..ProjArgData.Construct()
         }
         
-    ]
-};
+    ];
+//};
 
-Dictionary<Button, () => void> bindings: {
-    Keys: [Button.Crouch, Button.Jump, Button.Ability2, Button.Ability1, Button.PrimaryFire, Button.SecondaryFire],
-    Values: <(() => void)[]>[
-        () => null,
-        () => null,
-        () => changeSize *= 10,
-        () => changeSize /= 10,
-        () => null,
-        () => null
+single struct ActionsForUIPress
+{
+    public Button button;
+    public String toString: InputBindingString(this.button);
+}
+ActionsForUIPress[] bindings: [
+    //Down
+    {
+        button: Button.Crouch
+    },
 
-    ],
-};
+    //Up
+    {
+        button: Button.Jump
+    },
+
+    //IncreaseChange
+    {
+        button: Button.Ability2
+    },
+
+    //DecreaseChange
+    {
+        button: Button.Ability1
+    },
+
+    //IncreaseByChange
+    {
+        button: Button.PrimaryFire
+    },
+
+    //DecreaseByChange
+    {
+        button: Button.SecondaryFire
+    }
+
+];
 playervar Boolean editingArgs;
 playervar Number changeSize = 1;
+playervar Number[] ArgIndexForUI;
 
 rule: '[BMPW] Create text showing proj args'
 //if (ProjArgDataForUI.Keys.Length)
 {
-    Player lc: LocalPlayer();
+    Player lp: LocalPlayer();
     Wait(0.5);
     CreateHudText(VisibleTo: LocalPlayer(),
-        Header: !lc.editingArgs ? $"Press {InputBindingString(Button.Crouch)} + {InputBindingString(Button.Interact)} to change args" :
-        $"Down: {bindings.Keys[0]} | Up: {bindings.Keys[1]}\nSize: {lc.changeSize} | Increase Change: {bindings.Keys[2]} | Decrease Change: {bindings.Keys[3]}\nIncrease By Change: {bindings.Keys[4]} | Decrease By Change: {bindings.Keys[5]}",
+        Header: $"Press {InputBindingString(Button.Crouch)} + {InputBindingString(Button.Interact)} to change args",
         Location: Location.Left, SortOrder: -1, Reevaluation: HudTextRev.VisibleToAndString, Spectators: Spectators.DefaultVisibility);
-    for (_waitlessIterator = 0; _waitlessIterator < ProjArgDataForUI.Keys.Length; _waitlessIterator++)
+    CreateHudText(VisibleTo: LocalPlayer(),
+        Header: !lp.editingArgs ? "" : $"Down: {bindings[0].toString} | Up: {bindings[1].toString}\nSize: {lp.changeSize} | Increase Change: {bindings[2].toString} | Decrease Change: {bindings[3].toString}\nIncrease By Change: {bindings[4].toString} | Decrease By Change: {bindings[5].toString}",
+        Location: Location.Left, SortOrder: -1, Reevaluation: HudTextRev.VisibleToAndString, Spectators: Spectators.DefaultVisibility);
+    for (_waitlessIterator = 0; _waitlessIterator < projArgDataForUI.Length; _waitlessIterator++)
     {
         Number i: _waitlessIterator;
         Number ie: EvaluateOnce(i);
-        _ProjArgData value: ProjArgDataForUI.Values[ie];
-        if (!ProjArgDataForUI.Values[i].Internal)
+        ProjArgData value: projArgDataForUI[ie];
+        if (!projArgDataForUI[i].Internal)
         {
             CreateHudText(
                 VisibleTo: LocalPlayer(),
                 //Header: $"Press {InputBindingString(Button.Crouch)} + {InputBindingString(Button.Interact)} to change args",
                 Subheader: null,
-                Text: $"{ProjArgDataForUI.Keys[ie]}: {value.DefaultIsConstant ? (value.TextForValue ? value.TextForValue : value.Arg(lc)) : value.TextForNotConstantDefault}",
+                Text: $"{value.TextForArg}: {value.DefaultIsConstant ? (value.TextForValue ? value.TextForValue : value.Arg(lp)) : value.TextForNotConstantDefault}" + 
+                (lp.ArgIndexForUI.First != value.Pointer ? "" : makeFG("fgFF0000FF", "<")),
                 Location: Location.Left,
                 SortOrder: -1,
                 //HeaderColor: ,
@@ -175,22 +223,57 @@ rule: '[BMPW] Create text showing proj args'
 
 rule: 'toggle editing args & process inputs'
 Event.OngoingPlayer
-if ((bindings.Keys.Any(v => IsButtonHeld(EventPlayer(), <Button>v)) && editingArgs) || (IsButtonHeld(EventPlayer(), Button.Crouch) && IsButtonHeld(EventPlayer(), Button.Interact)))
-{
+if ((bindings.Any(v => IsButtonHeld(EventPlayer(), v.button)) && editingArgs) || (IsButtonHeld(EventPlayer(), Button.Crouch) && IsButtonHeld(EventPlayer(), Button.Interact)))
+{   
+    //SmallMessage(HostPlayer(), "rule fired");
+    //XOR
+    Button[] buttonsHeld = bindings.Map(v => v.button).Filter(v => IsButtonHeld(EventPlayer(), v));
+    Number numberOfButtonsForTogglingEditingPressed: [Button.Crouch, Button.Interact].Filter(v => IsButtonHeld(EventPlayer(), v)).Length;
+    if (numberOfButtonsForTogglingEditingPressed == 1) {
+        //Gives player 1 second to do keystrokes for toggling editing args
+        WaitUntil(numberOfButtonsForTogglingEditingPressed != 1, 1);
+    }
+
     if (IsButtonHeld(EventPlayer(), Button.Crouch) && IsButtonHeld(EventPlayer(), Button.Interact)) {
         editingArgs = !editingArgs;
+        //toggle bindings
+            for (_waitlessIterator = 0; _waitlessIterator < bindings.Length; _waitlessIterator++) {
+        if (editingArgs) {
+            DisallowButton(EventPlayer(), bindings[_waitlessIterator].button);
+        } else {
+            AllowButton(EventPlayer(), bindings[_waitlessIterator].button);
+        }
+        }
     } else if (editingArgs) {
-        switch (bindings.Keys.Filter(v => IsButtonHeld(EventPlayer(), <Button>v)).First)
+        //SmallMessage(HostPlayer(), "switched!");
+        switch (buttonsHeld.First)
         {
-            case bindings.Keys[0]: changeSize += null; break;
-            case bindings.Keys[1]: changeSize += null; break;
-            case bindings.Keys[2]: changeSize *= 10; break;
-            case bindings.Keys[3]: changeSize /= 10; break;
-            case bindings.Keys[4]: changeSize += null; break;
-            case bindings.Keys[5]: changeSize += null; break;
+            //Down
+            case bindings[0].button:   ArgIndexForUI[0] += 1; break;
+            
+            //Up
+            case bindings[1].button:   ArgIndexForUI[0] -= 1; break;
+            
+            //IncreaseChange
+            case bindings[2].button:   changeSize *= 10;   break;
+            
+            //DecreaseChange
+            case bindings[3].button:   changeSize /= 10;   break;
+            
+            //IncreaseByChange
+            case bindings[4].button:   changeSize += null; break;
+            
+            //DecreaseByChange
+            case bindings[5].button:   changeSize += null; break;
         }
     }
 }
+
+rule: '[DEV] show values'
+{
+   _CreateDevText($"index: {LocalPlayer().ArgIndexForUI.First}");
+}
+
 
 playervar ProjectileArgs _projArgs;
 ProjectileArgs args(in Player player=EventPlayer()): ProjectileArgs.Default(player);
