@@ -200,7 +200,7 @@ ActionsForUIPress[] bindings: [
 ];
 playervar Boolean editingArgs;
 playervar Number changeSize = 1;
-playervar Number[] ArgIndexForUI;
+playervar Number[] ArgIndexForUI = [externalPointers.First];
 
 
 rule: '[BMPW] Create text showing proj args'
@@ -255,14 +255,20 @@ rule: '[BMPW] Create text showing proj args'
 }
 
 
+Number[] externalPointers: projArgDataForUI.Filter(v => !v.Internal).Map(v => v.Pointer);
+globalvar Number indexInExternalPointers = 0;
+
 rule: 'toggle editing args & process inputs'
 Event.OngoingPlayer
 if ((bindings.Any(v => IsButtonHeld(EventPlayer(), v.button)) && editingArgs) || (IsButtonHeld(EventPlayer(), Button.Crouch) && IsButtonHeld(EventPlayer(), Button.Interact)))
 {   
     //SmallMessage(HostPlayer(), "rule fired");
-    //XOR
     Button[] buttonsHeld = bindings.Map(v => v.button).Filter(v => IsButtonHeld(EventPlayer(), v));
     Number numberOfButtonsForTogglingEditingPressed: [Button.Crouch, Button.Interact].Filter(v => IsButtonHeld(EventPlayer(), v)).Length;
+
+    
+    
+    //XOR
     if (numberOfButtonsForTogglingEditingPressed == 1) {
         //Gives player 1 second to do keystrokes for toggling editing args
         WaitUntil(numberOfButtonsForTogglingEditingPressed != 1, 1);
@@ -286,14 +292,22 @@ if ((bindings.Any(v => IsButtonHeld(EventPlayer(), v.button)) && editingArgs) ||
             case bindings[0].button:   if (projArgDataForUI[ArgIndexForUI.First].UIType == UIType.Vector && ArgIndexForUI[1] < 2 && projArgDataForUI[ArgIndexForUI.First].DefaultIsConstant) {
                     ArgIndexForUI[1] += 1;
                 } else {
-                    ArgIndexForUI[0] += 1; ArgIndexForUI[1] = 0;
+                    indexInExternalPointers = (indexInExternalPointers + 1)%(externalPointers.Length);
+                    //Traverse to the next external pointer (circular)
+                    ArgIndexForUI[0] = externalPointers[indexInExternalPointers];
+                    //ArgIndexForUI[0] += 1;
+                    ArgIndexForUI[1] = 0;
                 } break;
             
             //Up
             case bindings[1].button:   if (projArgDataForUI[ArgIndexForUI.First].UIType == UIType.Vector && ArgIndexForUI[1] > 0 && projArgDataForUI[ArgIndexForUI.First].DefaultIsConstant) {
                     ArgIndexForUI[1] -= 1;
                 } else {
-                    ArgIndexForUI[0] -= 1; ArgIndexForUI[1] = 2;
+                    indexInExternalPointers = !indexInExternalPointers ? externalPointers.Length - 1 : (indexInExternalPointers - 1)%(externalPointers.Length);
+                    //Traverse to the previous external pointer (circular)
+                    ArgIndexForUI[0] = externalPointers[indexInExternalPointers];
+                    //ArgIndexForUI[0] -= 1;
+                    ArgIndexForUI[1] = 2;
                 } break;
             
             //IncreaseChange
@@ -315,6 +329,7 @@ if ((bindings.Any(v => IsButtonHeld(EventPlayer(), v.button)) && editingArgs) ||
 rule: '[DEV] show values'
 {
    _CreateDevText($"index: {LocalPlayer().ArgIndexForUI.First}.{LocalPlayer().ArgIndexForUI[1]}");
+   _CreateDevText($"index of ext. pointer: {indexInExternalPointers}");
     //    String testString: <"<0><1><2>", Vector(1, 20, 300)[0], Vector(1, 20, 300)[1], Vector(1, 20, 300)[2]>;
     //    String VectorToString(in Vector vector): <"<0>", vector>;
     //String[] VectorComponentsToString(in Vector vector): [
