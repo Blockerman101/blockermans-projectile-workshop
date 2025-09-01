@@ -808,3 +808,17 @@ disabled rule: '[DEV] log changes'
     Wait(0.1);
     LoopIfConditionIsTrue();
 }
+
+ui.del
+playervar ProjectileArgs _projArgs;
+ProjectileArgs defaultArgs: ProjectileArgs.Default();
+globalvar Player copyBot;
+rule: 'Create bot for ui output'
+{
+    CreateDummyBot(Hero.Soldier76, TeamOf(HostPlayer()), -1, Vector(0, 999, 0), null);
+    copyBot = LastCreatedEntity();
+    StartForcingPlayerPosition(copyBot, Vector(0, 999, 0), false);
+    SetStatus(copyBot, null, Status.Unkillable, 999999999999);
+    SetStatus(copyBot, null, Status.PhasedOut, 999999999999);
+    StartForcingDummyBotName(copyBot, "Copy Me!");
+}

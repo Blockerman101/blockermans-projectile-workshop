@@ -2,28 +2,41 @@ import "BMPW/structs.del";
 import "../../../Other/extraFunctions.ostw";
 import "tx.del";
 
+enum UIType
+{
+    NULL,
+    Number,
+    Vector,
+    Boolean,
+    ProjFX
+}
+
 single struct ProjArgData
 {
     //The corresponding index in ProjectileArgs
     public Number Pointer;
     //Whether this arg is used internally, or can be set by the player
     public Boolean Internal;
-
+    public UIType UIType;
     //Whether the default value for this arg is constant. ex. startPos = Eye Position is not constant, speed = 20 is
     public Boolean DefaultIsConstant;
     public String TextForArg;
     public String TextForValue;
     public String TextForNotConstantDefault;
+    //Whether this current arg is an actual member of projArg, or just another option for the UI
+    public Boolean IsArg;
     public Any Arg(in Player player=EventPlayer()): args(player)[this.Pointer];
     
 
     public static ProjArgData Construct(): {
         Pointer: null,
         Internal: true,
+        UIType: UIType.NULL,
         DefaultIsConstant: false,
         TextForArg: null,
         TextForValue: null,
-        TextForNotConstantDefault: ""
+        TextForNotConstantDefault: "",
+        IsArg: true
     };
 }
 
@@ -59,6 +72,7 @@ globalvar ProjArgData[] projArgDataForUI = [
         {
             Pointer: 1,
             Internal: false,
+            UIType: UIType.ProjFX,
             DefaultIsConstant: true,
             TextForArg: "Proj FX",
             TextForValue: $"{PFXToText(args()[1])} ({args()[1]})",
@@ -69,17 +83,17 @@ globalvar ProjArgData[] projArgDataForUI = [
         {
             Pointer: 2,
             Internal: false,
+            UIType: UIType.Vector,
             DefaultIsConstant: false,
             TextForArg: "Start Position",
             TextForNotConstantDefault: "Eye Position(EP)",
-
             ..ProjArgData.Construct()
         },
-
         //Direction
         {
             Pointer: 3,
             Internal: false,
+            UIType: UIType.Vector,
             DefaultIsConstant: false,
             TextForArg: "Direction",
             TextForNotConstantDefault: "Facing Dir(EP)",
@@ -100,6 +114,7 @@ globalvar ProjArgData[] projArgDataForUI = [
         {
             Pointer: 5,
             Internal: false,
+            UIType: UIType.Number,
             DefaultIsConstant: true,
             TextForArg: "Oversize",
             ..ProjArgData.Construct()
@@ -108,6 +123,7 @@ globalvar ProjArgData[] projArgDataForUI = [
         {
             Pointer: 6,
             Internal: false,
+            UIType: UIType.Number,
             DefaultIsConstant: true,
             TextForArg: "Speed",
             ..ProjArgData.Construct()
@@ -117,6 +133,7 @@ globalvar ProjArgData[] projArgDataForUI = [
         {
             Pointer: 7,
             Internal: false,
+            UIType: UIType.Number,
             DefaultIsConstant: true,
             TextForArg: "Lifetime",
             ..ProjArgData.Construct()
@@ -126,6 +143,7 @@ globalvar ProjArgData[] projArgDataForUI = [
         {
             Pointer: 8,
             Internal: false,
+            UIType: UIType.Vector,
             DefaultIsConstant: true,
             TextForArg: "Gravity",
             ..ProjArgData.Construct()
@@ -184,6 +202,7 @@ playervar Boolean editingArgs;
 playervar Number changeSize = 1;
 playervar Number[] ArgIndexForUI;
 
+
 rule: '[BMPW] Create text showing proj args'
 //if (ProjArgDataForUI.Keys.Length)
 {
@@ -200,14 +219,29 @@ rule: '[BMPW] Create text showing proj args'
         Number i: _waitlessIterator;
         Number ie: EvaluateOnce(i);
         ProjArgData value: projArgDataForUI[ie];
+        //Split into 3 different strings, 1 for each vector component
+        String[] valueToSplitVectorString: [<"<0>", XOf(value.Arg(lp))>, <"<0>", YOf(value.Arg(lp))>, <"<0>", ZOf(value.Arg(lp))>];
+        Any addPointer: (lp.ArgIndexForUI.First != value.Pointer || !lp.editingArgs ? "" : makeFG("fgFF0000FF", $"←±{lp.changeSize}"));
+        
         if (!projArgDataForUI[i].Internal)
         {
             CreateHudText(
                 VisibleTo: LocalPlayer(),
                 //Header: $"Press {InputBindingString(Button.Crouch)} + {InputBindingString(Button.Interact)} to change args",
                 Subheader: null,
-                Text: $"{value.TextForArg}: {value.DefaultIsConstant ? (value.TextForValue ? value.TextForValue : value.Arg(lp)) : value.TextForNotConstantDefault}" + 
-                (lp.ArgIndexForUI.First != value.Pointer ? "" : makeFG("fgFF0000FF", "<")),
+                Text:
+                    $"{value.TextForArg}: " + 
+                    ((value.UIType != UIType.Vector || (!value.DefaultIsConstant)) ? 
+                        $"{value.DefaultIsConstant ? (value.TextForValue ? value.TextForValue : value.Arg(lp)) : value.TextForNotConstantDefault}" + addPointer
+                    :
+                        "(" + valueToSplitVectorString.First + ((lp.ArgIndexForUI.First == value.Pointer && lp.ArgIndexForUI[1] == (0)) && lp.editingArgs ? makeFG("fgFF0000FF", $"←±{lp.changeSize}") : "") + 
+                        ", " + valueToSplitVectorString[1]   + ((lp.ArgIndexForUI.First == value.Pointer && lp.ArgIndexForUI[1] == (1)) && lp.editingArgs ? makeFG("fgFF0000FF", $"←±{lp.changeSize}") : "") + 
+                        ", " + valueToSplitVectorString[2]   + ((lp.ArgIndexForUI.First == value.Pointer && lp.ArgIndexForUI[1] == (2)) && lp.editingArgs ? makeFG("fgFF0000FF", $"←±{lp.changeSize}") : "") +
+                        ")"
+                    )
+                
+                ,
+
                 Location: Location.Left,
                 SortOrder: -1,
                 //HeaderColor: ,
@@ -249,10 +283,18 @@ if ((bindings.Any(v => IsButtonHeld(EventPlayer(), v.button)) && editingArgs) ||
         switch (buttonsHeld.First)
         {
             //Down
-            case bindings[0].button:   ArgIndexForUI[0] += 1; break;
+            case bindings[0].button:   if (projArgDataForUI[ArgIndexForUI.First].UIType == UIType.Vector && ArgIndexForUI[1] < 2 && projArgDataForUI[ArgIndexForUI.First].DefaultIsConstant) {
+                    ArgIndexForUI[1] += 1;
+                } else {
+                    ArgIndexForUI[0] += 1; ArgIndexForUI[1] = 0;
+                } break;
             
             //Up
-            case bindings[1].button:   ArgIndexForUI[0] -= 1; break;
+            case bindings[1].button:   if (projArgDataForUI[ArgIndexForUI.First].UIType == UIType.Vector && ArgIndexForUI[1] > 0 && projArgDataForUI[ArgIndexForUI.First].DefaultIsConstant) {
+                    ArgIndexForUI[1] -= 1;
+                } else {
+                    ArgIndexForUI[0] -= 1; ArgIndexForUI[1] = 2;
+                } break;
             
             //IncreaseChange
             case bindings[2].button:   changeSize *= 10;   break;
@@ -269,25 +311,22 @@ if ((bindings.Any(v => IsButtonHeld(EventPlayer(), v.button)) && editingArgs) ||
     }
 }
 
+
 rule: '[DEV] show values'
 {
-   _CreateDevText($"index: {LocalPlayer().ArgIndexForUI.First}");
+   _CreateDevText($"index: {LocalPlayer().ArgIndexForUI.First}.{LocalPlayer().ArgIndexForUI[1]}");
+    //    String testString: <"<0><1><2>", Vector(1, 20, 300)[0], Vector(1, 20, 300)[1], Vector(1, 20, 300)[2]>;
+    //    String VectorToString(in Vector vector): <"<0>", vector>;
+    //String[] VectorComponentsToString(in Vector vector): [
+    //    VectorToString(vector).Slice(1, VectorToString(vector).re())
+    //];
+   //CreateHudText(HostPlayer(), <"<0>", StringSplit(<"<0>", Vector(1, 20, 300)>, ", ")>, null, null, Location.Left, 1, Color.White, Color.White, Color.White, HudTextRev.VisibleToAndString, Spectators.DefaultVisibility);
+   //_CreateDevText(testString);
+   //_CreateDevText($"[0]: {split.First}, [1]: {split[1]}, [2]: {split[2]}]");
 }
 
-
-playervar ProjectileArgs _projArgs;
 ProjectileArgs args(in Player player=EventPlayer()): ProjectileArgs.Default(player);
-ProjectileArgs defaultArgs: ProjectileArgs.Default();
-globalvar Player copyBot;
-rule: 'Create bot for ui output'
-{
-    CreateDummyBot(Hero.Soldier76, TeamOf(HostPlayer()), -1, Vector(0, 999, 0), null);
-    copyBot = LastCreatedEntity();
-    StartForcingPlayerPosition(copyBot, Vector(0, 999, 0), false);
-    SetStatus(copyBot, null, Status.Unkillable, 999999999999);
-    SetStatus(copyBot, null, Status.PhasedOut, 999999999999);
-    StartForcingDummyBotName(copyBot, "Copy Me!");
-}
+
 
 private String PFXToText(in ProjFX pfx)
 {
