@@ -17,14 +17,13 @@ if (HasSpawned(HostPlayer()))
     SetKnockbackReceived(HostPlayer(), 0);
 }
 
-
-
 rule: 'Make my projectile'
 Event.OngoingPlayer
 if (EventPlayer().IsButtonHeld(Button.Interact))
 if (!EventPlayer().IsButtonHeld(Button.Crouch))
 //if (EventPlayer() == HostPlayer())
 {
+    updateNotConstants();
     //ProjectileArgs shortProj: {ProjFX: ProjFX.GenjiShuriken, Lifetime: 5, Speed: ProjectileArgs.Default().Speed, ..ProjectileArgs.Default()};
     CreateCustomProjectile(EventPlayer()._projArgs);
     //Number myID = lastProjectileID;

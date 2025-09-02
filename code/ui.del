@@ -25,7 +25,7 @@ single struct ProjArgData
     public String TextForNotConstantDefault;
     //Whether this current arg is an actual member of projArg, or just another option for the UI
     public Boolean IsArg;
-    public Any Arg(in Player player=EventPlayer()): args(player)[this.Pointer];
+    //public Any Arg(in Player player=EventPlayer()): args(player)[this.Pointer];
     //public Any Arg(in Player player=EventPlayer()): player._projArgs[this.Pointer];
     
 
@@ -46,7 +46,10 @@ single struct ProjArgData
 //    public ProjArgData[] data;
 //    //public Any Arg: ;
 //    //public Number Pointer: ;
+//    public void 
 //}
+
+
 
 //"_ProjID",
 //"Proj FX",
@@ -222,7 +225,8 @@ rule: '[BMPW] Create text showing proj args'
         Number ie: EvaluateOnce(i);
         ProjArgData value: projArgDataForUI[ie];
         //Split into 3 different strings, 1 for each vector component
-        String[] valueToSplitVectorString: [<"<0>", XOf(value.Arg(lp))>, <"<0>", YOf(value.Arg(lp))>, <"<0>", ZOf(value.Arg(lp))>];
+        
+        String[] valueToSplitVectorString: [<"<0>", XOf(args(lp)[value.Pointer])>, <"<0>", YOf(args(lp)[value.Pointer])>, <"<0>", ZOf(args(lp)[value.Pointer])>];
         Any addPointer: (lp.ArgIndexForUI.First != value.Pointer || !lp.editingArgs ? "" : makeFG("fgFF0000FF", $"←±{lp.changeSize}"));
         
         if (!projArgDataForUI[i].Internal)
@@ -234,7 +238,7 @@ rule: '[BMPW] Create text showing proj args'
                 Text:
                     $"{value.TextForArg}: " + 
                     ((value.UIType != UIType.Vector || (!value.DefaultIsConstant)) ? 
-                        $"{value.DefaultIsConstant ? (value.TextForValue ? value.TextForValue : value.Arg(lp)) : value.TextForNotConstantDefault}" + addPointer
+                        $"{value.DefaultIsConstant ? (value.TextForValue ? value.TextForValue : args(lp)[value.Pointer]) : value.TextForNotConstantDefault}" + addPointer
                     :
                         "(" + valueToSplitVectorString.First + ((lp.ArgIndexForUI.First == value.Pointer && lp.ArgIndexForUI[1] == (0)) && lp.editingArgs ? makeFG("fgFF0000FF", $"←±{lp.changeSize}") : "") + 
                         ", " + valueToSplitVectorString[1]   + ((lp.ArgIndexForUI.First == value.Pointer && lp.ArgIndexForUI[1] == (1)) && lp.editingArgs ? makeFG("fgFF0000FF", $"←±{lp.changeSize}") : "") + 
@@ -325,36 +329,39 @@ if ((bindings.Any(v => IsButtonHeld(EventPlayer(), v.button)) && editingArgs) ||
             Number incOrDec: (buttonsHeld.First == bindings[4].button ? 1 : -1);
             //IncreaseByChange || DecreaseByChange
             case bindings[4].button:
-            case bindings[5].button: switch(current.UIType) {
-                //If type -> if increase button is held, increase, else, decrease
-                case UIType.Number: EventPlayer()._projArgs[ArgIndexForUI.First] += changeSize * incOrDec; break;
+            case bindings[5].button: 
+            if (current.DefaultIsConstant) {
+                switch(current.UIType) {
+                    //If type -> if increase button is held, increase, else, decrease
+                    case UIType.Number: EventPlayer()._projArgs[ArgIndexForUI.First] += changeSize * incOrDec; break;
 
-                //Switch through the diff components
-                case UIType.Vector: {
-                    //the different indexes/components of a vector (0 = x, 1 = y, 2 = z)
-                    switch (ArgIndexForUI[1]) {
-                        case 0: EventPlayer()._projArgs[ArgIndexForUI.First] += Vector(changeSize, 0, 0) * incOrDec; break;
-                        case 1: EventPlayer()._projArgs[ArgIndexForUI.First] += Vector(0, changeSize, 0) * incOrDec; break;
-                        case 2: EventPlayer()._projArgs[ArgIndexForUI.First] += Vector(0, 0, changeSize) * incOrDec; break;
+                    //Switch through the diff components
+                    case UIType.Vector: {
+                        //the different indexes/components of a vector (0 = x, 1 = y, 2 = z)
+                        switch (ArgIndexForUI[1]) {
+                            case 0: EventPlayer()._projArgs[ArgIndexForUI.First] += Vector(changeSize, 0, 0) * incOrDec; break;
+                            case 1: EventPlayer()._projArgs[ArgIndexForUI.First] += Vector(0, changeSize, 0) * incOrDec; break;
+                            case 2: EventPlayer()._projArgs[ArgIndexForUI.First] += Vector(0, 0, changeSize) * incOrDec; break;
+                        }
                     } break;
-                } break;
 
-                //Flip booleans
-                case UIType.Boolean: EventPlayer()._projArgs[ArgIndexForUI.First] = !EventPlayer()._projArgs[ArgIndexForUI.First]; break;
+                    //Flip booleans
+                    case UIType.Boolean: EventPlayer()._projArgs[ArgIndexForUI.First] = !EventPlayer()._projArgs[ArgIndexForUI.First]; break;
 
-                //Special type, for the ProjFX arg. From index 0 through 19, then loop back to 0
-                case UIType.ProjFX:
-                    //circular adding
-                    if (buttonsHeld.First == bindings[4].button) {
-                        
-                        EventPlayer()._projArgs[ArgIndexForUI.First] = (EventPlayer()._projArgs[ArgIndexForUI.First] + 1)%countOfProjFX;
-                    }
-                    //circular subtracting
-                    else {
-                        EventPlayer()._projArgs[ArgIndexForUI.First] -= 1;
-                        if (EventPlayer()._projArgs[ArgIndexForUI.First] < 0) {EventPlayer()._projArgs[ArgIndexForUI.First] = countOfProjFX - 1 - EventPlayer()._projArgs[ArgIndexForUI.First];}
-                    }
-                    break;
+                    //Special type, for the ProjFX arg. From index 0 through 19, then loop back to 0
+                    case UIType.ProjFX:
+                        //circular adding
+                        if (buttonsHeld.First == bindings[4].button) {
+                            
+                            EventPlayer()._projArgs[ArgIndexForUI.First] = (EventPlayer()._projArgs[ArgIndexForUI.First] + 1)%countOfProjFX;
+                        }
+                        //circular subtracting
+                        else {
+                            EventPlayer()._projArgs[ArgIndexForUI.First] -= 1;
+                            if (EventPlayer()._projArgs[ArgIndexForUI.First] < 0) {EventPlayer()._projArgs[ArgIndexForUI.First] = countOfProjFX - 1 - EventPlayer()._projArgs[ArgIndexForUI.First];}
+                        }
+                        break;
+                }
             } break;
             
             //DecreaseByChange
@@ -377,6 +384,15 @@ rule: '[DEV] show values'
    //_CreateDevText(testString);
    //_CreateDevText($"[0]: {split.First}, [1]: {split[1]}, [2]: {split[2]}]");
 }
+//ProjectileArgs args(in Player player=EventPlayer()): ProjectileArgs.Default(player);
 ProjectileArgs args(in Player player=EventPlayer()): ProjectileArgs.Default(player);
-//ProjectileArgs args(in Player player=EventPlayer()): player._projArgs;
 playervar ProjectileArgs _projArgs = ProjectileArgs.Default();
+
+void updateNotConstants(in Player player=EventPlayer()) {
+  for (_waitlessIterator = 0; _waitlessIterator < CountOf(player._projArgs); _waitlessIterator++)
+  {
+    if (!projArgDataForUI[_waitlessIterator].DefaultIsConstant) {
+        player._projArgs[_waitlessIterator] = ProjectileArgs.Default()[_waitlessIterator];
+    }
+  }   
+}
