@@ -22,7 +22,7 @@ single struct ProjArgData
     //Whether the default value for this arg is constant. ex. startPos = Eye Position is not constant, speed = 20 is
     public Boolean DefaultIsConstant;
     public String TextForArg;
-    public Player => String TextForValue;
+    public String TextForValue;
     public String TextForNotConstantDefault;
     //Whether this current arg is an actual member of projArg, or just another option for the UI
     public Boolean IsArg;
@@ -75,7 +75,8 @@ void updateNotConstants(in Player player=EventPlayer()) {
   }   
 }
 
-globalvar ProjArgData[] projArgDataForUI = [
+//Should be playervar because of things involving TextForValue
+playervar ProjArgData[] projArgDataForUI = [
     //data: [
         //_ProjID
         {
@@ -95,7 +96,7 @@ globalvar ProjArgData[] projArgDataForUI = [
             DefaultIsConstant: true,
             TextForArg: "Proj FX",
             //THE TROUBLEMAKER
-            //TextForValue: p => <"<0> (<1>)", PFXToText(p._projArgs.ProjFX), p._projArgs.ProjFX>,
+            TextForValue: <"<0> (<1>)", PFXToText(_projArgs.ProjFX), _projArgs.ProjFX>,
             //TextForValue: $"{_mytestvar.MyField}",
             ..ProjArgData.Construct()
         },
@@ -225,10 +226,11 @@ playervar Number[] ArgIndexForUI = [externalPointers.First];
 
 
 rule: '[BMPW] Create text showing proj args'
-//if (ProjArgDataForUI.Keys.Length)
+if (AllPlayers())
+if (AllPlayers().First.projArgDataForUI.Length)
 {
     Player lp: LocalPlayer();
-    Wait(0.5);
+    Wait(4);
     CreateHudText(VisibleTo: LocalPlayer(),
         Header: $"Press {makeFG('fg55FF55FF', InputBindingString(Button.Interact))} to fire projectile!\nPress {InputBindingString(Button.Crouch)} + {InputBindingString(Button.Interact)} to start/stop changing args",
         Location: Location.Left, SortOrder: -1, Reevaluation: HudTextRev.VisibleToAndString, Spectators: Spectators.DefaultVisibility);
@@ -236,17 +238,17 @@ rule: '[BMPW] Create text showing proj args'
     CreateHudText(VisibleTo: LocalPlayer(),
         Header: !lp.editingArgs ? "" : $"Down: {makeFG(colorForBindings, bindings[0].toString)} | Up: {makeFG(colorForBindings, bindings[1].toString)}\nIncrease Change: {makeFG(colorForBindings, bindings[2].toString)} | Decrease Change: {makeFG(colorForBindings, bindings[3].toString)}\nIncrease By Change: {makeFG(colorForBindings, bindings[4].toString)} | Decrease By Change: {makeFG(colorForBindings, bindings[5].toString)}",
         Location: Location.Left, SortOrder: -1, Reevaluation: HudTextRev.VisibleToAndString, Spectators: Spectators.DefaultVisibility);
-    for (_waitlessIterator = 0; _waitlessIterator < projArgDataForUI.Length; _waitlessIterator++)
+    for (_waitlessIterator = 0; _waitlessIterator < AllPlayers().First.projArgDataForUI.Length; _waitlessIterator++)
     {
         Number i: _waitlessIterator;
         Number ie: EvaluateOnce(i);
-        ProjArgData value: projArgDataForUI[ie];
+        ProjArgData value: lp.projArgDataForUI[ie];
         //Split into 3 different strings, 1 for each vector component
         
         String[] valueToSplitVectorString: [<"<0>", XOf(args(lp)[value.Pointer])>, <"<0>", YOf(args(lp)[value.Pointer])>, <"<0>", ZOf(args(lp)[value.Pointer])>];
         Any addPointer: (lp.ArgIndexForUI.First != value.Pointer || !lp.editingArgs ? "" : makeFG("fgFF0000FF", $"←±{lp.changeSize}"));
         
-        if (!projArgDataForUI[i].Internal)
+        if (!AllPlayers().First.projArgDataForUI[i].Internal)
         {
             CreateHudText(
                 VisibleTo: LocalPlayer(),
@@ -255,7 +257,7 @@ rule: '[BMPW] Create text showing proj args'
                 Text:
                     $"{value.TextForArg}: " + 
                     ((value.UIType != UIType.Vector || (!value.DefaultIsConstant)) ? 
-                        $"{value.DefaultIsConstant ? (value.TextForValue ? value.TextForValue(lp) : args(lp)[value.Pointer]) : value.TextForNotConstantDefault}" + addPointer
+                        $"{value.DefaultIsConstant ? (value.TextForValue ? value.TextForValue : args(lp)[value.Pointer]) : value.TextForNotConstantDefault}" + addPointer
                     :
                         "(" + valueToSplitVectorString.First + ((lp.ArgIndexForUI.First == value.Pointer && lp.ArgIndexForUI[1] == (0)) && lp.editingArgs ? makeFG("fgFF0000FF", $"←±{lp.changeSize}") : "") + 
                         ", " + valueToSplitVectorString[1]   + ((lp.ArgIndexForUI.First == value.Pointer && lp.ArgIndexForUI[1] == (1)) && lp.editingArgs ? makeFG("fgFF0000FF", $"←±{lp.changeSize}") : "") + 
