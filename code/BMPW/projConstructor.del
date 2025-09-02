@@ -187,29 +187,3 @@ if (projConstructor.Length > 0)
 }
 
 
-void CastPFX(in ProjFX pfx, const ProjectileType => void cast)
-{
-    switch (pfx)
-    {
-        case ProjFX.BaptisteBioticLauncher:         cast(ProjectileType.BaptisteBioticLauncher);        break;
-        case ProjFX.BastionA36TacticalGrenade:      cast(ProjectileType.BastionA36TacticalGrenade);     break;
-        case ProjFX.EchoStickyBomb:                 cast(ProjectileType.EchoStickyBomb);                break;
-        case ProjFX.GenjiShuriken:                  cast(ProjectileType.GenjiShuriken);                 break;
-        case ProjFX.LucioSonicAmplifier:            cast(ProjectileType.LucioSonicAmplifier);           break;
-        case ProjFX.MeiIcicle:                      cast(ProjectileType.MeiIcicle);                     break;
-        case ProjFX.MercyCaduceusBlaster:           cast(ProjectileType.MercyCaduceusBlaster);          break;
-        case ProjFX.MoiraDamageOrb:                 cast(ProjectileType.MoiraDamageOrb);                break;
-        case ProjFX.MoiraHealOrb:                   cast(ProjectileType.MoiraHealOrb);                  break;
-        case ProjFX.OrbProjectile:                  cast(ProjectileType.OrbProjectile);                 break;
-        case ProjFX.OrisaFusionDriver:              cast(ProjectileType.OrisaFusionDriver);             break;
-        case ProjFX.PharahRocket:                   cast(ProjectileType.PharahRocket);                  break;
-        case ProjFX.RamattraRavenousVortexSphere:   cast(ProjectileType.RamattraRavenousVortexSphere);  break;
-        case ProjFX.ReinhardtFireStrike:            cast(ProjectileType.ReinhardtFireStrike);           break;
-        case ProjFX.RoadhogScrap:                   cast(ProjectileType.RoadhogScrap);                  break;
-        case ProjFX.RoadhogScrapBall:               cast(ProjectileType.RoadhogScrapBall);              break;
-        case ProjFX.SigmaHypersphere:               cast(ProjectileType.SigmaHypersphere);              break;
-        case ProjFX.SymmetraPhotonProjector:        cast(ProjectileType.SymmetraPhotonProjector);       break;
-        case ProjFX.ZaryaGraviton:                  cast(ProjectileType.ZaryaGraviton);                 break;
-        case ProjFX.ZaryaParticleCannon:            cast(ProjectileType.ZaryaParticleCannon);           break;
-    }
-}

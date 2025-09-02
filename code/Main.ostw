@@ -26,7 +26,7 @@ if (!EventPlayer().IsButtonHeld(Button.Crouch))
 //if (EventPlayer() == HostPlayer())
 {
     //ProjectileArgs shortProj: {ProjFX: ProjFX.GenjiShuriken, Lifetime: 5, Speed: ProjectileArgs.Default().Speed, ..ProjectileArgs.Default()};
-    CreateCustomProjectile(args());
+    CreateCustomProjectile(EventPlayer()._projArgs);
     //Number myID = lastProjectileID;
     Wait(0.25, WaitBehavior.AbortWhenFalse);
     LoopIfConditionIsTrue();

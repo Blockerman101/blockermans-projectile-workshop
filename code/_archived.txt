@@ -822,3 +822,6 @@ rule: 'Create bot for ui output'
     SetStatus(copyBot, null, Status.PhasedOut, 999999999999);
     StartForcingDummyBotName(copyBot, "Copy Me!");
 }
+
+in ui.del, before increase change
+'Size: {lp.changeSize} | '

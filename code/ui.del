@@ -26,6 +26,7 @@ single struct ProjArgData
     //Whether this current arg is an actual member of projArg, or just another option for the UI
     public Boolean IsArg;
     public Any Arg(in Player player=EventPlayer()): args(player)[this.Pointer];
+    //public Any Arg(in Player player=EventPlayer()): player._projArgs[this.Pointer];
     
 
     public static ProjArgData Construct(): {
@@ -40,12 +41,12 @@ single struct ProjArgData
     };
 }
 
-struct ProjArgDataForUI
-{
-    public ProjArgData[] data;
-    //public Any Arg: ;
-    //public Number Pointer: ;
-}
+//struct ProjArgDataForUI
+//{
+//    public ProjArgData[] data;
+//    //public Any Arg: ;
+//    //public Number Pointer: ;
+//}
 
 //"_ProjID",
 //"Proj FX",
@@ -209,10 +210,11 @@ rule: '[BMPW] Create text showing proj args'
     Player lp: LocalPlayer();
     Wait(0.5);
     CreateHudText(VisibleTo: LocalPlayer(),
-        Header: $"Press {InputBindingString(Button.Crouch)} + {InputBindingString(Button.Interact)} to change args",
+        Header: $"Press {InputBindingString(Button.Crouch)} + {InputBindingString(Button.Interact)} to start/stop changing args",
         Location: Location.Left, SortOrder: -1, Reevaluation: HudTextRev.VisibleToAndString, Spectators: Spectators.DefaultVisibility);
+    String colorForBindings: 'fg7777FFFF';
     CreateHudText(VisibleTo: LocalPlayer(),
-        Header: !lp.editingArgs ? "" : $"Down: {bindings[0].toString} | Up: {bindings[1].toString}\nSize: {lp.changeSize} | Increase Change: {bindings[2].toString} | Decrease Change: {bindings[3].toString}\nIncrease By Change: {bindings[4].toString} | Decrease By Change: {bindings[5].toString}",
+        Header: !lp.editingArgs ? "" : $"Down: {makeFG(colorForBindings, bindings[0].toString)} | Up: {makeFG(colorForBindings, bindings[1].toString)}\nIncrease Change: {makeFG(colorForBindings, bindings[2].toString)} | Decrease Change: {makeFG(colorForBindings, bindings[3].toString)}\nIncrease By Change: {makeFG(colorForBindings, bindings[4].toString)} | Decrease By Change: {makeFG(colorForBindings, bindings[5].toString)}",
         Location: Location.Left, SortOrder: -1, Reevaluation: HudTextRev.VisibleToAndString, Spectators: Spectators.DefaultVisibility);
     for (_waitlessIterator = 0; _waitlessIterator < projArgDataForUI.Length; _waitlessIterator++)
     {
@@ -256,7 +258,7 @@ rule: '[BMPW] Create text showing proj args'
 
 
 Number[] externalPointers: projArgDataForUI.Filter(v => !v.Internal).Map(v => v.Pointer);
-globalvar Number indexInExternalPointers = 0;
+playervar Number indexInExternalPointers = 0;
 
 rule: 'toggle editing args & process inputs'
 Event.OngoingPlayer
@@ -286,6 +288,10 @@ if ((bindings.Any(v => IsButtonHeld(EventPlayer(), v.button)) && editingArgs) ||
         }
     } else if (editingArgs) {
         //SmallMessage(HostPlayer(), "switched!");
+
+        //The currently selected arg
+        ProjArgData current: projArgDataForUI[ArgIndexForUI.First];
+
         switch (buttonsHeld.First)
         {
             //Down
@@ -316,11 +322,43 @@ if ((bindings.Any(v => IsButtonHeld(EventPlayer(), v.button)) && editingArgs) ||
             //DecreaseChange
             case bindings[3].button:   changeSize /= 10;   break;
             
-            //IncreaseByChange
-            case bindings[4].button:   changeSize += null; break;
+            Number incOrDec: (buttonsHeld.First == bindings[4].button ? 1 : -1);
+            //IncreaseByChange || DecreaseByChange
+            case bindings[4].button:
+            case bindings[5].button: switch(current.UIType) {
+                //If type -> if increase button is held, increase, else, decrease
+                case UIType.Number: EventPlayer()._projArgs[ArgIndexForUI.First] += changeSize * incOrDec; break;
+
+                //Switch through the diff components
+                case UIType.Vector: {
+                    //the different indexes/components of a vector (0 = x, 1 = y, 2 = z)
+                    switch (ArgIndexForUI[1]) {
+                        case 0: EventPlayer()._projArgs[ArgIndexForUI.First] += Vector(changeSize, 0, 0) * incOrDec; break;
+                        case 1: EventPlayer()._projArgs[ArgIndexForUI.First] += Vector(0, changeSize, 0) * incOrDec; break;
+                        case 2: EventPlayer()._projArgs[ArgIndexForUI.First] += Vector(0, 0, changeSize) * incOrDec; break;
+                    } break;
+                } break;
+
+                //Flip booleans
+                case UIType.Boolean: EventPlayer()._projArgs[ArgIndexForUI.First] = !EventPlayer()._projArgs[ArgIndexForUI.First]; break;
+
+                //Special type, for the ProjFX arg. From index 0 through 19, then loop back to 0
+                case UIType.ProjFX:
+                    //circular adding
+                    if (buttonsHeld.First == bindings[4].button) {
+                        
+                        EventPlayer()._projArgs[ArgIndexForUI.First] = (EventPlayer()._projArgs[ArgIndexForUI.First] + 1)%countOfProjFX;
+                    }
+                    //circular subtracting
+                    else {
+                        EventPlayer()._projArgs[ArgIndexForUI.First] -= 1;
+                        if (EventPlayer()._projArgs[ArgIndexForUI.First] < 0) {EventPlayer()._projArgs[ArgIndexForUI.First] = countOfProjFX - 1 - EventPlayer()._projArgs[ArgIndexForUI.First];}
+                    }
+                    break;
+            } break;
             
             //DecreaseByChange
-            case bindings[5].button:   changeSize += null; break;
+            //case bindings[5].button:   changeSize += null; break;
         }
     }
 }
@@ -329,7 +367,7 @@ if ((bindings.Any(v => IsButtonHeld(EventPlayer(), v.button)) && editingArgs) ||
 rule: '[DEV] show values'
 {
    _CreateDevText($"index: {LocalPlayer().ArgIndexForUI.First}.{LocalPlayer().ArgIndexForUI[1]}");
-   _CreateDevText($"index of ext. pointer: {indexInExternalPointers}");
+   _CreateDevText($"index of ext. pointer: {LocalPlayer().indexInExternalPointers}");
     //    String testString: <"<0><1><2>", Vector(1, 20, 300)[0], Vector(1, 20, 300)[1], Vector(1, 20, 300)[2]>;
     //    String VectorToString(in Vector vector): <"<0>", vector>;
     //String[] VectorComponentsToString(in Vector vector): [
@@ -339,33 +377,6 @@ rule: '[DEV] show values'
    //_CreateDevText(testString);
    //_CreateDevText($"[0]: {split.First}, [1]: {split[1]}, [2]: {split[2]}]");
 }
-
 ProjectileArgs args(in Player player=EventPlayer()): ProjectileArgs.Default(player);
-
-
-private String PFXToText(in ProjFX pfx)
-{
-    switch (pfx)
-    {
-        case ProjFX.BaptisteBioticLauncher:         return("Baptiste Biotic Launcher");         break;
-        case ProjFX.BastionA36TacticalGrenade:      return("Bastion A36 Tactical Grenade");     break;
-        case ProjFX.EchoStickyBomb:                 return("Echo Sticky Bomb");                 break;
-        case ProjFX.GenjiShuriken:                  return("Genji Shuriken");                   break;
-        case ProjFX.LucioSonicAmplifier:            return("Lucio Sonic Amplifier");            break;
-        case ProjFX.MeiIcicle:                      return("Mei Icicle");                       break;
-        case ProjFX.MercyCaduceusBlaster:           return("Mercy Caduceus Blaster");           break;
-        case ProjFX.MoiraDamageOrb:                 return("Moira Damage Orb");                 break;
-        case ProjFX.MoiraHealOrb:                   return("Moira Heal Orb");                   break;
-        case ProjFX.OrbProjectile:                  return("Orb Projectile");                   break;
-        case ProjFX.OrisaFusionDriver:              return("Orisa Fusion Driver");              break;
-        case ProjFX.PharahRocket:                   return("Pharah Rocket");                    break;
-        case ProjFX.RamattraRavenousVortexSphere:   return("Ramattra Ravenous Vortex Sphere");  break;
-        case ProjFX.ReinhardtFireStrike:            return("Reinhardt Fire Strike");            break;
-        case ProjFX.RoadhogScrap:                   return("Roadhog Scrap");                    break;
-        case ProjFX.RoadhogScrapBall:               return("Roadhog Scrap Ball");               break;
-        case ProjFX.SigmaHypersphere:               return("Sigma Hypersphere");                break;
-        case ProjFX.SymmetraPhotonProjector:        return("Symmetra Photon Projector");        break;
-        case ProjFX.ZaryaGraviton:                  return("Zarya Graviton");                   break;
-        case ProjFX.ZaryaParticleCannon:            return("Zarya Particle Cannon");            break;
-    }
-}
+//ProjectileArgs args(in Player player=EventPlayer()): player._projArgs;
+playervar ProjectileArgs _projArgs = ProjectileArgs.Default();
