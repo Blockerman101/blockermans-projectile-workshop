@@ -5,7 +5,7 @@ import "BMPW/complexProcessing.del";
 import "BMPW/projConstructor.del";
 import "BMPW/projDestructor.del";
 import "BMPW/structs.del";
-import "_flight.del";
+//import "_flight.del";
 //import "_dev.del";
 import "ui.del";
 

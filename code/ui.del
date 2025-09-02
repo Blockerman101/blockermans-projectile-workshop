@@ -1,6 +1,7 @@
 import "BMPW/structs.del";
 import "../../../Other/extraFunctions.ostw";
 import "tx.del";
+//import "mynewfile.del";
 
 enum UIType
 {
@@ -21,7 +22,7 @@ single struct ProjArgData
     //Whether the default value for this arg is constant. ex. startPos = Eye Position is not constant, speed = 20 is
     public Boolean DefaultIsConstant;
     public String TextForArg;
-    public String TextForValue;
+    public Player => String TextForValue;
     public String TextForNotConstantDefault;
     //Whether this current arg is an actual member of projArg, or just another option for the UI
     public Boolean IsArg;
@@ -62,7 +63,18 @@ single struct ProjArgData
 //"Gravity",
 //"_TimeOfCall",
 
-String stringOne: <"<0> (<1>)", PFXToText(LocalPlayer()._projArgs.ProjFX), LocalPlayer()._projArgs.ProjFX>;
+ProjectileArgs args(in Player player=EventPlayer()): player._projArgs;
+playervar ProjectileArgs _projArgs = ProjectileArgs.Default();
+
+void updateNotConstants(in Player player=EventPlayer()) {
+  for (_waitlessIterator = 0; _waitlessIterator < CountOf(player._projArgs); _waitlessIterator++)
+  {
+    if (!projArgDataForUI[_waitlessIterator].DefaultIsConstant) {
+        player._projArgs[_waitlessIterator] = ProjectileArgs.Default()[_waitlessIterator];
+    }
+  }   
+}
+
 globalvar ProjArgData[] projArgDataForUI = [
     //data: [
         //_ProjID
@@ -83,7 +95,8 @@ globalvar ProjArgData[] projArgDataForUI = [
             DefaultIsConstant: true,
             TextForArg: "Proj FX",
             //THE TROUBLEMAKER
-            TextForValue: '',
+            //TextForValue: p => <"<0> (<1>)", PFXToText(p._projArgs.ProjFX), p._projArgs.ProjFX>,
+            //TextForValue: $"{_mytestvar.MyField}",
             ..ProjArgData.Construct()
         },
 
@@ -217,7 +230,7 @@ rule: '[BMPW] Create text showing proj args'
     Player lp: LocalPlayer();
     Wait(0.5);
     CreateHudText(VisibleTo: LocalPlayer(),
-        Header: $"Press {InputBindingString(Button.Crouch)} + {InputBindingString(Button.Interact)} to start/stop changing args",
+        Header: $"Press {makeFG('fg55FF55FF', InputBindingString(Button.Interact))} to fire projectile!\nPress {InputBindingString(Button.Crouch)} + {InputBindingString(Button.Interact)} to start/stop changing args",
         Location: Location.Left, SortOrder: -1, Reevaluation: HudTextRev.VisibleToAndString, Spectators: Spectators.DefaultVisibility);
     String colorForBindings: 'fg7777FFFF';
     CreateHudText(VisibleTo: LocalPlayer(),
@@ -242,7 +255,7 @@ rule: '[BMPW] Create text showing proj args'
                 Text:
                     $"{value.TextForArg}: " + 
                     ((value.UIType != UIType.Vector || (!value.DefaultIsConstant)) ? 
-                        $"{value.DefaultIsConstant ? (value.TextForValue ? value.TextForValue : args(lp)[value.Pointer]) : value.TextForNotConstantDefault}" + addPointer
+                        $"{value.DefaultIsConstant ? (value.TextForValue ? value.TextForValue(lp) : args(lp)[value.Pointer]) : value.TextForNotConstantDefault}" + addPointer
                     :
                         "(" + valueToSplitVectorString.First + ((lp.ArgIndexForUI.First == value.Pointer && lp.ArgIndexForUI[1] == (0)) && lp.editingArgs ? makeFG("fgFF0000FF", $"←±{lp.changeSize}") : "") + 
                         ", " + valueToSplitVectorString[1]   + ((lp.ArgIndexForUI.First == value.Pointer && lp.ArgIndexForUI[1] == (1)) && lp.editingArgs ? makeFG("fgFF0000FF", $"←±{lp.changeSize}") : "") + 
@@ -389,14 +402,3 @@ rule: '[DEV] show values'
    //_CreateDevText($"[0]: {split.First}, [1]: {split[1]}, [2]: {split[2]}]");
 }
 //ProjectileArgs args(in Player player=EventPlayer()): ProjectileArgs.Default(player);
-ProjectileArgs args(in Player player=EventPlayer()): player._projArgs;
-playervar ProjectileArgs _projArgs = ProjectileArgs.Default();
-
-void updateNotConstants(in Player player=EventPlayer()) {
-  for (_waitlessIterator = 0; _waitlessIterator < CountOf(player._projArgs); _waitlessIterator++)
-  {
-    if (!projArgDataForUI[_waitlessIterator].DefaultIsConstant) {
-        player._projArgs[_waitlessIterator] = ProjectileArgs.Default()[_waitlessIterator];
-    }
-  }   
-}
