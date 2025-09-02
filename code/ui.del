@@ -26,7 +26,7 @@ single struct ProjArgData
     //Whether this current arg is an actual member of projArg, or just another option for the UI
     public Boolean IsArg;
     //public Any Arg(in Player player=EventPlayer()): args(player)[this.Pointer];
-    //public Any Arg(in Player player=EventPlayer()): player._projArgs[this.Pointer];
+    public Any Arg(in Player player=EventPlayer()): player._projArgs[this.Pointer];
     
 
     public static ProjArgData Construct(): {
@@ -61,6 +61,8 @@ single struct ProjArgData
 //"Lifetime",
 //"Gravity",
 //"_TimeOfCall",
+
+String stringOne: <"<0> (<1>)", PFXToText(LocalPlayer()._projArgs.ProjFX), LocalPlayer()._projArgs.ProjFX>;
 globalvar ProjArgData[] projArgDataForUI = [
     //data: [
         //_ProjID
@@ -72,6 +74,7 @@ globalvar ProjArgData[] projArgDataForUI = [
             ..ProjArgData.Construct()
         },
 
+
         //ProjFX
         {
             Pointer: 1,
@@ -79,7 +82,8 @@ globalvar ProjArgData[] projArgDataForUI = [
             UIType: UIType.ProjFX,
             DefaultIsConstant: true,
             TextForArg: "Proj FX",
-            TextForValue: $"{PFXToText(args()[1])} ({args()[1]})",
+            //THE TROUBLEMAKER
+            TextForValue: '',
             ..ProjArgData.Construct()
         },
 
@@ -373,8 +377,8 @@ if ((bindings.Any(v => IsButtonHeld(EventPlayer(), v.button)) && editingArgs) ||
 
 rule: '[DEV] show values'
 {
-   _CreateDevText($"index: {LocalPlayer().ArgIndexForUI.First}.{LocalPlayer().ArgIndexForUI[1]}");
-   _CreateDevText($"index of ext. pointer: {LocalPlayer().indexInExternalPointers}");
+   //_CreateDevText($"index: {LocalPlayer().ArgIndexForUI.First}.{LocalPlayer().ArgIndexForUI[1]}");
+   //_CreateDevText($"index of ext. pointer: {LocalPlayer().indexInExternalPointers}");
     //    String testString: <"<0><1><2>", Vector(1, 20, 300)[0], Vector(1, 20, 300)[1], Vector(1, 20, 300)[2]>;
     //    String VectorToString(in Vector vector): <"<0>", vector>;
     //String[] VectorComponentsToString(in Vector vector): [
@@ -385,7 +389,7 @@ rule: '[DEV] show values'
    //_CreateDevText($"[0]: {split.First}, [1]: {split[1]}, [2]: {split[2]}]");
 }
 //ProjectileArgs args(in Player player=EventPlayer()): ProjectileArgs.Default(player);
-ProjectileArgs args(in Player player=EventPlayer()): ProjectileArgs.Default(player);
+ProjectileArgs args(in Player player=EventPlayer()): player._projArgs;
 playervar ProjectileArgs _projArgs = ProjectileArgs.Default();
 
 void updateNotConstants(in Player player=EventPlayer()) {
