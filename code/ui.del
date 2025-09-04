@@ -23,8 +23,11 @@ single struct ProjArgData
     public Boolean DefaultIsConstant;
     public String TextForArg; //Never changes
     //public String TextForValue(ref ProjectileArgs projArgs, ProjectileArgs => String str) {return str.Invoke(projArgs);}
-    public String TextForValue; //Changes
-    public ref void UpdateTextForValue(in String string) {TextForValue = string;}
+    //public String TextForValue; //Changes
+    //public ref void UpdateTextForValue(in String string) {TextForValue = string;}
+    public String TextForValue;
+    public () => String TextForUpdatingTextForValue;
+    public ref void UpdateTextForValue() {TextForValue = TextForUpdatingTextForValue.Invoke();}
     public String TextForNotConstantDefault;
     //Whether this current arg is an actual member of projArg, or just another option for the UI
     public Boolean IsArg;
@@ -39,6 +42,7 @@ single struct ProjArgData
         DefaultIsConstant: false,
         TextForArg: null,
         TextForValue: null,
+        TextForUpdatingTextForValue: null,
         TextForNotConstantDefault: "",
         IsArg: true
     };
@@ -68,13 +72,6 @@ single struct ProjArgData
 ProjectileArgs args: HostPlayer()._projArgs;
 Player hp: HostPlayer();
 playervar ProjectileArgs _projArgs = ProjectileArgs.Default();
-void updateUIText(ref ProjectileArgs args) {
-  for (_waitlessIterator = 0; _waitlessIterator < projArgDataForUI.Length; _waitlessIterator++)
-  {
-    ProjArgData current: projArgDataForUI[_waitlessIterator];
-    //projArgDataForUI[_waitlessIterator] = {TextForValue: (x => ), ..current};
-  }   
-}
 
 void updateNotConstants(in Player player=HostPlayer()) {
   for (_waitlessIterator = 0; _waitlessIterator < CountOf(player._projArgs); _waitlessIterator++)
@@ -107,7 +104,8 @@ globalvar ProjArgData[] projArgDataForUI = [
             TextForArg: "Proj FX",
             //THE TROUBLEMAKER
             //TextForValue: () => <"<0> (<1>)", PFXToText(args.ProjFX), args.ProjFX>,
-            TextForValue: <'<0> (<1>)', PFXToText(args.ProjFX), args.ProjFX>,
+            //TextForValue: ,
+            TextForUpdatingTextForValue: () => <'<0> (<1>)', PFXToText(args.ProjFX), args.ProjFX>,
             //TextForValue: "Initial",
             ..ProjArgData.Construct()
         },
@@ -255,8 +253,9 @@ if (projArgDataForUI.Length)
         ProjArgData value: projArgDataForUI[ie];
 
         //Update initial
-        if (projArgDataForUI[i].TextForValue) {
-            projArgDataForUI[i].UpdateTextForValue(<'<0> (<1>)', PFXToText(args.ProjFX), args.ProjFX>);
+        if (!projArgDataForUI[i].TextForValue) {
+            LogToInspector("Updated");
+            projArgDataForUI[i].UpdateTextForValue();
         }
         //Split into 3 different strings, 1 for each vector component
         
@@ -394,8 +393,8 @@ if ((bindings.Any(v => IsButtonHeld(EventPlayer(), v.button)) && editingArgs) ||
                             EventPlayer()._projArgs[ArgIndexForUI.First] -= 1;
                             if (EventPlayer()._projArgs[ArgIndexForUI.First] < 0) {EventPlayer()._projArgs[ArgIndexForUI.First] = countOfProjFX - 1 - EventPlayer()._projArgs[ArgIndexForUI.First];}
                         }
-                        projArgDataForUI[ArgIndexForUI.First].UpdateTextForValue(<'<0> (<1>)', PFXToText(args.ProjFX), args.ProjFX>);
-                        //projArgDataForUI[ArgIndexForUI.First].UpdateTextForValue("changed");
+                        //projArgDataForUI[ArgIndexForUI.First].UpdateTextForValue(<'<0> (<1>)', PFXToText(args.ProjFX), args.ProjFX>);
+                        projArgDataForUI[ArgIndexForUI.First].UpdateTextForValue();
                         break;
                 }
             } break;

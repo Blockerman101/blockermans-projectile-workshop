@@ -825,3 +825,12 @@ rule: 'Create bot for ui output'
 
 in ui.del, before increase change
 'Size: {lp.changeSize} | '
+
+ui.del
+void updateUIText(ref ProjArgData data) {
+  //for (_waitlessIterator = 0; _waitlessIterator < projArgDataForUI.Length; _waitlessIterator++)
+  //{
+    //projArgDataForUI[_waitlessIterator] = {TextForValue: (x => ), ..current};
+    data.TextForValue = data.test.Invoke();
+  //}   
+}
