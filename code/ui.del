@@ -21,8 +21,10 @@ single struct ProjArgData
     public UIType UIType;
     //Whether the default value for this arg is constant. ex. startPos = Eye Position is not constant, speed = 20 is
     public Boolean DefaultIsConstant;
-    public String TextForArg;
-    public String TextForValue;
+    public String TextForArg; //Never changes
+    //public String TextForValue(ref ProjectileArgs projArgs, ProjectileArgs => String str) {return str.Invoke(projArgs);}
+    public String TextForValue; //Changes
+    public ref void UpdateTextForValue(in String string) {TextForValue = string;}
     public String TextForNotConstantDefault;
     //Whether this current arg is an actual member of projArg, or just another option for the UI
     public Boolean IsArg;
@@ -63,10 +65,18 @@ single struct ProjArgData
 //"Gravity",
 //"_TimeOfCall",
 
-ProjectileArgs args(in Player player=EventPlayer()): player._projArgs;
+ProjectileArgs args: HostPlayer()._projArgs;
+Player hp: HostPlayer();
 playervar ProjectileArgs _projArgs = ProjectileArgs.Default();
+void updateUIText(ref ProjectileArgs args) {
+  for (_waitlessIterator = 0; _waitlessIterator < projArgDataForUI.Length; _waitlessIterator++)
+  {
+    ProjArgData current: projArgDataForUI[_waitlessIterator];
+    //projArgDataForUI[_waitlessIterator] = {TextForValue: (x => ), ..current};
+  }   
+}
 
-void updateNotConstants(in Player player=EventPlayer()) {
+void updateNotConstants(in Player player=HostPlayer()) {
   for (_waitlessIterator = 0; _waitlessIterator < CountOf(player._projArgs); _waitlessIterator++)
   {
     if (!projArgDataForUI[_waitlessIterator].DefaultIsConstant) {
@@ -76,7 +86,7 @@ void updateNotConstants(in Player player=EventPlayer()) {
 }
 
 //Should be playervar because of things involving TextForValue
-playervar ProjArgData[] projArgDataForUI = [
+globalvar ProjArgData[] projArgDataForUI = [
     //data: [
         //_ProjID
         {
@@ -96,8 +106,9 @@ playervar ProjArgData[] projArgDataForUI = [
             DefaultIsConstant: true,
             TextForArg: "Proj FX",
             //THE TROUBLEMAKER
-            TextForValue: <"<0> (<1>)", PFXToText(_projArgs.ProjFX), _projArgs.ProjFX>,
-            //TextForValue: $"{_mytestvar.MyField}",
+            //TextForValue: () => <"<0> (<1>)", PFXToText(args.ProjFX), args.ProjFX>,
+            TextForValue: <'<0> (<1>)', PFXToText(args.ProjFX), args.ProjFX>,
+            //TextForValue: "Initial",
             ..ProjArgData.Construct()
         },
 
@@ -226,11 +237,10 @@ playervar Number[] ArgIndexForUI = [externalPointers.First];
 
 
 rule: '[BMPW] Create text showing proj args'
-if (AllPlayers())
-if (AllPlayers().First.projArgDataForUI.Length)
+if (projArgDataForUI.Length)
 {
     Player lp: LocalPlayer();
-    Wait(4);
+    Wait(1);
     CreateHudText(VisibleTo: LocalPlayer(),
         Header: $"Press {makeFG('fg55FF55FF', InputBindingString(Button.Interact))} to fire projectile!\nPress {InputBindingString(Button.Crouch)} + {InputBindingString(Button.Interact)} to start/stop changing args",
         Location: Location.Left, SortOrder: -1, Reevaluation: HudTextRev.VisibleToAndString, Spectators: Spectators.DefaultVisibility);
@@ -238,17 +248,22 @@ if (AllPlayers().First.projArgDataForUI.Length)
     CreateHudText(VisibleTo: LocalPlayer(),
         Header: !lp.editingArgs ? "" : $"Down: {makeFG(colorForBindings, bindings[0].toString)} | Up: {makeFG(colorForBindings, bindings[1].toString)}\nIncrease Change: {makeFG(colorForBindings, bindings[2].toString)} | Decrease Change: {makeFG(colorForBindings, bindings[3].toString)}\nIncrease By Change: {makeFG(colorForBindings, bindings[4].toString)} | Decrease By Change: {makeFG(colorForBindings, bindings[5].toString)}",
         Location: Location.Left, SortOrder: -1, Reevaluation: HudTextRev.VisibleToAndString, Spectators: Spectators.DefaultVisibility);
-    for (_waitlessIterator = 0; _waitlessIterator < AllPlayers().First.projArgDataForUI.Length; _waitlessIterator++)
+    for (_waitlessIterator = 0; _waitlessIterator < projArgDataForUI.Length; _waitlessIterator++)
     {
         Number i: _waitlessIterator;
         Number ie: EvaluateOnce(i);
-        ProjArgData value: lp.projArgDataForUI[ie];
+        ProjArgData value: projArgDataForUI[ie];
+
+        //Update initial
+        if (projArgDataForUI[i].TextForValue) {
+            projArgDataForUI[i].UpdateTextForValue(<'<0> (<1>)', PFXToText(args.ProjFX), args.ProjFX>);
+        }
         //Split into 3 different strings, 1 for each vector component
         
-        String[] valueToSplitVectorString: [<"<0>", XOf(args(lp)[value.Pointer])>, <"<0>", YOf(args(lp)[value.Pointer])>, <"<0>", ZOf(args(lp)[value.Pointer])>];
+        String[] valueToSplitVectorString: [<"<0>", XOf(args[value.Pointer])>, <"<0>", YOf(args[value.Pointer])>, <"<0>", ZOf(args[value.Pointer])>];
         Any addPointer: (lp.ArgIndexForUI.First != value.Pointer || !lp.editingArgs ? "" : makeFG("fgFF0000FF", $"←±{lp.changeSize}"));
         
-        if (!AllPlayers().First.projArgDataForUI[i].Internal)
+        if (!projArgDataForUI[i].Internal)
         {
             CreateHudText(
                 VisibleTo: LocalPlayer(),
@@ -257,7 +272,7 @@ if (AllPlayers().First.projArgDataForUI.Length)
                 Text:
                     $"{value.TextForArg}: " + 
                     ((value.UIType != UIType.Vector || (!value.DefaultIsConstant)) ? 
-                        $"{value.DefaultIsConstant ? (value.TextForValue ? value.TextForValue : args(lp)[value.Pointer]) : value.TextForNotConstantDefault}" + addPointer
+                        $"{value.DefaultIsConstant ? (value.TextForValue ? value.TextForValue : args[value.Pointer]) : value.TextForNotConstantDefault}" + addPointer
                     :
                         "(" + valueToSplitVectorString.First + ((lp.ArgIndexForUI.First == value.Pointer && lp.ArgIndexForUI[1] == (0)) && lp.editingArgs ? makeFG("fgFF0000FF", $"←±{lp.changeSize}") : "") + 
                         ", " + valueToSplitVectorString[1]   + ((lp.ArgIndexForUI.First == value.Pointer && lp.ArgIndexForUI[1] == (1)) && lp.editingArgs ? makeFG("fgFF0000FF", $"←±{lp.changeSize}") : "") + 
@@ -379,6 +394,8 @@ if ((bindings.Any(v => IsButtonHeld(EventPlayer(), v.button)) && editingArgs) ||
                             EventPlayer()._projArgs[ArgIndexForUI.First] -= 1;
                             if (EventPlayer()._projArgs[ArgIndexForUI.First] < 0) {EventPlayer()._projArgs[ArgIndexForUI.First] = countOfProjFX - 1 - EventPlayer()._projArgs[ArgIndexForUI.First];}
                         }
+                        projArgDataForUI[ArgIndexForUI.First].UpdateTextForValue(<'<0> (<1>)', PFXToText(args.ProjFX), args.ProjFX>);
+                        //projArgDataForUI[ArgIndexForUI.First].UpdateTextForValue("changed");
                         break;
                 }
             } break;
@@ -388,7 +405,33 @@ if ((bindings.Any(v => IsButtonHeld(EventPlayer(), v.button)) && editingArgs) ||
         }
     }
 }
-
+Number countOfProjFX: GetAllEnumValues<ProjFX>().Length;
+public String PFXToText(in ProjFX pfx)
+{
+    switch (pfx)
+    {
+        case ProjFX.BaptisteBioticLauncher:         return("Baptiste Biotic Launcher");         break;
+        case ProjFX.BastionA36TacticalGrenade:      return("Bastion A36 Tactical Grenade");     break;
+        case ProjFX.EchoStickyBomb:                 return("Echo Sticky Bomb");                 break;
+        case ProjFX.GenjiShuriken:                  return("Genji Shuriken");                   break;
+        case ProjFX.LucioSonicAmplifier:            return("Lucio Sonic Amplifier");            break;
+        case ProjFX.MeiIcicle:                      return("Mei Icicle");                       break;
+        case ProjFX.MercyCaduceusBlaster:           return("Mercy Caduceus Blaster");           break;
+        case ProjFX.MoiraDamageOrb:                 return("Moira Damage Orb");                 break;
+        case ProjFX.MoiraHealOrb:                   return("Moira Heal Orb");                   break;
+        case ProjFX.OrbProjectile:                  return("Orb Projectile");                   break;
+        case ProjFX.OrisaFusionDriver:              return("Orisa Fusion Driver");              break;
+        case ProjFX.PharahRocket:                   return("Pharah Rocket");                    break;
+        case ProjFX.RamattraRavenousVortexSphere:   return("Ramattra Ravenous Vortex Sphere");  break;
+        case ProjFX.ReinhardtFireStrike:            return("Reinhardt Fire Strike");            break;
+        case ProjFX.RoadhogScrap:                   return("Roadhog Scrap");                    break;
+        case ProjFX.RoadhogScrapBall:               return("Roadhog Scrap Ball");               break;
+        case ProjFX.SigmaHypersphere:               return("Sigma Hypersphere");                break;
+        case ProjFX.SymmetraPhotonProjector:        return("Symmetra Photon Projector");        break;
+        case ProjFX.ZaryaGraviton:                  return("Zarya Graviton");                   break;
+        case ProjFX.ZaryaParticleCannon:            return("Zarya Particle Cannon");            break;
+    }
+}
 
 rule: '[DEV] show values'
 {

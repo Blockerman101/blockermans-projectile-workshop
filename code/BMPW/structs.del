@@ -196,8 +196,6 @@ single struct ProjectileArgs
 //    }
 }
 
-
-Number countOfProjFX: 20;
 enum ProjFX
 {
     BaptisteBioticLauncher,
@@ -246,32 +244,6 @@ void CastPFX(in ProjFX pfx, const ProjectileType => void cast)
         case ProjFX.SymmetraPhotonProjector:        cast(ProjectileType.SymmetraPhotonProjector);       break;
         case ProjFX.ZaryaGraviton:                  cast(ProjectileType.ZaryaGraviton);                 break;
         case ProjFX.ZaryaParticleCannon:            cast(ProjectileType.ZaryaParticleCannon);           break;
-    }
-}
-public String PFXToText(in ProjFX pfx)
-{
-    switch (pfx)
-    {
-        case ProjFX.BaptisteBioticLauncher:         return("Baptiste Biotic Launcher");         break;
-        case ProjFX.BastionA36TacticalGrenade:      return("Bastion A36 Tactical Grenade");     break;
-        case ProjFX.EchoStickyBomb:                 return("Echo Sticky Bomb");                 break;
-        case ProjFX.GenjiShuriken:                  return("Genji Shuriken");                   break;
-        case ProjFX.LucioSonicAmplifier:            return("Lucio Sonic Amplifier");            break;
-        case ProjFX.MeiIcicle:                      return("Mei Icicle");                       break;
-        case ProjFX.MercyCaduceusBlaster:           return("Mercy Caduceus Blaster");           break;
-        case ProjFX.MoiraDamageOrb:                 return("Moira Damage Orb");                 break;
-        case ProjFX.MoiraHealOrb:                   return("Moira Heal Orb");                   break;
-        case ProjFX.OrbProjectile:                  return("Orb Projectile");                   break;
-        case ProjFX.OrisaFusionDriver:              return("Orisa Fusion Driver");              break;
-        case ProjFX.PharahRocket:                   return("Pharah Rocket");                    break;
-        case ProjFX.RamattraRavenousVortexSphere:   return("Ramattra Ravenous Vortex Sphere");  break;
-        case ProjFX.ReinhardtFireStrike:            return("Reinhardt Fire Strike");            break;
-        case ProjFX.RoadhogScrap:                   return("Roadhog Scrap");                    break;
-        case ProjFX.RoadhogScrapBall:               return("Roadhog Scrap Ball");               break;
-        case ProjFX.SigmaHypersphere:               return("Sigma Hypersphere");                break;
-        case ProjFX.SymmetraPhotonProjector:        return("Symmetra Photon Projector");        break;
-        case ProjFX.ZaryaGraviton:                  return("Zarya Graviton");                   break;
-        case ProjFX.ZaryaParticleCannon:            return("Zarya Particle Cannon");            break;
     }
 }
 
