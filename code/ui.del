@@ -42,7 +42,8 @@ single struct ProjArgData
         DefaultIsConstant: false,
         TextForArg: null,
         TextForValue: null,
-        TextForUpdatingTextForValue: null,
+        //TextForValue: null,
+        TextForUpdatingTextForValue: () => null,
         TextForNotConstantDefault: "",
         IsArg: true
     };
@@ -253,12 +254,10 @@ if (projArgDataForUI.Length)
         ProjArgData value: projArgDataForUI[ie];
 
         //Update initial
-        if (!projArgDataForUI[i].TextForValue) {
-            LogToInspector("Updated");
-            projArgDataForUI[i].UpdateTextForValue();
-        }
+        LogToInspector("Updated");
+        projArgDataForUI[i].UpdateTextForValue();
+
         //Split into 3 different strings, 1 for each vector component
-        
         String[] valueToSplitVectorString: [<"<0>", XOf(args[value.Pointer])>, <"<0>", YOf(args[value.Pointer])>, <"<0>", ZOf(args[value.Pointer])>];
         Any addPointer: (lp.ArgIndexForUI.First != value.Pointer || !lp.editingArgs ? "" : makeFG("fgFF0000FF", $"←±{lp.changeSize}"));
         
