@@ -23,7 +23,7 @@ if (EventPlayer().IsButtonHeld(Button.Interact))
 if (!EventPlayer().IsButtonHeld(Button.Crouch))
 //if (EventPlayer() == HostPlayer())
 {
-    updateNotConstants();
+    updateInconstants();
     //ProjectileArgs shortProj: {ProjFX: ProjFX.GenjiShuriken, Lifetime: 5, Speed: ProjectileArgs.Default().Speed, ..ProjectileArgs.Default()};
     CreateCustomProjectile(EventPlayer()._projArgs);
     //Number myID = lastProjectileID;

@@ -79,7 +79,7 @@ ProjectileArgs args: HostPlayer()._projArgs;
 Player hp: HostPlayer();
 playervar ProjectileArgs _projArgs = ProjectileArgs.Default();
 
-void updateNotConstants(in Player player=HostPlayer()) {
+void updateInconstants(in Player player=HostPlayer()) {
   for (_waitlessIterator = 0; _waitlessIterator < CountOf(player._projArgs); _waitlessIterator++)
   {
     if (!projArgDataForUI[_waitlessIterator].DefaultIsConstant) {
@@ -529,7 +529,7 @@ if (projArgDataForUI[10].valueForNonArg == 2)
 {
     PlayEffect(HostPlayer(), PlayEffect.BuffImpactSound, null, EyePosition(hp), 90);
 
-    updateNotConstants();
+    updateInconstants();
 
     _projArgs = hp._projArgs;
     //argsInAnArray.ModAppend(HostPlayer()._projArgs);

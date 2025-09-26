@@ -9,6 +9,10 @@ enum UIType
     Number,
     Vector,
     Boolean,
+    //Takes 2 inputs to render true/false, rather than one
+    //0 -> Vector.Zero -> 1
+    //1 -> " " -> 0
+    TwoStepBoolean,
     Special
     //ProjFX,
     //ExportArgs
@@ -28,7 +32,7 @@ single struct ProjArgData
     public Boolean Internal;
     public UIType UIType;
     //Whether the default value for this arg is constant. ex. startPos = Eye Position is not constant, speed = 20 is
-    public String TextForNotConstantValue;
+    public String TextForInconstantValue;
     public String Name; //Never changes
     public Boolean IsArg;
     public () => String OverrideText;
@@ -46,7 +50,7 @@ single struct ProjArgData
         Pointer: null,
         Internal: false,
         UIType: UIType.NULL,
-        TextForNotConstantValue: "",
+        TextForInconstantValue: "",
         Name: "",
         IsArg: true,
         OverrideText: null,
@@ -88,7 +92,7 @@ globalvar ProjArgData[] UI = [
         Internal: false,
         UIType: UIType.Vector,
         Name: "Start Position",
-        TextForNotConstantValue: "Eye Position(EP)",
+        TextForInconstantValue: "Eye Position(EP)",
         ..ProjArgData.Construct()
     },
     //Direction
@@ -97,7 +101,7 @@ globalvar ProjArgData[] UI = [
         Internal: false,
         UIType: UIType.Vector,
         Name: "Direction",
-        TextForNotConstantValue: "Facing Dir(EP)",
+        TextForInconstantValue: "Facing Dir(EP)",
         ..ProjArgData.Construct()
     },
 
@@ -106,7 +110,7 @@ globalvar ProjArgData[] UI = [
         Pointer: 4,
         Internal: false,
         Name: "Targets",
-        TextForNotConstantValue: "All Players(Opp Team(Team(EP)))",
+        TextForInconstantValue: "All Players(Opp Team(Team(EP)))",
         ..ProjArgData.Construct()
     },
 
@@ -160,10 +164,11 @@ globalvar ProjArgData[] UI = [
         IsArg: false,
         Name: "Export",
         ValueForNonArg: false,
-        UIType: UIType.Special,
-        ActionForSpecialType: incOrDec => {UI[10].ValueForNonArg += 1;},
+        UIType: UIType.TwoStepBoolean,
+        //ActionForSpecialType: incOrDec => {UI[10].ValueForNonArg += 1;},
         //TextForValue: ,
-        //TextForUpdatingTextForValue: () => <"<0>", UI[10].ValueForNonArg ? (UI[10].ValueForNonArg == 2 ? "Exported!" : "Click Again To Confirm") : "Click To Export">,
+        //OverrideText: () => <"<0>", UI[10].ValueForNonArg == 0 ? (UI[10].ValueForNonArg == 1 ? "Exported!" : "Click Again To Confirm") : "Click To Export">,
+        //OverrideText: () => (UI[10].ValueForNonArg == true),
         ..ProjArgData.Construct()
     },
 
@@ -172,7 +177,7 @@ globalvar ProjArgData[] UI = [
         Pointer: 11,
         Internal: false,
         Name: "Use raw values",
-        UIType: UIType.Boolean,
+        UIType: UIType.TwoStepBoolean,
         IsArg: false,
         ValueForNonArg: false,
         ..ProjArgData.Construct()
@@ -205,14 +210,16 @@ globalvar ProjArgData[] UI = [
 ProjectileArgs args: HostPlayer()._projArgs;
 Player hp: HostPlayer();
 playervar ProjectileArgs _projArgs = ProjectileArgs.Default();
+ProjectileArgs defaultArgsWithVectors: {StartPosition: Vector(0,0,0), Direction: Vector(0,0,0), ..ProjectileArgs.Default(hp)};
 
-void updateNotConstants(in Player player=HostPlayer()) {
-  for (_waitlessIterator = 0; _waitlessIterator < CountOf(player._projArgs); _waitlessIterator++)
-  {
-    if (UI[_waitlessIterator].TextForNotConstantValue) {
-        player._projArgs[_waitlessIterator] = ProjectileArgs.Default(player)[_waitlessIterator];
+void updateInconstants(in Player player=HostPlayer()) {
+    if (!UI[11].ValueForNonArg) {
+        for (_waitlessIterator = 0; _waitlessIterator < CountOf(player._projArgs); _waitlessIterator++) {
+            if (UI[_waitlessIterator].TextForInconstantValue) {
+            player._projArgs[_waitlessIterator] = ProjectileArgs.Default(player)[_waitlessIterator];
+            }
+        }   
     }
-  }   
 }
 
 single struct ActionsForUIPress
@@ -261,9 +268,15 @@ rule: '[BMPW] Create text showing proj args'
 if (UI.Length)
 {
     Player lp: LocalPlayer();
+
+    //Create FX for showing raw StartPos and Dir
+    CreateEffect(UI[11].ValueForNonArg ? lp : null, Effect.Sphere, Color.Red, args.StartPosition, 0.5, EffectRev.VisibleToPositionAndRadius);
+    CreateEffect(UI[11].ValueForNonArg ? lp : null, Effect.Sphere, Color.White, args.StartPosition + args.Direction.Normalize() * 0.5, 0.125, EffectRev.VisibleToPositionAndRadius);
+    CreateBeamEffect(UI[11].ValueForNonArg ? lp : null, BeamType.GrappleBeam, args.StartPosition, args.StartPosition + args.Direction.Normalize() * 0.5, Color.White, EffectRev.VisibleToPositionAndRadius);
+
     Wait(1);
     CreateHudText(VisibleTo: LocalPlayer(),
-        Header: $"Press {makeFG('fg55FF55FF', InputBindingString(Button.Interact))} to fire projectile!\nPress {InputBindingString(Button.Crouch)} + {InputBindingString(Button.PrimaryFire)} to start/stop changing args\n{InputBindingString(Button.Crouch)} + {InputBindingString(Button.SecondaryFire)} to change heroes",
+        Header: $"Press {makeFG('fg55FF55FF', InputBindingString(Button.Interact))} to fire projectile!\nPress {InputBindingString(Button.Crouch)} + {InputBindingString(Button.Interact)} to start/stop changing args\n{InputBindingString(Button.Crouch)} + {InputBindingString(Button.SecondaryFire)} to change heroes",
         Location: Location.Left, SortOrder: -1, Reevaluation: HudTextRev.VisibleToAndString, Spectators: Spectators.DefaultVisibility);
     String colorForBindings: 'fg7777FFFF';
     CreateHudText(VisibleTo: LocalPlayer(),
@@ -273,15 +286,15 @@ if (UI.Length)
     {
         Number i: _waitlessIterator;
         Number ie: EvaluateOnce(i);
-        ProjArgData value: UI[ie];
+        ProjArgData current: UI[ie];
 
         //Update initial
         LogToInspector("Updated");
         UI[i].UpdateOverriddenText();
 
         //Split into 3 different strings, 1 for each vector component
-        String[] valueToSplitVectorString: [<"<0>", XOf(args[value.Pointer])>, <"<0>", YOf(args[value.Pointer])>, <"<0>", ZOf(args[value.Pointer])>];
-        Any addPointer: (ArgIndexForUI.First != value.Pointer || !hp.editingArgs ? "" : makeFG("fgFF0000FF", $"←±{changeSize}"));
+        String[] valueToSplitVectorString: [<"<0>", XOf(args[current.Pointer])>, <"<0>", YOf(args[current.Pointer])>, <"<0>", ZOf(args[current.Pointer])>];
+        Any addPointer: (ArgIndexForUI.First != current.Pointer || !hp.editingArgs ? "" : makeFG("fgFF0000FF", $"←±{changeSize}"));
         
         if (!UI[i].Internal)
         {
@@ -290,14 +303,19 @@ if (UI.Length)
                 //Header: $"Press {InputBindingString(Button.Crouch)} + {InputBindingString(Button.Interact)} to change args",
                 Subheader: null,
                 Text:
-                    $"{value.Name}: " + 
-                    ((value.UIType == UIType.Vector) ? 
-                        "(" + valueToSplitVectorString.First + ((ArgIndexForUI.First == value.Pointer && ArgIndexForUI[1] == (0)) && lp.editingArgs ? makeFG("fgFF0000FF", $"←±{changeSize}") : "") + 
-                        ", " + valueToSplitVectorString[1]   + ((ArgIndexForUI.First == value.Pointer && ArgIndexForUI[1] == (1)) && lp.editingArgs ? makeFG("fgFF0000FF", $"←±{changeSize}") : "") + 
-                        ", " + valueToSplitVectorString[2]   + ((ArgIndexForUI.First == value.Pointer && ArgIndexForUI[1] == (2)) && lp.editingArgs ? makeFG("fgFF0000FF", $"←±{changeSize}") : "") +
-                        ")"
-                    :
-                        $"{value.Value()}" + addPointer
+                    $"{current.Name}" + (current.UIType == UIType.TwoStepBoolean ? " (Click Twice): " : ": ") + 
+                    ((current.TextForInconstantValue && !UI[11].ValueForNonArg) ? $"{current.TextForInconstantValue}" + addPointer : 
+                        (
+                            (current.UIType == UIType.Vector) ? 
+                                "(" + valueToSplitVectorString.First + ((ArgIndexForUI.First == current.Pointer && ArgIndexForUI[1] == (0)) && lp.editingArgs ? makeFG("fgFF0000FF", $"←±{changeSize}") : "") + 
+                                ", " + valueToSplitVectorString[1]   + ((ArgIndexForUI.First == current.Pointer && ArgIndexForUI[1] == (1)) && lp.editingArgs ? makeFG("fgFF0000FF", $"←±{changeSize}") : "") + 
+                                ", " + valueToSplitVectorString[2]   + ((ArgIndexForUI.First == current.Pointer && ArgIndexForUI[1] == (2)) && lp.editingArgs ? makeFG("fgFF0000FF", $"←±{changeSize}") : "") +
+                                ")"
+                            : (current.UIType == UIType.TwoStepBoolean) ? 
+                                ((current.Value() ? "True" : "False") + addPointer)
+                            :
+                                $"{current.Value()}" + addPointer
+                        )
                     )
                 
                 ,
@@ -306,11 +324,11 @@ if (UI.Length)
                 SortOrder: -1,
                 //HeaderColor: ,
                 //SubheaderColor: ,
-                TextColor: value.IsArg ? Color.White : CustomColor(175, 175, 175, 255),
+                TextColor: current.IsArg ? Color.White : CustomColor(175, 175, 175, 255),
                 Reevaluation: HudTextRev.VisibleToAndString,
                 Spectators: Spectators.DefaultVisibility
             );
-            LogToInspector($"Created {value.Name}");
+            LogToInspector($"Created {current.Name}");
         }
     }
 }
@@ -321,11 +339,11 @@ playervar Number indexInExternalPointers = 0;
 
 rule: 'toggle editing args & process inputs'
 Event.OngoingPlayer
-if ((bindings.Any(v => IsButtonHeld(EventPlayer(), v.button)) && editingArgs) || (IsButtonHeld(EventPlayer(), Button.Crouch) && IsButtonHeld(EventPlayer(), Button.PrimaryFire)))
+if ((bindings.Any(v => IsButtonHeld(EventPlayer(), v.button)) && editingArgs) || (IsButtonHeld(EventPlayer(), Button.Crouch) && IsButtonHeld(EventPlayer(), Button.Interact)))
 {   
     //SmallMessage(HostPlayer(), "rule fired");
     Button[] buttonsHeld = bindings.Map(v => v.button).Filter(v => IsButtonHeld(EventPlayer(), v));
-    Number numberOfButtonsForTogglingEditingPressed: [Button.Crouch, Button.PrimaryFire].Filter(v => IsButtonHeld(EventPlayer(), v)).Length;
+    Number numberOfButtonsForTogglingEditingPressed: [Button.Crouch, Button.Interact].Filter(v => IsButtonHeld(EventPlayer(), v)).Length;
 
     
     
@@ -335,7 +353,7 @@ if ((bindings.Any(v => IsButtonHeld(EventPlayer(), v.button)) && editingArgs) ||
         WaitUntil(numberOfButtonsForTogglingEditingPressed != 1, 1);
     }
 
-    if (IsButtonHeld(EventPlayer(), Button.Crouch) && IsButtonHeld(EventPlayer(), Button.PrimaryFire)) {
+    if (IsButtonHeld(EventPlayer(), Button.Crouch) && IsButtonHeld(EventPlayer(), Button.Interact)) {
         editingArgs = !editingArgs;
         //toggle bindings
             for (_waitlessIterator = 0; _waitlessIterator < bindings.Length; _waitlessIterator++) {
@@ -354,7 +372,7 @@ if ((bindings.Any(v => IsButtonHeld(EventPlayer(), v.button)) && editingArgs) ||
         switch (buttonsHeld.First)
         {
             //Down
-            case bindings[0].button:   if (UI[ArgIndexForUI.First].UIType == UIType.Vector && ArgIndexForUI[1] < 2 && !UI[ArgIndexForUI.First].TextForNotConstantValue) {
+            case bindings[0].button:   if (UI[ArgIndexForUI.First].UIType == UIType.Vector && ArgIndexForUI[1] < 2 && (!UI[ArgIndexForUI.First].TextForInconstantValue || UI[11].ValueForNonArg)) {
                     ArgIndexForUI[1] += 1;
                 } else {
                     indexInExternalPointers = (indexInExternalPointers + 1)%(externalPointers.Length);
@@ -365,7 +383,7 @@ if ((bindings.Any(v => IsButtonHeld(EventPlayer(), v.button)) && editingArgs) ||
                 } break;
             
             //Up
-            case bindings[1].button:   if (UI[ArgIndexForUI.First].UIType == UIType.Vector && ArgIndexForUI[1] > 0 && !UI[ArgIndexForUI.First].TextForNotConstantValue) {
+            case bindings[1].button:   if (UI[ArgIndexForUI.First].UIType == UIType.Vector && ArgIndexForUI[1] > 0 && (!UI[ArgIndexForUI.First].TextForInconstantValue || UI[11].ValueForNonArg)) {
                     ArgIndexForUI[1] -= 1;
                 } else {
                     indexInExternalPointers = !indexInExternalPointers ? externalPointers.Length - 1 : (indexInExternalPointers - 1)%(externalPointers.Length);
@@ -387,7 +405,8 @@ if ((bindings.Any(v => IsButtonHeld(EventPlayer(), v.button)) && editingArgs) ||
             case bindings[5].button:
                 //if (current.IsArg) {
                 //TEMP || true FOR DEV
-                    if (!current.TextForNotConstantValue || true) {
+                //May not be needed in general
+                    if (!current.TextForInconstantValue || true) {
                         switch(current.UIType) {
                             //If type -> if increase button is held, increase, else, decrease
                             case UIType.Number:
@@ -421,7 +440,33 @@ if ((bindings.Any(v => IsButtonHeld(EventPlayer(), v.button)) && editingArgs) ||
                             } else {
                                 UI[ArgIndexForUI.First].ValueForNonArg = !current.ValueForNonArg;
                             }break;
-                            //case UIType.Boolean: UI[ArgIndexForUI.First].ValueForNonArg = !current.ValueForNonArg; break;
+                            
+                            case UIType.TwoStepBoolean:
+                                if (current.Value() == 1 || current.Value() == 0) {
+                                    twoStepBooleanTimer.ModAppend([current.Pointer, TotalTimeElapsed()]);
+                                }
+                                if (current.IsArg) {
+                                    EventPlayer()._projArgs[ArgIndexForUI.First] = (args[ArgIndexForUI.First] == false ?
+                                        (
+                                            args[ArgIndexForUI.First] == 0 ? Vector.Zero : 1
+                                        )
+                                        : 
+                                        (
+                                            args[ArgIndexForUI.First] == 1 ? " "         : 0
+                                        )
+                                    );
+
+                                } else {
+                                    UI[ArgIndexForUI.First].ValueForNonArg = (UI[ArgIndexForUI.First].ValueForNonArg == false ? 
+                                        (
+                                            UI[ArgIndexForUI.First].ValueForNonArg == 0 ? Vector.Zero : 1
+                                        )
+                                        :
+                                        (
+                                            UI[ArgIndexForUI.First].ValueForNonArg == 1 ? " "         : 0
+                                        )
+                                    );
+                                } break;
 
                             //Do special actions                            
                             case UIType.Special: current.ActionForSpecialType.Invoke(incOrDec); break;
@@ -434,6 +479,7 @@ if ((bindings.Any(v => IsButtonHeld(EventPlayer(), v.button)) && editingArgs) ||
                 //    UI[ArgIndexForUI.First].ValueForNonArg = !current.ValueForNonArg;
                 //}
                 UI[ArgIndexForUI.First].UpdateOverriddenText();
+                updateInconstants(hp);
                 break;
             
             //DecreaseByChange
@@ -510,27 +556,45 @@ rule: 'Create bot for ui output'
     StartForcingDummyBotName(copyBot, $"Copy Me! | Click the " + makeFG("fgff5555ff", "(x)") + " button");
 }
 
-rule: 'Confirm Exporting'
-if (UI[10].ValueForNonArg == 1)
+globalvar Number[][] twoStepBooleanTimer = [];
+Number TimeToTimeout: 0.75;
+rule: 'Timeout TSB'
+//The - n is how long it takes to timeout
+if (twoStepBooleanTimer.Any(v => v[1] <= TotalTimeElapsed() - TimeToTimeout))
 {
-    Wait(5);
-    UI[10].ValueForNonArg = 0;
-    UI[ArgIndexForUI.First].UpdateOverriddenText();
+    Number[] current = twoStepBooleanTimer.Filter(v => v[1] <= TotalTimeElapsed() - TimeToTimeout).First;
+    if (UI[current[0]].Value()) {
+        if (UI[current[0]].IsArg) {
+            hp._projArgs[current[0]] = true;
+        } else {
+            UI[current[0]].ValueForNonArg = true;
+        }
+    } else {
+        if (UI[current[0]].IsArg) {
+            hp._projArgs[current[0]] = false;
+        } else {
+            UI[current[0]].ValueForNonArg = false;
+        }
+    }
+    UI[current[0]].UpdateOverriddenText();
+    twoStepBooleanTimer = twoStepBooleanTimer.Filter(v => v.First != current.First);
+    MinWait();
+    LoopIfConditionIsTrue();
 }
 
 rule: 'Export code'
 Event.OngoingPlayer
 if (IsDummyBot())
-if (UI[10].ValueForNonArg == 2)
+if (UI[10].ValueForNonArg)
 {
-    PlayEffect(HostPlayer(), PlayEffect.BuffImpactSound, null, EyePosition(hp), 90);
-
-    updateNotConstants();
+    PlayEffect(HostPlayer(), PlayEffect.BuffImpactSound, null, EyePosition(hp), 150);
+    SmallMessage(HostPlayer(), "   Exported! (Check Inspector)");
+    updateInconstants();
 
     _projArgs = hp._projArgs;
     //argsInAnArray.ModAppend(HostPlayer()._projArgs);
 
-    Wait(1);
+    Wait(0.5);
     UI[10].ValueForNonArg = 0;
     UI[ArgIndexForUI.First].UpdateOverriddenText();
 }
