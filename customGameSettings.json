@@ -31,21 +31,16 @@
             "Team 1":
             {
                 "Enabled Heroes": ["Soldier: 76"],
-                "Soldier: 76": {
-                    "Biotic Field Cooldown Time": 0,
-                    "Helix Rockets Cooldown Time": 0
-                },
                 "General": {
                     "Health": 500,
-                    "Damage Received": 10
+                    "Damage Received": 10,
+                    "Ability Cooldown Time": 0,
+                    "Spawn With Ultimate Ready": true,
+                    "Ultimate Generation": 500,
+                    "Ultimate Generation - Combat": 500,
+                    "Ultimate Generation - Passive": 500
                 }
-            },
-
-            "Team 2":
-            {
-                "Reinhardt": {"Charge": false}
-            }
-            
+            }            
         },
 
         "Extensions":

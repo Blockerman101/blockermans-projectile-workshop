@@ -19,6 +19,7 @@ if (HasSpawned(HostPlayer()))
 
 rule: 'Make my projectile'
 Event.OngoingPlayer
+if (!editingArgs)
 if (EventPlayer().IsButtonHeld(UI[12].ValueForNonArg))
 if (!EventPlayer().IsButtonHeld(Button.Crouch) || UI[12].ValueForNonArg == Button.Crouch)
 //if (EventPlayer() == HostPlayer())
