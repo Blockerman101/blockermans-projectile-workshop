@@ -425,10 +425,10 @@ if ((bindings.Any(v => IsButtonHeld(EventPlayer(), v.button)) && editingArgs) ||
                 } break;
             
             //IncreaseChange
-            case bindings[2].button:   changeSize *= 10;   break;
+            case bindings[2].button:   changeSize *= 10; changeSize = Min(changeSize, 10000);   break;
             
             //DecreaseChange
-            case bindings[3].button:   changeSize /= 10;   break;
+            case bindings[3].button:   changeSize /= 10; changeSize = Max(changeSize, 0.001);   break;
             
             Number incOrDec: (buttonsHeld.First == bindings[4].button ? 1 : -1);
             //IncreaseByChange || DecreaseByChange

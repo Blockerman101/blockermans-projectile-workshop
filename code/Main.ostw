@@ -24,8 +24,8 @@ if (EventPlayer().IsButtonHeld(UI[12].ValueForNonArg))
 if (!EventPlayer().IsButtonHeld(Button.Crouch) || UI[12].ValueForNonArg == Button.Crouch)
 //if (EventPlayer() == HostPlayer())
 {
+    MinWait();
     updateInconstants();
-    //ProjectileArgs shortProj: {ProjFX: ProjFX.GenjiShuriken, Lifetime: 5, Speed: ProjectileArgs.Default().Speed, ..ProjectileArgs.Default()};
     CreateCustomProjectile(EventPlayer()._projArgs);
     //Number myID = lastProjectileID;
     Wait(0.25, WaitBehavior.AbortWhenFalse);
