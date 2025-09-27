@@ -181,10 +181,41 @@ globalvar ProjArgData[] UI = [
         IsArg: false,
         ValueForNonArg: false,
         ..ProjArgData.Construct()
+    },
+
+    //Change button to fire proj
+    {
+        Pointer: 12,
+        Name: "Firing button",
+        IsArg: false,
+        UIType: UIType.Special,
+        ActionForSpecialType: incOrDec => {
+            //((EventPlayer()._projArgs[ArgIndexForUI.First] + incOrDec) >= 0 ? (EventPlayer()._projArgs[ArgIndexForUI.First] + incOrDec)%countOfProjFX : countOfProjFX - 1);
+            UI[12].ValueForNonArg = (buttonsForFiringButton.IndexOf(UI[12].ValueForNonArg) + incOrDec >= 0 ? buttonsForFiringButton[(buttonsForFiringButton.IndexOf(UI[12].ValueForNonArg) + incOrDec)%buttonsForFiringButton.Length] : buttonsForFiringButton.Last);
+        },
+        ValueForNonArg: Button.Interact,
+        //OverrideText: () => <"<0>", ButtonToText(UI[12].ValueForNonArg)>,
+        ..ProjArgData.Construct()
     }
 ];
 
 
+Button[] buttonsForFiringButton: [Button.Ability1, Button.Ability2, Button.Crouch, Button.Interact, Button.Jump, Button.Melee, Button.PrimaryFire, Button.Reload, Button.SecondaryFire, Button.Ultimate];
+public String ButtonToText(in Button button) {
+    switch (button)
+    {
+        case Button.Ability1:       return "Ability 1";         break;
+        case Button.Ability2:       return "Ability 2";         break;
+        case Button.Crouch:         return "Crouch";            break;
+        case Button.Interact:       return "Interact";          break;
+        case Button.Jump:           return "Jump";              break;
+        case Button.Melee:          return "Melee";             break;
+        case Button.PrimaryFire:    return "Primary Fire";      break;
+        case Button.Reload:         return "Reload";            break;
+        case Button.SecondaryFire:  return "Secondary Fire";    break;
+        case Button.Ultimate:       return "Ultimate";          break;
+    }
+}
 
 //struct ProjArgDataForUI
 //{
@@ -276,7 +307,7 @@ if (UI.Length)
 
     Wait(1);
     CreateHudText(VisibleTo: LocalPlayer(),
-        Header: $"Press {makeFG('fg55FF55FF', InputBindingString(Button.Interact))} to fire projectile!\nPress {InputBindingString(Button.Crouch)} + {InputBindingString(Button.Interact)} to start/stop changing args\n{InputBindingString(Button.Crouch)} + {InputBindingString(Button.SecondaryFire)} to change heroes",
+        Header: $"Press {makeFG('fg55FF55FF', InputBindingString(UI[12].ValueForNonArg))} to fire projectile!\nPress {InputBindingString(Button.Crouch)} + {InputBindingString(Button.Interact)} to start/stop changing args\n{InputBindingString(Button.Crouch)} + {InputBindingString(Button.SecondaryFire)} to change heroes",
         Location: Location.Left, SortOrder: -1, Reevaluation: HudTextRev.VisibleToAndString, Spectators: Spectators.DefaultVisibility);
     String colorForBindings: 'fg7777FFFF';
     CreateHudText(VisibleTo: LocalPlayer(),
