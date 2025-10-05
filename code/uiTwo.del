@@ -1,5 +1,5 @@
 import "BMPW/structs.del";
-import "../../../Other/extraFunctions.ostw";
+//import "../../../Other/extraFunctions.ostw";
 import "tx.del";
 //import "mynewfile.del";
 
@@ -43,6 +43,8 @@ single struct ProjArgData
 
     //Number is incOrDec, a scalar of 1 or -1 depending on if the operation is for incrementing or decrementing
     public (Number) => void ActionForSpecialType;
+    //The minimum and maximum values for this arg
+    public Number[] MinAndMax;
     public Any Value(in Player player=HostPlayer()): (OverrideText ? (_OverriddenText) : (IsArg ? player._projArgs[Pointer] : ValueForNonArg));
     public ref void UpdateOverriddenText() {_OverriddenText = OverrideText.Invoke();}
 
@@ -56,7 +58,8 @@ single struct ProjArgData
         OverrideText: null,
         _OverriddenText: null,
         ValueForNonArg: null,
-        ActionForSpecialType: null
+        ActionForSpecialType: null,
+        MinAndMax: [-1000000, 1000000]
     };
 }
 
@@ -120,6 +123,7 @@ globalvar ProjArgData[] UI = [
         Internal: false,
         UIType: UIType.Number,
         Name: "Oversize",
+        MinAndMax: [0, 1],
         ..ProjArgData.Construct()
     },
     //Speed
@@ -137,6 +141,7 @@ globalvar ProjArgData[] UI = [
         Internal: false,
         UIType: UIType.Number,
         Name: "Lifetime",
+        MinAndMax: [0, 60],
         ..ProjArgData.Construct()
     },
 
@@ -307,7 +312,7 @@ if (UI.Length)
 
     Wait(1);
     CreateHudText(VisibleTo: LocalPlayer(),
-        Header: $"Press {makeFG('fg55FF55FF', InputBindingString(UI[12].ValueForNonArg))} to fire projectile!\nPress {InputBindingString(Button.Crouch)} + {InputBindingString(Button.Interact)} to start/stop changing args\n{InputBindingString(Button.Crouch)} + {InputBindingString(Button.SecondaryFire)} to change heroes",
+        Header: (!lp.editingArgs ? $"Press {makeFG('fg55FF55FF', InputBindingString(UI[12].ValueForNonArg))} to fire projectile!" : makeFG('fg990000FF', 'Stop editing args to be able to fire projectile')) + $"\nPress {InputBindingString(Button.Crouch)} + {InputBindingString(Button.PrimaryFire)} to start/stop editing\nPress {InputBindingString(Button.Crouch)} + {InputBindingString(Button.SecondaryFire)} to change heroes",
         Location: Location.Left, SortOrder: -1, Reevaluation: HudTextRev.VisibleToAndString, Spectators: Spectators.DefaultVisibility);
     String colorForBindings: 'fg7777FFFF';
     CreateHudText(VisibleTo: LocalPlayer(),
@@ -370,11 +375,11 @@ playervar Number indexInExternalPointers = 0;
 
 rule: 'toggle editing args & process inputs'
 Event.OngoingPlayer
-if ((bindings.Any(v => IsButtonHeld(EventPlayer(), v.button)) && editingArgs) || (IsButtonHeld(EventPlayer(), Button.Crouch) && IsButtonHeld(EventPlayer(), Button.Interact)))
+if ((bindings.Any(v => IsButtonHeld(EventPlayer(), v.button)) && editingArgs) || (IsButtonHeld(EventPlayer(), Button.Crouch) && IsButtonHeld(EventPlayer(), Button.PrimaryFire)))
 {   
     //SmallMessage(HostPlayer(), "rule fired");
     Button[] buttonsHeld = bindings.Map(v => v.button).Filter(v => IsButtonHeld(EventPlayer(), v));
-    Number numberOfButtonsForTogglingEditingPressed: [Button.Crouch, Button.Interact].Filter(v => IsButtonHeld(EventPlayer(), v)).Length;
+    Number numberOfButtonsForTogglingEditingPressed: [Button.Crouch, Button.PrimaryFire].Filter(v => IsButtonHeld(EventPlayer(), v)).Length;
 
     
     
@@ -384,7 +389,7 @@ if ((bindings.Any(v => IsButtonHeld(EventPlayer(), v.button)) && editingArgs) ||
         WaitUntil(numberOfButtonsForTogglingEditingPressed != 1, 1);
     }
 
-    if (IsButtonHeld(EventPlayer(), Button.Crouch) && IsButtonHeld(EventPlayer(), Button.Interact)) {
+    if (IsButtonHeld(EventPlayer(), Button.Crouch) && IsButtonHeld(EventPlayer(), Button.PrimaryFire)) {
         editingArgs = !editingArgs;
         //toggle bindings
             for (_waitlessIterator = 0; _waitlessIterator < bindings.Length; _waitlessIterator++) {
@@ -443,9 +448,12 @@ if ((bindings.Any(v => IsButtonHeld(EventPlayer(), v.button)) && editingArgs) ||
                             case UIType.Number:
                                 if (current.IsArg) {
                                     EventPlayer()._projArgs[ArgIndexForUI.First] += changeSize * incOrDec;
+                                    EventPlayer()._projArgs[ArgIndexForUI.First] = Clamp(EventPlayer()._projArgs[ArgIndexForUI.First], current.MinAndMax.First, current.MinAndMax[1]);
                                 } else {
                                     UI[ArgIndexForUI.First].ValueForNonArg += changeSize * incOrDec;
-                                } break;
+                                    UI[ArgIndexForUI.First].ValueForNonArg = Clamp(UI[ArgIndexForUI.First].ValueForNonArg, current.MinAndMax.First, current.MinAndMax[1]);
+                                }
+                                break;
 
                             //Switch through the diff components
                             case UIType.Vector: {
@@ -475,6 +483,8 @@ if ((bindings.Any(v => IsButtonHeld(EventPlayer(), v.button)) && editingArgs) ||
                             case UIType.TwoStepBoolean:
                                 if (current.Value() == 1 || current.Value() == 0) {
                                     twoStepBooleanTimer.ModAppend([current.Pointer, TotalTimeElapsed()]);
+                                } else {
+                                    PlayEffect(HostPlayer(), PlayEffect.BuffImpactSound, null, EyePosition(hp), 150);
                                 }
                                 if (current.IsArg) {
                                     EventPlayer()._projArgs[ArgIndexForUI.First] = (args[ArgIndexForUI.First] == false ?
@@ -618,7 +628,6 @@ Event.OngoingPlayer
 if (IsDummyBot())
 if (UI[10].ValueForNonArg)
 {
-    PlayEffect(HostPlayer(), PlayEffect.BuffImpactSound, null, EyePosition(hp), 150);
     SmallMessage(HostPlayer(), "   Exported! (Check Inspector)");
     updateInconstants();
 
@@ -629,3 +638,11 @@ if (UI[10].ValueForNonArg)
     UI[10].ValueForNonArg = 0;
     UI[ArgIndexForUI.First].UpdateOverriddenText();
 }
+
+
+Vector ClampDirection(in Vector dir)
+{
+    return Vector(Clamp(dir.X, -1, 1), Clamp(dir.Y, -1, 1), Clamp(dir.Z, -1, 1));
+}
+
+Number Clamp(in Number value, in Number min, in Number max): Min(Max(value, min), max);
