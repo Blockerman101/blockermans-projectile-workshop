@@ -19,13 +19,15 @@ if (HasSpawned(HostPlayer()))
 
 rule: 'Make my projectile'
 Event.OngoingPlayer
-if (!editingArgs)
+if (EventPlayer() == HostPlayer())
+if (!editingArgs || !bindings.Map(v => v.button).Contains(UI[12].ValueForNonArg))
 if (EventPlayer().IsButtonHeld(UI[12].ValueForNonArg))
 //if (EventPlayer() == HostPlayer())
 {
     MinWait();
     updateInconstants();
-    CreateCustomProjectile(EventPlayer()._projArgs);
+    ProjectileArgs argsForBug: {Direction: (_projArgs.Direction + Vector(0, UI[13].ValueForNonArg, 0)).Normalize(), ..EventPlayer()._projArgs};
+    CreateCustomProjectile(argsForBug);
     //Number myID = lastProjectileID;
     Wait(0.25, WaitBehavior.AbortWhenFalse);
     LoopIfConditionIsTrue();

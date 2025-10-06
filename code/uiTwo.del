@@ -57,6 +57,7 @@ single struct ProjArgData
         IsArg: true,
         OverrideText: null,
         _OverriddenText: null,
+        //If UIType.Vector, initialize as Vector.Zero!
         ValueForNonArg: null,
         ActionForSpecialType: null,
         MinAndMax: [-1000000, 1000000]
@@ -201,6 +202,15 @@ globalvar ProjArgData[] UI = [
         ValueForNonArg: Button.Interact,
         //OverrideText: () => <"<0>", ButtonToText(UI[12].ValueForNonArg)>,
         ..ProjArgData.Construct()
+    },
+
+    //Add delta vector
+    {
+        Pointer: 13,
+        Name: "Delta vector (Y)",
+        IsArg: false,
+        UIType: UIType.Number,
+        ..ProjArgData.Construct()
     }
 ];
 
@@ -248,7 +258,7 @@ Player hp: HostPlayer();
 playervar ProjectileArgs _projArgs = ProjectileArgs.Default();
 ProjectileArgs defaultArgsWithVectors: {StartPosition: Vector(0,0,0), Direction: Vector(0,0,0), ..ProjectileArgs.Default(hp)};
 
-void updateInconstants(in Player player=HostPlayer()) {
+void updateInconstants(Player player=HostPlayer()) "Update Inconstants" {
     if (!UI[11].ValueForNonArg) {
         for (_waitlessIterator = 0; _waitlessIterator < CountOf(player._projArgs); _waitlessIterator++) {
             if (UI[_waitlessIterator].TextForInconstantValue) {
@@ -300,7 +310,7 @@ globalvar Number changeSize = 1;
 globalvar Number[] ArgIndexForUI = [externalPointers.First];
 
 
-rule: '[BMPW] Create text showing proj args'
+rule: 'Create text showing proj args'
 if (UI.Length)
 {
     Player lp: LocalPlayer();
@@ -309,14 +319,15 @@ if (UI.Length)
     CreateEffect(UI[11].ValueForNonArg ? lp : null, Effect.Sphere, Color.Red, args.StartPosition, 0.5, EffectRev.VisibleToPositionAndRadius);
     CreateEffect(UI[11].ValueForNonArg ? lp : null, Effect.Sphere, Color.White, args.StartPosition + args.Direction.Normalize() * 0.5, 0.125, EffectRev.VisibleToPositionAndRadius);
     CreateBeamEffect(UI[11].ValueForNonArg ? lp : null, BeamType.GrappleBeam, args.StartPosition, args.StartPosition + args.Direction.Normalize() * 0.5, Color.White, EffectRev.VisibleToPositionAndRadius);
+    CreateBeamEffect(UI[11].ValueForNonArg && UI[13].ValueForNonArg != null ? lp : null, BeamType.BrigitteFlailChainBeam, args.StartPosition, args.StartPosition + (hp._projArgs.Direction + Vector(0, UI[13].ValueForNonArg, 0)).Normalize() * 3, Color.White, EffectRev.VisibleToPositionAndRadius);
 
     Wait(1);
     CreateHudText(VisibleTo: LocalPlayer(),
-        Header: (!lp.editingArgs ? $"Press {makeFG('fg55FF55FF', InputBindingString(UI[12].ValueForNonArg))} to fire projectile!" : makeFG('fg990000FF', 'Stop editing args to be able to fire projectile')) + $"\nPress {InputBindingString(Button.Crouch)} + {InputBindingString(Button.PrimaryFire)} to start/stop editing\nPress {InputBindingString(Button.Crouch)} + {InputBindingString(Button.SecondaryFire)} to change heroes",
+        Header: ((!lp.editingArgs || !bindings.Map(v => v.button).Contains(UI[12].ValueForNonArg)) ? $"Press {makeFG('fg55FF55FF', InputBindingString(UI[12].ValueForNonArg))} to fire projectile!" : $"(Button: {InputBindingString(UI[12].ValueForNonArg)}) " + makeFG('fg990000FF', 'Stop editing args')) + $"\nPress {InputBindingString(Button.Crouch)} + {InputBindingString(Button.PrimaryFire)} to start/stop editing\nPress {InputBindingString(Button.Crouch)} + {InputBindingString(Button.SecondaryFire)} to change heroes",
         Location: Location.Left, SortOrder: -1, Reevaluation: HudTextRev.VisibleToAndString, Spectators: Spectators.DefaultVisibility);
     String colorForBindings: 'fg7777FFFF';
     CreateHudText(VisibleTo: LocalPlayer(),
-        Header: !lp.editingArgs ? "" : $"Down: {makeFG(colorForBindings, bindings[0].toString)} | Up: {makeFG(colorForBindings, bindings[1].toString)}\nIncrease Change: {makeFG(colorForBindings, bindings[2].toString)} | Decrease Change: {makeFG(colorForBindings, bindings[3].toString)}\nIncrease By Change: {makeFG(colorForBindings, bindings[4].toString)} | Decrease By Change: {makeFG(colorForBindings, bindings[5].toString)}",
+        Header: !lp.editingArgs ? "" : $"Down: {makeFG(colorForBindings, bindings[0].toString)} | Up: {makeFG(colorForBindings, bindings[1].toString)}\nIncrease Change: {makeFG(colorForBindings, bindings[2].toString)} | Decrease Change: {makeFG(colorForBindings, bindings[3].toString)}\nIncrease By Change: {makeFG(colorForBindings, bindings[4].toString)} | Decrease By Change: {makeFG(colorForBindings, bindings[5].toString)}\n{makeFG('fgC4BAE8FF', 'These args')} are add-ons, not actually proj args",
         Location: Location.Left, SortOrder: -1, Reevaluation: HudTextRev.VisibleToAndString, Spectators: Spectators.DefaultVisibility);
     for (_waitlessIterator = 0; _waitlessIterator < UI.Length; _waitlessIterator++)
     {
@@ -329,7 +340,7 @@ if (UI.Length)
         UI[i].UpdateOverriddenText();
 
         //Split into 3 different strings, 1 for each vector component
-        String[] valueToSplitVectorString: [<"<0>", XOf(args[current.Pointer])>, <"<0>", YOf(args[current.Pointer])>, <"<0>", ZOf(args[current.Pointer])>];
+        String[] valueToSplitVectorString: [<"<0>", XOf(current.Value(lp))>, <"<0>", YOf(current.Value(lp))>, <"<0>", ZOf(current.Value(lp))>];
         Any addPointer: (ArgIndexForUI.First != current.Pointer || !hp.editingArgs ? "" : makeFG("fgFF0000FF", $"←±{changeSize}"));
         
         if (!UI[i].Internal)
@@ -360,7 +371,7 @@ if (UI.Length)
                 SortOrder: -1,
                 //HeaderColor: ,
                 //SubheaderColor: ,
-                TextColor: current.IsArg ? Color.White : CustomColor(175, 175, 175, 255),
+                TextColor: current.IsArg ? Color.White : CustomColor(196, 186, 232, 255),
                 Reevaluation: HudTextRev.VisibleToAndString,
                 Spectators: Spectators.DefaultVisibility
             );
@@ -584,22 +595,11 @@ rule: '[DEV] show values'
 //
 
 
-globalvar Player copyBot;
-rule: 'Create bot for ui output'
-{
-    MinWait();
-    CreateDummyBot(Hero.Soldier76, TeamOf(HostPlayer()), -1, Vector(0, 0, 0), null);
-    copyBot = LastCreatedEntity();
-    Wait(0.5);
-    StartForcingPlayerPosition(copyBot, Vector(0, 0, 10), false);
-    SetStatus(copyBot, null, Status.Unkillable, 999999999999);
-    SetStatus(copyBot, null, Status.PhasedOut, 999999999999);
-    StartForcingDummyBotName(copyBot, $"Copy Me! | Click the " + makeFG("fgff5555ff", "(x)") + " button");
-}
+
 
 globalvar Number[][] twoStepBooleanTimer = [];
 Number TimeToTimeout: 0.75;
-rule: 'Timeout TSB'
+rule: 'Timeout Two-Step Booleans (TSB)'
 //The - n is how long it takes to timeout
 if (twoStepBooleanTimer.Any(v => v[1] <= TotalTimeElapsed() - TimeToTimeout))
 {
@@ -623,9 +623,23 @@ if (twoStepBooleanTimer.Any(v => v[1] <= TotalTimeElapsed() - TimeToTimeout))
     LoopIfConditionIsTrue();
 }
 
+globalvar Player copyBot;
+rule: 'Create bot for ui output'
+{
+    MinWait();
+    CreateDummyBot(Hero.Soldier76, TeamOf(HostPlayer()), -1, Vector(0, 0, 0), null);
+    copyBot = LastCreatedEntity();
+    Wait(0.5);
+    StartForcingPlayerPosition(copyBot, Vector(0, 0, 10), false);
+    SetStatus(copyBot, null, Status.Unkillable, 999999999999);
+    SetStatus(copyBot, null, Status.PhasedOut, 999999999999);
+    StartForcingDummyBotName(copyBot, $"Copy Me! | Click the " + makeFG("fgff5555ff", "(x)") + " button");
+}
+
 rule: 'Export code'
 Event.OngoingPlayer
 if (IsDummyBot())
+if (EventPlayer() == copyBot)
 if (UI[10].ValueForNonArg)
 {
     SmallMessage(HostPlayer(), "   Exported! (Check Inspector)");

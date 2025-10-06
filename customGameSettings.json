@@ -47,6 +47,7 @@
         {
             "Projectiles": true,
             "Spawn More Dummy Bots": true,
-            "Play More Effects": true
+            "Play More Effects": true,
+            "Beam Effects": true
         }
     }
