@@ -25,6 +25,7 @@ if (EventPlayer().IsButtonHeld(UI[12].ValueForNonArg))
 //if (EventPlayer() == HostPlayer())
 {
     updateInconstants();
+    //Incorporate deltaV
     ProjectileArgs argsForDeltaV: {Direction: (_projArgs.Direction + Vector(0, UI[13].ValueForNonArg, 0)).Normalize(), ..EventPlayer()._projArgs};
     CreateCustomProjectile(argsForDeltaV);
     //Number myID = lastProjectileID;
