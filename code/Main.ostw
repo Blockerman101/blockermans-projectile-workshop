@@ -7,7 +7,7 @@ import "BMPW/projDestructor.del";
 import "BMPW/structs.del";
 //import "_flight.del";
 //import "_dev.del";
-import "uiTwo.del";
+import "ui.del";
 
 rule: '[DEV] remove dmg'
 //if (AllPlayers().Length != EvaluateOnce(AllPlayers().Length))
@@ -24,14 +24,15 @@ if (!editingArgs || !bindings.Map(v => v.button).Contains(UI[12].ValueForNonArg)
 if (EventPlayer().IsButtonHeld(UI[12].ValueForNonArg))
 //if (EventPlayer() == HostPlayer())
 {
-    MinWait();
     updateInconstants();
-    ProjectileArgs argsForBug: {Direction: (_projArgs.Direction + Vector(0, UI[13].ValueForNonArg, 0)).Normalize(), ..EventPlayer()._projArgs};
-    CreateCustomProjectile(argsForBug);
+    ProjectileArgs argsForDeltaV: {Direction: (_projArgs.Direction + Vector(0, UI[13].ValueForNonArg, 0)).Normalize(), ..EventPlayer()._projArgs};
+    CreateCustomProjectile(argsForDeltaV);
     //Number myID = lastProjectileID;
     Wait(0.25, WaitBehavior.AbortWhenFalse);
     LoopIfConditionIsTrue();
 }
+
+
 
     Vector RandomSpread(Player player, Number deviation): (player.FacingDirection() * CosineFromDegrees(RandomReal(0, deviation)) + SineFromDegrees(RandomReal(0, deviation)) * (Right().AsWorldVector(player, Transformation.Rotation) * CosineFromDegrees(RandomReal(0, 360)) + CrossProduct(player.FacingDirection(), Left().AsWorldVector(player, Transformation.Rotation)) * SineFromDegrees(RandomReal(0, 360)))).Normalize();
 
