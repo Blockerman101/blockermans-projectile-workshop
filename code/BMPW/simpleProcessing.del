@@ -20,7 +20,7 @@ if (intervalIndex < timeInInterval.Length)
 if (diff(intervalIndex))
 {
     //Adding a bit to interval so the checks slightly overlap, prevents edgecase bugs
-    simpleProcessing(timeInInterval[intervalIndex].ID, (interval + 0.032), Color.White, BeamType.BadBeam, ID => {return projData[ID].Position;}); //Check this projectile
+    simpleProcessing(timeInInterval[intervalIndex].ID, (interval + 0.032), Color.White, BeamType.BadBeam, ID => {return projData[ID].Position();}); //Check this projectile
     intervalIndex++; //Traverse to the next projectile
     WaitUntil((diff(intervalIndex) || !intervalIndex) && intervalIndex < timeInInterval.Length , interval - (time%interval)); //Wait until the next proj is ready to be checked, and if either if the loop ends, or until there is a value at timeInInterval[intervalIndex].Time
     //Heres the reason why '&& intervalIndex < timeInInterval.Lengh' is needed: First off, this code makes sure that your not reading an out-of-scope index.
@@ -35,7 +35,7 @@ if (timeInInterval.Length)
 {
     SpreadOverTicks(timeInInterval, 15, tte, i => {
         //i is the index of the array entered
-        StateCheck(i.ID, projData[i.ID].Position);
+        StateCheck(i.ID, projData[i.ID].Position());
         //LogToInspector($"Checked state of proj {i} (TTE: {time})");
     });
 }

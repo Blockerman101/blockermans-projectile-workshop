@@ -44,7 +44,10 @@ if (projConstructor.Length > 0)
 {
 
     //LogToInspector("Constructor Fired!");
-    ProjectileArgs Args: projConstructor.First;
+
+    ProjectileArgs _tempArgsForConstructorOne = projConstructor.First;
+    ProjectileArgs Args: _tempArgsForConstructorOne;
+
     Any ID: Args._GetID();
 
     //deltaT is not the time since the last tick, but the time that passed since this proj was called
@@ -97,6 +100,8 @@ if (projConstructor.Length > 0)
             HitPlayer: null
         };
 
+        ReadOnlyProjData _tempArgsForConstructorTwo = projData[ID].ReadOnly;
+
         Number timeToMaxHeight: (tte + Max(0, -1 * Args.Speed * DotProduct(Args.Direction, Args.Gravity)/DotProduct(Args.Gravity, Args.Gravity)));
         Number ticksToMaxHeight: (((timeToMaxHeight%interval) / 0.016).Floor());
         TimeInInterval.Queue(ID, ticksToMaxHeight);
@@ -143,7 +148,9 @@ if (projConstructor.Length > 0)
             CastPFX(
                 pfx: Args.ProjFX,
                 fx => {
-                    CreateProjectileEffect(AllPlayers(), fx, AllPlayers(), UpdateEveryFrame(projData[EvaluateOnce(ID)].Position), projData[EvaluateOnce(ID)].ReadOnly.Velocity + projData[EvaluateOnce(ID)].ReadOnly.Gravity * projData[EvaluateOnce(ID)].time, EvaluateOnce(Args.Oversize), ProjectileEffectReeval.PositionDirectionAndSize);
+                    //Position (without beziers) is p_0 + t * (v_0 + g * t * 1/2)
+                    //Direction is v_0 + g * t
+                    CreateProjectileEffect(AllPlayers(), fx, AllPlayers(), UpdateEveryFrame(projData[EvaluateOnce(ID)].Position(EvaluateOnce(_tempArgsForConstructorTwo))), EvaluateOnce(_tempArgsForConstructorTwo).Velocity + EvaluateOnce(_tempArgsForConstructorTwo).Gravity * projData[EvaluateOnce(ID)].time, EvaluateOnce(Args.Oversize), ProjectileEffectReeval.PositionDirectionAndSize);
                     }
             );
             //projData_VFX[ID] = LastCreatedEntity();

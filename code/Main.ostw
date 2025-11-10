@@ -87,6 +87,7 @@ if (EventPlayer() == HostPlayer())
 {
     ProjectileArgs myArgs = {ProjFX: ProjFX.PharahRocket, StartPosition: EventPlayer().EyePosition(), Speed: 50, Gravity: Vector.Zero, Lifetime: 2, ..ProjectileArgs.Default()};
     CreateCustomProjectile(myArgs);
+    bigProjIDs.ModAppend(lastProjectileID);
 }
 
 
