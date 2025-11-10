@@ -731,5 +731,3 @@ Vector ClampDirection(in Vector dir)
 {
     return Vector(Clamp(dir.X, -1, 1), Clamp(dir.Y, -1, 1), Clamp(dir.Z, -1, 1));
 }
-
-Number Clamp(in Number value, in Number min, in Number max): Min(Max(value, min), max);
