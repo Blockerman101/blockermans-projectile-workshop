@@ -86,14 +86,19 @@ private void SimpleProcessing(in Number ID, in Number _interval, in Color color,
         //break;
     } //stop raycasting if the latest one hit
 }
+
+
+
 Number speed(in Number ID): projData[ID].ReadOnly.Velocity.Magnitude;
+
+//The interval for the checks, in seconds (15 ticks / 62.5tps = 0.24s)
 Number inter: 0.24;
 
 //projRad + baseRad + scalar * speed * intervalOfSC
-Number rad(in Number ID): projData[ID].ReadOnly.Radius + 4 + 0.5 * speed(ID) * inter;
+Number rad(in Number ID): projData[ID].ReadOnly.Radius + 10 + 1.0 * speed(ID) * inter;
 
 //The faster a proj is going, the more you can assume ahead of it to be the checked position
-Vector pos(in Number ID): projData[ID].PositionAtTime(inter * Min(1, speed(ID) / 85));
+Vector pos(in Number ID): projData[ID].PositionAtTime(inter * Min(1, Min(85, speed(ID)) / 85));
 private void StateCheck(in Number ID, in Vector position)
 {
     //Criteria for complex state
