@@ -113,7 +113,7 @@ if (projConstructor.Length > 0)
 
         //first ED Check
         Number ModdedTimeToMaxHeight: Max(0, -1 * Args.Speed * DotProduct(Args.Direction, Args.Gravity)/DotProduct(Args.Gravity, Args.Gravity))%interval;
-        SimpleProcessing(ID, (!ModdedTimeToMaxHeight ? interval : ModdedTimeToMaxHeight) + deltaT, Color.SkyBlue, BeamType.GoodBeam, i => {return Args.StartPosition;}); //First EC. If there is no TTMH (the proj is created past its apex), run a full interval EC check
+        ECollision(ID, (!ModdedTimeToMaxHeight ? interval : ModdedTimeToMaxHeight) + deltaT, Color.SkyBlue, BeamType.GoodBeam, i => {return Args.StartPosition;}); //First EC. If there is no TTMH (the proj is created past its apex), run a full interval EC check
         
         //First StateCheck. If the proj spawns close to a player, it should be in the complex state
         StateCheck(ID, Args.StartPosition);
@@ -153,7 +153,6 @@ if (projConstructor.Length > 0)
                     CreateProjectileEffect(AllPlayers(), fx, AllPlayers(), UpdateEveryFrame(projData[EvaluateOnce(ID)].Position(EvaluateOnce(_tempArgsForConstructorTwo))), EvaluateOnce(_tempArgsForConstructorTwo).Velocity + EvaluateOnce(_tempArgsForConstructorTwo).Gravity * projData[EvaluateOnce(ID)].time, EvaluateOnce(Args.Oversize), ProjectileEffectReeval.PositionDirectionAndSize);
                     }
             );
-            //projData_VFX[ID] = LastCreatedEntity();
             projData[ID].ReadOnly.VFX = LastCreatedEntity();
             //projData[ID].ReadOnly.VFX.ModAppend(LastCreatedEntity());
 
