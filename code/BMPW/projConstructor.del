@@ -153,8 +153,8 @@ if (projConstructor.Length > 0)
                     CreateProjectileEffect(AllPlayers(), fx, AllPlayers(), UpdateEveryFrame(projData[EvaluateOnce(ID)].Position(EvaluateOnce(_tempArgsForConstructorTwo))), EvaluateOnce(_tempArgsForConstructorTwo).Velocity + EvaluateOnce(_tempArgsForConstructorTwo).Gravity * projData[EvaluateOnce(ID)].time, EvaluateOnce(Args.Oversize), ProjectileEffectReeval.PositionDirectionAndSize);
                     }
             );
-            projData[ID].ReadOnly.VFX = LastCreatedEntity();
-            //projData[ID].ReadOnly.VFX.ModAppend(LastCreatedEntity());
+            //projData[ID].ReadOnly.VFX = LastCreatedEntity();
+            projData[ID].ReadOnly.VFX.ModAppend(LastCreatedEntity());
 
             ProjDestructor.Queue(ID, Args.Lifetime - deltaT);
 

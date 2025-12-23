@@ -68,15 +68,25 @@ private void ECollision(in Number ID, in Number _interval, in Color color, BeamT
 
         //if (IsTrueForAny([position, endPosition, raycast], ArrayElement() == Vector.Zero)) {LogToInspector("!--POSITIONS REGISTERED ZERO--!");}
 
-        //CreateBeamEffect(HostPlayer(), beamType, position, raycast, Color.Red, EffectRev.None);
-        //projData[ID].ReadOnly.VFX.ModAppend(LastCreatedEntity());
-        //CreateEffect(HostPlayer(), Effect.Sphere, color, raycast, 0.25, EffectRev.None);
-        //projData[ID].ReadOnly.VFX.ModAppend(LastCreatedEntity());
+        CreateBeamEffect(HostPlayer(), beamType, position, raycast, Color.Red, EffectRev.None);
+        projData[ID].ReadOnly.VFX.ModAppend(LastCreatedEntity());
+        CreateEffect(HostPlayer(), Effect.Sphere, color, raycast, 0.25, EffectRev.None);
+        projData[ID].ReadOnly.VFX.ModAppend(LastCreatedEntity());
         
 
 //        if ([position, endPosition, raycast].IsTrueForAny(v => v == Vector.Zero)) {LogToInspector($"POSITIONS REGISTERED ZERO");}
     if (raycast != endPosition) 
     {
+        //if the projectile is complex, do an additional player raycast to make sure the environment isnt the player
+        if (complexProjs.Contains(ID)) {
+            //If the environment-checking raycast hit a player, dont queue it to be destroyed
+            //skip 3 if the log is there, 2 if it isnt
+            if (RayCastHitPlayer(tempPositions.StartPosition, tempPositions.EndPosition, projData[ID].ReadOnly.Targets, null, true) != null) {
+                SmallMessage(HostPlayer(), "skipped!");
+                Skip(4);
+            }
+            //SkipIf(RayCastHitPlayer(tempPositions.StartPosition, tempPositions.EndPosition, projData[ID].ReadOnly.Targets, null, true) != null, 3);
+        }
         //By making the queue time {offset} shorter, you avoid false positives with PC (take the case of a projectile hitting reins shield)
         //^ not needed if you just include objs in PD
         Number offset: 0.016*0;
@@ -106,9 +116,9 @@ private void StateCheck(in Number ID, in Vector position)
     {
         if (complexProjs.All(v => v != ID))
         {
-            complexProjs.ModAppend(ID);
+            //complexProjs.ModAppend(ID);
             //This should be the same as ticks in PD
-            checkPCollision(ID, 5);
+            //checkPCollision(ID, 5);
         }
     }
     else

@@ -22,9 +22,10 @@
         {
             "General":
             {
-            
-
-
+                "General":
+                {
+                    "Ability Cooldown Time": 0
+                }
             },
 
             

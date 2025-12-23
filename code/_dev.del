@@ -141,3 +141,22 @@ if (hp.IsFiringSecondary())
     Wait(2.5);
     StopCamera(hp);
 }
+
+rule: 'Movement bot'
+if (HasSpawned(hp))
+{
+    CreateDummyBot(Hero.Tracer, OppositeTeamOf(TeamOf(hp)), -1, null, null);
+    Player dummy = LastCreatedEntity();
+    StartScalingPlayer(dummy, 2, false);
+    while (EntityExists(dummy)) {
+        SetFacing(dummy, Forward(), Relative.ToWorld);
+        MinWait();
+        PressButton(dummy, Button.SecondaryFire);
+        Wait(0.5);
+
+        SetFacing(dummy, Backward(), Relative.ToWorld);
+        MinWait();
+        PressButton(dummy, Button.SecondaryFire);
+        Wait(0.5);
+    }
+}
