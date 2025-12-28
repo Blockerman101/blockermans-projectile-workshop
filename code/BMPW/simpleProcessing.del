@@ -77,20 +77,11 @@ private void ECollision(in Number ID, in Number _interval, in Color color, BeamT
 //        if ([position, endPosition, raycast].IsTrueForAny(v => v == Vector.Zero)) {LogToInspector($"POSITIONS REGISTERED ZERO");}
     if (raycast != endPosition) 
     {
-        //if the projectile is complex, do an additional player raycast to make sure the environment isnt the player
-        if (complexProjs.Contains(ID)) {
-            //If the environment-checking raycast hit a player, dont queue it to be destroyed
-            //skip 3 if the log is there, 2 if it isnt
-            if (RayCastHitPlayer(tempPositions.StartPosition, tempPositions.EndPosition, projData[ID].ReadOnly.Targets, null, true) != null) {
-                SmallMessage(HostPlayer(), "skipped!");
-                Skip(4);
-            }
-            //SkipIf(RayCastHitPlayer(tempPositions.StartPosition, tempPositions.EndPosition, projData[ID].ReadOnly.Targets, null, true) != null, 3);
-        }
         //By making the queue time {offset} shorter, you avoid false positives with PC (take the case of a projectile hitting reins shield)
         //^ not needed if you just include objs in PD
-        Number offset: 0.016*0;
-        Number timeToDestroy: interval * Min(1, Max(0, LinearInterpolate(0, 1, (position.DistanceTo(raycast)/position.DistanceTo(endPosition))))) - offset;
+        //Number offset: 0.016*0;
+        //Number timeToDestroy: interval * Min(1, Max(0, LinearInterpolate(0, 1, (position.DistanceTo(raycast) / position.DistanceTo(endPosition))))) - offset;
+        Number timeToDestroy: interval * Min(1, Max(0, LinearInterpolate(0, 1, (position.DistanceTo(raycast) / position.DistanceTo(endPosition)))));
         ProjDestructor.Queue(ID, timeToDestroy); //Cant add an offset for visuals because it would mess up ricochets
         LogToInspector($"Collided! (Proj {ID} queued with {timeToDestroy} seconds\n(Current Tick {(TotalTimeElapsed() / 0.016).Floor()} with {((timeToDestroy) / 0.016).Floor()} ticks to destruction\nExpected to be destroyed at tick {((time + timeToDestroy) / 0.016).Floor()}))");
         //break;

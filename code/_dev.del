@@ -133,12 +133,12 @@ if (HostPlayer().IsButtonHeld(Button.Crouch))
 
 Player hp: HostPlayer();
 rule: 'Create test proj'
-if (hp.IsFiringSecondary())
+if (projData.Length > 1)
 {
     //Vector ogPos: (EvaluateOnce(EyePosition(hp) + 10 * WorldVectorOf(Forward(), hp, LocalVector.Rotation)) + Up() * 40 * (tte - EvaluateOnce(<Vector>tte)));
     StopCamera(hp);
     StartCamera(hp, projData[1].Position() + hp.FacingDirection() * 3, projData[1].Position(), 0);
-    Wait(2.5);
+    Wait(1.5);
     StopCamera(hp);
 }
 
