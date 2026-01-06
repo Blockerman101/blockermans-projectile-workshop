@@ -156,7 +156,7 @@ if (projConstructor.Length > 0)
             //projData[ID].ReadOnly.VFX = LastCreatedEntity();
             projData[ID].ReadOnly.VFX.ModAppend(LastCreatedEntity());
 
-            ProjDestructor.Queue(ID, Args.Lifetime - deltaT);
+            ProjDestructor.Queue(ID, Args.Lifetime - deltaT, TypeOfDestruction.Timeout);
 
             //If the server load is on the higher side, limit the constructor rate so THE BUG happens less
             //Wait(ServerLoadPeak() >= 150 ? 0.032 : 0.016);

@@ -5,12 +5,44 @@ globalvar ProjDestructor[] projDestructor = [];
 rule: '[BMPW] Destructor - Destroy Proj'
 Event.OngoingGlobal
 if (projDestructor.Length)
-if (TotalTimeElapsed() >= projDestructor.First.time)
+if (projDestructor.First.time <= TotalTimeElapsed())
 {
     Number ID: projDestructor.First.ID;
+    ProjDestructor current: projDestructor.First;
+
+    if (current.TypeOfDestruction == TypeOfDestruction.Environment)
+    {
+        //JIT check for EC
+            Number timeBackwards: -0.1;
+            Number timeForwards:   0.1;
+        tempPositions.StartPosition = projData[ID].PositionAtTime(timeBackwards);
+        tempPositions.EndPosition = projData[ID].PositionAtTime(timeForwards);
+        //This will need to include targets in order for their objects to be tracked
+        tempPositions.RaycastPosition = RayCastHitPosition(tempPositions.StartPosition, tempPositions.EndPosition, projData[ID].ReadOnly.Targets, null, true);
+
+        Number timeToDestroy: timeBackwards + (timeBackwards + timeForwards) * Min(1, Max(0, LinearInterpolate(0, 1, (tempPositions.StartPosition.DistanceTo(tempPositions.RaycastPosition) / tempPositions.StartPosition.DistanceTo(tempPositions.EndPosition)))));
+        //LogToInspector($"proj {ID}\nold: {projDestructor.First.extra}\nnew: {tempPositions.RaycastPosition}");
+        LogToInspector($"Time is {timeToDestroy}");
+
+        //If we didn't collide with something, prevent destruction & check the remainder of the projs EC interval
+        if (tempPositions.RaycastPosition == tempPositions.EndPosition)
+        {
+            ECollision(ID, interval - projDestructor.First.extra, Color.LimeGreen, BeamType.GrappleBeam, i => {return projData[i].Position();});
+            SmallMessage(HostPlayer(), "prevented!");
+            projDestructor.ModRemoveByIndex(0);
+            MinWait();
+            LoopIfConditionIsTrue();
+            Abort();
+        }
+        
+    }
+
+
+
+
 
     //DestroyEffect(projData_VFX[ID]);
-    DestroyEffect(projData[ID].ReadOnly.VFX);
+    //DestroyEffect(projData[ID].ReadOnly.VFX);
     LogToInspector($"Destroyed fx {projData[ID].ReadOnly.VFX} from proj {ID}");
     projData[ID].ProjState = ProjState.Inactive;
     complexProjs.ModRemoveByValue(ID);
@@ -32,7 +64,8 @@ if (TotalTimeElapsed() >= projDestructor.First.time)
     LogToInspector($"Destroyed Proj {ID} (Tick {(time/0.016).Floor()})");
 
     //Do this last, ID is tied to ProjDestructor
-    ProjDestructor.ClearFromQueue(ID); 
+        //ProjDestructor.ClearFromQueue(ID); 
+    projDestructor.ModRemoveByIndex(0);
     MinWait();
 
     //
@@ -65,7 +98,7 @@ Event.OngoingGlobal
 if (cond && !projConstructor.Length)
 {
     Wait(0.25, WaitBehavior.AbortWhenFalse);
-    DestroyEffect(projData.Map(v => v.ReadOnly.VFX));
+    //DestroyEffect(projData.Map(v => v.ReadOnly.VFX));
     WipeData();
 
     MinWait();

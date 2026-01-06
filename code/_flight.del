@@ -1,6 +1,6 @@
 playervar define Flight;
 playervar define FlightKnockInterrupt;
-playervar define FlightSpeedMetersPerSecond = 70;
+playervar define FlightSpeedMetersPerSecond = 30;
 
 rule: "DEBUG - Press interact to toggle flight on and off."
 Event.OngoingPlayer
