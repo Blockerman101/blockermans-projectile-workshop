@@ -72,6 +72,8 @@ private void ECollision(in Number ID, in Number _interval, in Color color, BeamT
         projData[ID].ReadOnly.VFX.ModAppend(LastCreatedEntity());
         CreateEffect(HostPlayer(), Effect.Sphere, color, raycast, 0.25, EffectRev.None);
         projData[ID].ReadOnly.VFX.ModAppend(LastCreatedEntity());
+        //CreateEffect(HostPlayer(), Effect.Sphere, color, position, 0.25, EffectRev.None);
+        //projData[ID].ReadOnly.VFX.ModAppend(LastCreatedEntity());
         
 
 //        if ([position, endPosition, raycast].IsTrueForAny(v => v == Vector.Zero)) {LogToInspector($"POSITIONS REGISTERED ZERO");}

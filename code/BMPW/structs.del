@@ -288,12 +288,6 @@ public Number EffectiveSizeToOversize(in ProjFX fx, in Number effectiveSize) {
     }
 }
 
-rule: 'Testing oversize'
-{
-    LogToInspector($"Echo Sticky Bomb at size 1: {EffectiveSizeToOversize(ProjFX.EchoStickyBomb, 1)}");
-    LogToInspector($"Ram at size 2.3: {EffectiveSizeToOversize(ProjFX.RamattraRavenousVortexSphere, 2.3)}");
-}
-
 enum RicochetTarget {Players, World, PlayersAndWorld}
 
 struct Dictionary<K, V>

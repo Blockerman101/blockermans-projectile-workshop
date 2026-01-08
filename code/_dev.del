@@ -161,7 +161,7 @@ if (HasSpawned(hp))
     }
 }
 
-rule: 'Destroy FX'
+disabled rule: 'Destroy FX'
 if ([Button.Crouch, Button.SecondaryFire].All(v => hp.IsButtonHeld(v)))
 {
     DestroyAllEffects();
