@@ -14,7 +14,7 @@
                 "Enabled Maps": ["Workshop Island Night"],
                 "Game Mode Start": "Immediately",
                 "Respawn As Random Hero": false,
-                "Respawn Time Scalar": 40
+                "Respawn Time Scalar": 0
             }
         },
 

@@ -88,7 +88,6 @@ private void ECollision(in Number ID, in Number _interval, in Color color, BeamT
         //Number offset: 0.016*0;
         //Number timeToDestroy: scopedInterval * Min(1, Max(0, LinearInterpolate(0, 1, (position.DistanceTo(raycast) / position.DistanceTo(endPosition))))) - offset;
         Number timeToDestroy: scopedInterval * Min(1, Max(0, LinearInterpolate(0, 1, (position.DistanceTo(raycast) / position.DistanceTo(endPosition)))));
-        LogToInspector($"Time was {timeToDestroy}");
         ProjDestructor.Queue(ID, timeToDestroy, TypeOfDestruction.Environment, scopedInterval - timeToDestroy); //Cant add an offset for visuals because it would mess up ricochets
         LogToInspector($"Collided! (Proj {ID} queued with {timeToDestroy} seconds\n(Current Tick {(TotalTimeElapsed() / 0.016).Floor()} with {((timeToDestroy) / 0.016).Floor()} ticks to destruction\nExpected to be destroyed at tick {((time + timeToDestroy) / 0.016).Floor()}))");
         //break;
@@ -114,9 +113,9 @@ private void StateCheck(in Number ID, in Vector position)
     {
         if (complexProjs.All(v => v != ID))
         {
-            //complexProjs.ModAppend(ID);
-            //This should be the same as ticks in PD
-            //checkPCollision(ID, 5);
+            complexProjs.ModAppend(ID);
+            //This should be the same as ticks in PC
+            checkPCollision(ID, 5);
         }
     }
     else

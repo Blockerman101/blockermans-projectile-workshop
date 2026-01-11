@@ -75,7 +75,7 @@ struct ProjData
     //public Vector Position: b0;
 
     //A macro for caculating the projectiles position
-    public ref Vector Position(in ReadOnlyProjData overrideReadOnlyVar=ReadOnly): (overrideReadOnlyVar.InitPos + time * (overrideReadOnlyVar.Velocity + overrideReadOnlyVar.Gravity * time / 2));
+    public Vector Position(in ReadOnlyProjData overrideReadOnlyVar=ReadOnly): (overrideReadOnlyVar.InitPos + time * (overrideReadOnlyVar.Velocity + overrideReadOnlyVar.Gravity * time / 2));
 
     //A variable for the projectiles position, updated every [interval] in the EC
     public Vector PositionAtTime(in Number extraTime): this.ReadOnly.InitPos + (time + extraTime) * (this.ReadOnly.Velocity + this.ReadOnly.Gravity * (time + extraTime) / 2);

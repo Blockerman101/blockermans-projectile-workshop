@@ -14,7 +14,7 @@ if (complexProjs.Length)
 private void checkPCollision(in Number ID, in Number ticks) {
     ProjData proj: projData[ID];
     projData[ID].HitPlayer = RayCastHitPlayer(projData[ID].Position(), proj.PositionAtTime(0.016*ticks), proj.ReadOnly.Targets, null, true);
-    //PlayEffect(HostPlayer(), PlayEffect.GoodExplosion, Color.White, proj.Position, 0.5);
+    //PlayEffect(HostPlayer(), PlayEffect.GoodExplosion, Color.White, proj.Position(), 0.5);
     //PlayEffect(HostPlayer(), PlayEffect.GoodExplosion, Color.White, proj.PositionAtTime(0.016*ticks), 0.5);
     if (proj.HitPlayer)
     {
@@ -23,6 +23,38 @@ private void checkPCollision(in Number ID, in Number ticks) {
     }
 }
 
+
+//public void SpreadOverTicks<T>(in T[] Array, in Number NumberOfTicks, in Number time, const T => void func) {
+//    
+//    //Ticks start at 0 (end at NumberOfTicks - 1), so they easily convert to indices
+//
+//    //CAN be a macro, but higher element count (and harder to read in inspector for debugging)
+//    //Put it in extendedCollection to make every instance part of an array rather their own variable
+//    Number currentTick! = (time/0.016).Floor()%NumberOfTicks;
+//
+//    
+//    Number start: LinearInterpolate(0, Array.Length, currentTick/NumberOfTicks).Floor();
+//    Number end: LinearInterpolate(0, Array.Length, (currentTick+1)/NumberOfTicks).Floor();
+//
+//    //if the length is smaller than or equal to the number of ticks, just reference the tick for the index
+//    if (Array.Length <= NumberOfTicks) {
+//
+//        //ensure the 'index' (currentTick) is not less than the array size. array lengths start at index 1, ticks at index 0, so they cant be equal, as ArrayLength 3 has a max index of 2, so it shouldnt be checking index 3 (when the ticks and length are equal)
+//        if (Array.Length > currentTick) {
+//            func(Array[currentTick]);
+//        }
+//
+//    //if there are more projs than ticks
+//    } else {
+//
+//        //iterate through every proj in that tick, already buffered to be startingIndex 0 (see above)
+//        WaitlessForLoop(start, v => v < end, 1, i => {
+//            func(Array[i]);
+//        });
+//    }
+//    MinWait();
+//    LoopIfConditionIsTrue();
+//}
 
 public void SpreadOverTicks<T>(in T[] Array, in Number NumberOfTicks, in Number time, const T => void func) {
     

@@ -109,7 +109,7 @@ if (projData.Length > 1)
     LoopIfConditionIsTrue();
 }
 
-disabled rule: '[DEV] show state criteria'
+rule: '[DEV] show proj state'
 {
     WaitlessForLoop(1, v => v <= 10, 1, i => {
         CreateEffect((projData[EvaluateOnce(i)].ProjState == ProjState.Active) ? AllPlayers() : null, Effect.Sphere, complexProjs.Contains(EvaluateOnce(i)) ? Color.Blue : Color.Red, pos(EvaluateOnce(i)), rad(EvaluateOnce(i)), EffectRev.VisibleToPositionRadiusAndColor);
@@ -131,18 +131,18 @@ if (HostPlayer().IsButtonHeld(Button.Crouch) && hp.IsButtonHeld(Button.PrimaryFi
     }
 }
 
-Player hp: HostPlayer();
+private Player hp: HostPlayer();
 rule: 'Track test proj'
 if (projData.Length > 1)
 {
     //Vector ogPos: (EvaluateOnce(EyePosition(hp) + 10 * WorldVectorOf(Forward(), hp, LocalVector.Rotation)) + Up() * 40 * (tte - EvaluateOnce(<Vector>tte)));
     StopCamera(hp);
     StartCamera(hp, projData[1].Position() + hp.FacingDirection() * 3, projData[1].Position(), 0);
-    Wait(2.5);
+    Wait(1.5);
     StopCamera(hp);
 }
 
-rule: 'Movement bot'
+disabled rule: 'Movement bot'
 if (HasSpawned(hp))
 {
     CreateDummyBot(Hero.Tracer, OppositeTeamOf(TeamOf(hp)), -1, null, null);
@@ -161,7 +161,7 @@ if (HasSpawned(hp))
     }
 }
 
-rule: 'Destroy FX'
+disabled rule: 'Destroy FX'
 if ([Button.Crouch, Button.SecondaryFire].All(v => hp.IsButtonHeld(v)))
 {
     DestroyAllEffects();
