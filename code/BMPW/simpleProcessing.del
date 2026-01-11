@@ -53,7 +53,9 @@ private void ECollision(in Number ID, in Number _interval, in Color color, BeamT
     tempPositions.Temp = _interval;
     Number scopedInterval: tempPositions.Temp;
 
+
     LogToInspector($"coll checked! (ID: {ID}, CurrentTII: {currentTick}, interval: {scopedInterval}, TTE: {time})");
+    LogToInspector($"\ninterval: {scopedInterval}\n");
     tempPositions.StartPosition = StartPosition(ID);
     tempPositions.EndPosition = projData[ID].PositionAtTime(scopedInterval);
     //This will need to include targets in order for their objects to be tracked
@@ -72,6 +74,8 @@ private void ECollision(in Number ID, in Number _interval, in Color color, BeamT
         projData[ID].ReadOnly.VFX.ModAppend(LastCreatedEntity());
         CreateEffect(HostPlayer(), Effect.Sphere, color, raycast, 0.25, EffectRev.None);
         projData[ID].ReadOnly.VFX.ModAppend(LastCreatedEntity());
+        CreateEffect(HostPlayer(), Effect.Sphere, color, endPosition, 0.25, EffectRev.None);
+        projData[ID].ReadOnly.VFX.ModAppend(LastCreatedEntity());
         //CreateEffect(HostPlayer(), Effect.Sphere, color, position, 0.25, EffectRev.None);
         //projData[ID].ReadOnly.VFX.ModAppend(LastCreatedEntity());
         
@@ -85,7 +89,7 @@ private void ECollision(in Number ID, in Number _interval, in Color color, BeamT
         //Number timeToDestroy: scopedInterval * Min(1, Max(0, LinearInterpolate(0, 1, (position.DistanceTo(raycast) / position.DistanceTo(endPosition))))) - offset;
         Number timeToDestroy: scopedInterval * Min(1, Max(0, LinearInterpolate(0, 1, (position.DistanceTo(raycast) / position.DistanceTo(endPosition)))));
         LogToInspector($"Time was {timeToDestroy}");
-        ProjDestructor.Queue(ID, timeToDestroy, TypeOfDestruction.Environment, timeToDestroy); //Cant add an offset for visuals because it would mess up ricochets
+        ProjDestructor.Queue(ID, timeToDestroy, TypeOfDestruction.Environment, scopedInterval - timeToDestroy); //Cant add an offset for visuals because it would mess up ricochets
         LogToInspector($"Collided! (Proj {ID} queued with {timeToDestroy} seconds\n(Current Tick {(TotalTimeElapsed() / 0.016).Floor()} with {((timeToDestroy) / 0.016).Floor()} ticks to destruction\nExpected to be destroyed at tick {((time + timeToDestroy) / 0.016).Floor()}))");
         //break;
     } //stop raycasting if the latest one hit

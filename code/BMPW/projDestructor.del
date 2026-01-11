@@ -10,9 +10,9 @@ if (projDestructor.First.time <= TotalTimeElapsed())
     Number ID: projDestructor.First.ID;
     ProjDestructor current: projDestructor.First;
 
+    //JIT check for EC
     if (current.TypeOfDestruction == TypeOfDestruction.Environment)
     {
-        //JIT check for EC
             Number timeBackwards: -0.1;
             Number timeForwards:   0.1;
         tempPositions.StartPosition = projData[ID].PositionAtTime(timeBackwards);
@@ -20,28 +20,62 @@ if (projDestructor.First.time <= TotalTimeElapsed())
         //This will need to include targets in order for their objects to be tracked
         tempPositions.RaycastPosition = RayCastHitPosition(tempPositions.StartPosition, tempPositions.EndPosition, projData[ID].ReadOnly.Targets, null, true);
 
-        Number timeToDestroy: timeBackwards + (timeBackwards + timeForwards) * Min(1, Max(0, LinearInterpolate(0, 1, (tempPositions.StartPosition.DistanceTo(tempPositions.RaycastPosition) / tempPositions.StartPosition.DistanceTo(tempPositions.EndPosition)))));
+        CreateBeamEffect(HostPlayer(), BeamType.BrigitteFlailChainBeam, tempPositions.StartPosition, tempPositions.EndPosition, Color.Red, EffectRev.None);
+            projData[ID].ReadOnly.VFX.ModAppend(LastCreatedEntity());
+        CreateEffect(HostPlayer(), Effect.Sphere, Color.Purple, tempPositions.RaycastPosition, 0.25, EffectRev.None);
+            projData[ID].ReadOnly.VFX.ModAppend(LastCreatedEntity());
+        CreateBeamEffect(HostPlayer(), BeamType.GoodBeam, (tempPositions.StartPosition + tempPositions.EndPosition) / 2, tempPositions.EndPosition, Color.Black, EffectRev.None);
+            projData[ID].ReadOnly.VFX.ModAppend(LastCreatedEntity());
+        CreateEffect(HostPlayer(), Effect.Sphere, Color.Orange, (tempPositions.StartPosition + tempPositions.EndPosition) / 2, 0.15, EffectRev.None);
+            projData[ID].ReadOnly.VFX.ModAppend(LastCreatedEntity());
+
+        Number timeToDestroy: (timeBackwards + (timeBackwards.Abs() + timeForwards) * Min(1, Max(0, LinearInterpolate(0, 1, (tempPositions.StartPosition.DistanceTo(tempPositions.RaycastPosition) / tempPositions.StartPosition.DistanceTo(tempPositions.EndPosition))))));
         //LogToInspector($"proj {ID}\nold: {projDestructor.First.extra}\nnew: {tempPositions.RaycastPosition}");
         LogToInspector($"Time is {timeToDestroy}");
 
         //If we didn't collide with something, prevent destruction & check the remainder of the projs EC interval
         if (tempPositions.RaycastPosition == tempPositions.EndPosition)
         {
-            ECollision(ID, interval - projDestructor.First.extra, Color.LimeGreen, BeamType.GrappleBeam, i => {return projData[i].Position();});
             SmallMessage(HostPlayer(), "prevented!");
+            LogToInspector($"prevented destruction of proj {ID}");
+            ECollision(ID, projDestructor.First.TimeLeft, Color.LimeGreen, BeamType.GrappleBeam, i => {return projData[i].PositionAtTime(-0.032);});
             projDestructor.ModRemoveByIndex(0);
             MinWait();
             LoopIfConditionIsTrue();
             Abort();
         }
-        
+
+        //If we did collide with something, update that queue (and set it to not JIT check again)
+        //Fine tunes the destruction time
+        else if (timeToDestroy > 0.016)
+        {
+            SmallMessage(HostPlayer(), "recalculated!");
+            LogToInspector($"recalculated des of proj {ID}\nTo be destroyed in {timeToDestroy}s");
+
+            //Update current, doing time last just to be safe
+
+            projDestructor[0] = {
+                time: current.time + timeToDestroy,
+                TypeOfDestruction: TypeOfDestruction.JustInTime,
+                ..current
+            };
+            //projDestructor.First.time += timeToDestroy;
+            ProjDestructor.SortQueue();
+
+            MinWait();
+            LoopIfConditionIsTrue();
+            Abort();
+        }
+
+        //If the timeToDestroy is <= 0, fine-tune some data
+        //This will make the destruction position / ricochets more accurate
+        else
+        {
+            //FINE TUNE HERE
+        }
     }
 
-
-
-
-
-    DestroyEffect(projData[ID].ReadOnly.VFX);
+    //DestroyEffect(projData[ID].ReadOnly.VFX);
     LogToInspector($"Destroyed fx {projData[ID].ReadOnly.VFX} from proj {ID}");
     projData[ID].ProjState = ProjState.Inactive;
     complexProjs.ModRemoveByValue(ID);
@@ -97,7 +131,7 @@ Event.OngoingGlobal
 if (cond && !projConstructor.Length)
 {
     Wait(0.25, WaitBehavior.AbortWhenFalse);
-    DestroyEffect(projData.Map(v => v.ReadOnly.VFX));
+    //DestroyEffect(projData.Map(v => v.ReadOnly.VFX));
     WipeData();
 
     MinWait();

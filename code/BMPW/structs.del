@@ -34,7 +34,8 @@ enum TypeOfDestruction
     NULL,
     Environment,
     Player,
-    Timeout
+    Timeout,
+    JustInTime
 }
 
 single struct ProjDestructor
@@ -42,15 +43,18 @@ single struct ProjDestructor
     public Number ID;
     public Number time; //The relative time to destroy this projectile
     public TypeOfDestruction TypeOfDestruction;
-    //extra is currently raw time until destruction
-    public Any extra;
+    //the length (in time) of the check subtracted by how much of the check was checked
+    //equivalent to scopedInterval - timeToDestroy
+    public Number TimeLeft;
     //Queue proj to be destroyed, the proj will be destroyed `time` seconds from when the method is called
 
     //public static void Queue(in Number ID, in Number time) {projDestructor = projDestructor.Append({ID: ID, time: tte + time}).Sort(v => v.time);} //TTE() is automatically included, so the extra time is relative
-    public static void Queue(in Number ID, in Number time, in TypeOfDestruction typeOfDestruction, in Any extra=null) {projDestructor = projDestructor.Append({ID: ID, time: tte + time, TypeOfDestruction: typeOfDestruction, extra: extra}).Sort(v => v.time);}
-    public static void QueueRaw(in Number ID, in Number time, in TypeOfDestruction typeOfDestruction, in Any extra=null) {projDestructor = projDestructor.Append({ID: ID, time: time, TypeOfDestruction: typeOfDestruction, extra: extra}).Sort(v => v.time);} //Queue without the automated TTE, letting you have full control over when, specifically, the proj is deleted
+    public static void Queue(in Number ID, in Number time, in TypeOfDestruction typeOfDestruction, in Number TimeLeft=null) {projDestructor = projDestructor.Append({ID: ID, time: tte + time, TypeOfDestruction: typeOfDestruction, TimeLeft: TimeLeft}).Sort(v => v.time);}
+    public static void QueueRaw(in Number ID, in Number time, in TypeOfDestruction typeOfDestruction, in Number TimeLeft=null) {projDestructor = projDestructor.Append({ID: ID, time: time, TypeOfDestruction: typeOfDestruction, TimeLeft: TimeLeft}).Sort(v => v.time);} //Queue without the automated TTE, letting you have full control over when, specifically, the proj is deleted
+    public static void SortQueue() {projDestructor = projDestructor.Sort(v => v.time);}
+    
     //Destroy proj ASAP
-    public static void Destroy(in Number ID) {projDestructor = projDestructor.Append({ID: ID, time: null, TypeOfDestruction: null, extra: null}).Sort(v => v.time);}
+    public static void Destroy(in Number ID) {projDestructor = projDestructor.Append({ID: ID, time: null, TypeOfDestruction: null, TimeLeft: null}).Sort(v => v.time);}
     public static void ClearFromQueue(in Number ID) {projDestructor = projDestructor.Filter(v => v.ID != ID);}
 }
 
