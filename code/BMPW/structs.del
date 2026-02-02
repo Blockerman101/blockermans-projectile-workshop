@@ -120,12 +120,21 @@ single struct RaycastPositions
     public static RaycastPositions Construct(): {StartPosition: Vector.Zero, EndPosition: Vector.Zero, RaycastPosition: Vector.Zero, Temp: null};
 }
 
+single struct ECOneTimeCheck
+{
+    public Number _interval;
+    public Vector StartPosition;
+    public Color color;
+}
+
 single struct TimeInInterval
 {
     public Number ID;
-    public Number Time;
-    public static TimeInInterval Construct(): {Time: null, ID: null};
-    public static void Queue(in Number ID, in Number Time) {timeInInterval = timeInInterval.Append({ID: ID, Time: Time}).Sort(v => v.Time);}
+    //also serves as the data for a one time check
+    public Number|ECOneTimeCheck Time;
+    public static TimeInInterval Construct(): {Time: null, ID: null, };
+    public static void Queue(in Number ID, in Number Time) {timeInInterval = timeInInterval.Append({ID: ID, Time: Time, DataForTemp: null}).Sort(v => v.Time);}
+    public static void OneTimeQueue(in Number ID, in ECOneTimeCheck data) {timeInInterval = timeInInterval.ModAppend({ID: ID, Time: data});}
     public static void ClearFromQueue(in Number ID) {timeInInterval = timeInInterval.Filter(v => v.ID != ID);}
 }
 

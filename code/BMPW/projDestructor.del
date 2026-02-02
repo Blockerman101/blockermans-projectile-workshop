@@ -41,7 +41,7 @@ if (projDestructor.First.time <= TotalTimeElapsed())
         if (tempPositions.RaycastPosition == tempPositions.EndPosition)
         {
             LogToInspector($"prevented destruction of proj {ID}");
-            ECollision(ID, projDestructor.First.TimeLeft, Color.LimeGreen, BeamType.GrappleBeam, i => {return projData[i].PositionAtTime(-0.032);});
+            ECollision(ID, projDestructor.First.TimeLeft, i => {return projData[i].PositionAtTime(-0.032);}, Color.LimeGreen);
             projDestructor.ModRemoveByIndex(0);
             MinWait();
             LoopIfConditionIsTrue();
