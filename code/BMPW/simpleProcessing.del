@@ -13,21 +13,34 @@ if (!currentTick)
     LogToInspector($"Lap ended. (Index returned to 0) (TTE: {time})");
 }
 
-Boolean diff(in Number ID): (timeInInterval[ID].Time == currentTick);
+Boolean diff(): (timeInInterval[intervalIndex].Time == currentTick || timeInInterval.Last.Data);
 rule: '[BMPW] Check EC'
 //This might fix a (potential?) bug
 if (intervalIndex < timeInInterval.Length)
-if (diff(intervalIndex))
-//if (CountOf(timeInInterval.Last.Time) > 1)
+if (diff())
 {
+    Boolean IsOneTimeCheck: (timeInInterval.Last.Data);
+    TimeInInterval OneTimeData: timeInInterval.Last;
+
+    if (IsOneTimeCheck) {
+        LogToInspector($"Doing OTC for Proj {OneTimeData.ID}\ntimePassed (ms): {TotalTimeElapsed() * 1000 - OneTimeData.Data.MSTimeOfCall}");
+        SmallMessage(HostPlayer(), $"Doing OTC for Proj {OneTimeData.ID}");
+    }
+
     //Adding a bit to interval so the checks slightly overlap, prevents edgecase bugs
     //ECollision(timeInInterval[intervalIndex].ID, (interval + 0.032), ID => {return projData[ID].Position();}, Color.White); //Check this projectile
 
     //called 4 times without debug stuff
-    Number ID: timeInInterval[intervalIndex].ID;
-    Number _interval: (interval + 0.032);
-    Number => Vector StartPosition: projID => {return projData[projID].Position();};
-    Color color: Color.White;
+    Number ID:                      IsOneTimeCheck ? OneTimeData.ID                                 : timeInInterval[intervalIndex].ID;
+
+    //called once (stored in tempPositions.Temp / scopedInterval)
+    Number _interval:               IsOneTimeCheck ? OneTimeData.Data._interval                     : (interval + 0.032);
+
+    //called once (stored in tempPositions.StartPosition)
+    Number => Vector StartPosition: IsOneTimeCheck ? x => {return OneTimeData.Data.StartPosition;}  : (projID => {return projData[projID].Position();});
+
+    //called twice, but its cosmetic
+    Color color:                    IsOneTimeCheck ? OneTimeData.Data.color                         : Color.White;
 
 
     tempPositions.Temp = _interval;
@@ -57,11 +70,13 @@ if (diff(intervalIndex))
 
         //if (IsTrueForAny([position, endPosition, raycast], ArrayElement() == Vector.Zero)) {LogToInspector("!--POSITIONS REGISTERED ZERO--!");}
 
-        CreateBeamEffect(HostPlayer(), BeamType.GrappleBeam, position, raycast, Color.Red, EffectRev.None);
+        CreateBeamEffect(HostPlayer(), BeamType.BadBeam, position, raycast, Color.Red, EffectRev.None);
         projData[ID].ReadOnly.VFX.ModAppend(LastCreatedEntity());
         CreateEffect(HostPlayer(), Effect.Sphere, color, raycast, 0.25, EffectRev.None);
         projData[ID].ReadOnly.VFX.ModAppend(LastCreatedEntity());
         CreateEffect(HostPlayer(), Effect.Sphere, color, endPosition, 0.25, EffectRev.None);
+        projData[ID].ReadOnly.VFX.ModAppend(LastCreatedEntity());
+        CreateEffect(HostPlayer(), Effect.Sphere, color, position, 0.25, EffectRev.None);
         projData[ID].ReadOnly.VFX.ModAppend(LastCreatedEntity());
         //CreateEffect(HostPlayer(), Effect.Sphere, color, position, 0.25, EffectRev.None);
         //projData[ID].ReadOnly.VFX.ModAppend(LastCreatedEntity());
@@ -92,33 +107,20 @@ if (diff(intervalIndex))
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-    if (CountOf(timeInInterval.Last.Time) > 1) {}
-    intervalIndex++; //Traverse to the next projectile
-    WaitUntil((diff(intervalIndex) || !intervalIndex) && intervalIndex < timeInInterval.Length , interval - (time%interval)); //Wait until the next proj is ready to be checked, and if either if the loop ends, or until there is a value at timeInInterval[intervalIndex].Time
+    if (IsOneTimeCheck) {
+        timeInInterval.ModRemoveByIndex(timeInInterval.Length - 1);
+    }
+    else {
+        intervalIndex++; //Traverse to the next projectile 
+        WaitUntil((diff() || !intervalIndex) && intervalIndex < timeInInterval.Length , interval - (time%interval)); //Wait until the next proj is ready to be checked, and if either if the loop ends, or until there is a value at timeInInterval[intervalIndex].Time
+    }
+    
     //Heres the reason why '&& intervalIndex < timeInInterval.Lengh' is needed: First off, this code makes sure that your not reading an out-of-scope index.
     //Take the case where there is 1 projectile, with a ProjTick of 0. When the Current Tick is 0, it will check Proj 1, then traverse to Proj 2.
     //Because there is no Proj 2, diff(1) corresponds to timeInInterval[1].Time == 0 -> null == 0 -> true. Therefore, the WaitUntil never happens, and it loops to the next check.
     //This happens an infinite amount of times (with 0 waits inbetween), crashing the server.
+    LoopIfConditionIsTrue();
+    Wait(0, WaitBehavior.RestartWhenTrue);
     LoopIfConditionIsTrue();
 }
 
@@ -167,6 +169,8 @@ private void ECollision(in Number ID, in Number _interval, const Number => Vecto
         CreateEffect(HostPlayer(), Effect.Sphere, color, raycast, 0.25, EffectRev.None);
         projData[ID].ReadOnly.VFX.ModAppend(LastCreatedEntity());
         CreateEffect(HostPlayer(), Effect.Sphere, color, endPosition, 0.25, EffectRev.None);
+        projData[ID].ReadOnly.VFX.ModAppend(LastCreatedEntity());
+        CreateEffect(HostPlayer(), Effect.Sphere, color, position, 0.25, EffectRev.None);
         projData[ID].ReadOnly.VFX.ModAppend(LastCreatedEntity());
         //CreateEffect(HostPlayer(), Effect.Sphere, color, position, 0.25, EffectRev.None);
         //projData[ID].ReadOnly.VFX.ModAppend(LastCreatedEntity());
