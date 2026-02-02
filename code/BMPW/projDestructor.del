@@ -79,7 +79,9 @@ if (projDestructor.First.time <= TotalTimeElapsed())
 
 
 
-    DestroyEffect(projData[ID].ReadOnly.VFX);
+    //DestroyEffect(projData[ID].ReadOnly.VFX);
+
+
     //LogToInspector($"Destroyed fx {projData[ID].ReadOnly.VFX} from proj {ID}");
     projData[ID].ProjState = ProjState.Inactive;
     complexProjs.ModRemoveByValue(ID);
@@ -134,7 +136,7 @@ Event.OngoingGlobal
 if (cond && !projConstructor.Length)
 {
     Wait(0.25, WaitBehavior.AbortWhenFalse);
-    DestroyEffect(projData.Map(v => v.ReadOnly.VFX));
+    //DestroyEffect(projData.Map(v => v.ReadOnly.VFX));
     WipeData();
 
     MinWait();

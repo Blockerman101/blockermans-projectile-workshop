@@ -132,7 +132,7 @@ if (HostPlayer().IsButtonHeld(Button.Crouch) && hp.IsButtonHeld(Button.PrimaryFi
 }
 
 private Player hp: HostPlayer();
-rule: 'Track test proj'
+disabled rule: 'Track test proj'
 if (projData.Length > 1)
 {
     //Vector ogPos: (EvaluateOnce(EyePosition(hp) + 10 * WorldVectorOf(Forward(), hp, LocalVector.Rotation)) + Up() * 40 * (tte - EvaluateOnce(<Vector>tte)));
