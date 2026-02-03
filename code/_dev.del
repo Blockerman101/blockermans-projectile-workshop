@@ -165,4 +165,5 @@ rule: 'Destroy FX'
 if ([Button.Crouch, Button.SecondaryFire].All(v => hp.IsButtonHeld(v)))
 {
     DestroyAllEffects();
+    DestroyAllInworldText();
 }

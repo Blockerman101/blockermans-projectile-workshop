@@ -97,7 +97,8 @@ if (projConstructor.Length > 0)
                 },
 
             //this is for testing, not intended for user
-            HitPlayer: null
+            HitPlayer: null,
+            DEBUG_ECCheck: null
         };
 
         ReadOnlyProjData _tempArgsForConstructorTwo = projData[ID].ReadOnly;
@@ -116,7 +117,7 @@ if (projConstructor.Length > 0)
         //ECollision(ID, (!ModdedTimeToMaxHeight ? interval : ModdedTimeToMaxHeight) + deltaT + 0.032, i => {return Args.StartPosition;}, Color.SkyBlue); //First EC. If there is no TTMH (the proj is created past its apex), run a full interval EC check
         LogToInspector($"OTQ here! (MTTMH: {ModdedTimeToMaxHeight})");
         TimeInInterval.OneTimeQueue(ID, <ECOneTimeCheck>{
-            _interval: (!ModdedTimeToMaxHeight ? interval : ModdedTimeToMaxHeight) + deltaT + 0.032,
+            _interval: (ModdedTimeToMaxHeight <= 0.016 ? interval : ModdedTimeToMaxHeight) + deltaT + 0.032,
             StartPosition: Args.StartPosition,
             color: Color.SkyBlue,
             MSTimeOfCall: TotalTimeElapsed() * 1000,

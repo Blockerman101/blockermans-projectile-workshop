@@ -75,6 +75,7 @@ struct ProjData
     //public Vector Position: b0;
 
     //A macro for caculating the projectiles position
+    public Number DEBUG_ECCheck;
     public Vector Position(in ReadOnlyProjData overrideReadOnlyVar=ReadOnly): (overrideReadOnlyVar.InitPos + time * (overrideReadOnlyVar.Velocity + overrideReadOnlyVar.Gravity * time / 2));
 
     //A variable for the projectiles position, updated every [interval] in the EC
@@ -84,7 +85,7 @@ struct ProjData
     public Vector PositionAtRawTime(in Number time): this.ReadOnly.InitPos + time * (this.ReadOnly.Velocity + this.ReadOnly.Gravity * time / 2);
 
    
-    public static ProjData Construct(): {ProjState: ProjState.NULL, ReadOnly: ReadOnlyProjData.Construct(), TimeOfCreation: 0, HitPlayer: null};  
+    public static ProjData Construct(): {ProjState: ProjState.NULL, ReadOnly: ReadOnlyProjData.Construct(), TimeOfCreation: 0, HitPlayer: null, DEBUG_ECCheck: null};  
     //public static void AddArgs(in ProjectileArgs args) {projData.Map(v => projData[CurrentArrayIndex()].ProjArgs).ModAppend(args);}
 }
 //single
@@ -135,7 +136,8 @@ single struct TimeInInterval
     public Number Time;
     public ECOneTimeCheck Data;
     public static TimeInInterval Construct(): {Time: null, ID: null, Data: null};
-    public static void Queue(in Number ID, in Number Time) {timeInInterval = timeInInterval.Append({ID: ID, Time: Time, Data: null}).Sort(v => v.Time).Sort(v => (<Boolean>v.Data));}
+    public static void Queue(in Number ID, in Number Time) {timeInInterval = timeInInterval.Append({ID: ID, Time: Time, Data: null}).Sort(v => v.Time);}
+    //public static void Queue(in Number ID, in Number Time) {timeInInterval = timeInInterval.Append({ID: ID, Time: Time, Data: null}).Sort(v => v.Time).Sort(v => (<Boolean>v.Data));}
     public static void OneTimeQueue(in Number ID, in ECOneTimeCheck data) {timeInInterval.ModAppend({ID: ID, Time: null, Data: data});}
     public static void ClearFromQueue(in Number ID) {timeInInterval = timeInInterval.Filter(v => v.ID != ID);}
 }

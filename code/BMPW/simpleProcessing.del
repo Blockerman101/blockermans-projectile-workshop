@@ -72,11 +72,14 @@ if (diff())
 
         CreateBeamEffect(HostPlayer(), BeamType.BadBeam, position, raycast, Color.Red, EffectRev.None);
         projData[ID].ReadOnly.VFX.ModAppend(LastCreatedEntity());
-        CreateEffect(HostPlayer(), Effect.Sphere, color, raycast, 0.25, EffectRev.None);
+        CreateEffect(HostPlayer(), Effect.Sphere, Color.LimeGreen, raycast, 0.25, EffectRev.None);
         projData[ID].ReadOnly.VFX.ModAppend(LastCreatedEntity());
-        CreateEffect(HostPlayer(), Effect.Sphere, color, endPosition, 0.25, EffectRev.None);
+        CreateEffect(HostPlayer(), Effect.Sphere, Color.Red, endPosition, 0.24, EffectRev.None);
         projData[ID].ReadOnly.VFX.ModAppend(LastCreatedEntity());
-        CreateEffect(HostPlayer(), Effect.Sphere, color, position, 0.25, EffectRev.None);
+        CreateEffect(HostPlayer(), Effect.Sphere, Color.SkyBlue, position, 0.23, EffectRev.None);
+        projData[ID].ReadOnly.VFX.ModAppend(LastCreatedEntity());
+        projData[ID].DEBUG_ECCheck++;
+        CreateInWorldText(HostPlayer(), $"Proj {ID} EC {projData[ID].DEBUG_ECCheck}", position, 1, Clipping.DoNotClip, InworldTextRev.None, Color.White, Spectators.DefaultVisibility);
         projData[ID].ReadOnly.VFX.ModAppend(LastCreatedEntity());
         //CreateEffect(HostPlayer(), Effect.Sphere, color, position, 0.25, EffectRev.None);
         //projData[ID].ReadOnly.VFX.ModAppend(LastCreatedEntity());
