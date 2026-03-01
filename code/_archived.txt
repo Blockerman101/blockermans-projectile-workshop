@@ -834,3 +834,53 @@ void updateUIText(ref ProjArgData data) {
     data.TextForValue = data.test.Invoke();
   //}   
 }
+
+
+
+
+private void ECollision(in Number ID, in Number _interval, const Number => Vector StartPosition, in Color color) {
+    tempPositions.Temp = _interval;
+    Number scopedInterval: tempPositions.Temp;
+
+
+    LogToInspector($"coll checked! (ID: {ID}, CurrentTII: {currentTick}, interval: {scopedInterval}, TTE: {time})");
+    LogToInspector($"\ninterval: {scopedInterval}\n");
+    tempPositions.StartPosition = StartPosition(ID);
+    tempPositions.EndPosition = projData[ID].PositionAtTime(scopedInterval);
+    //This will need to include targets in order for their objects to be tracked
+    tempPositions.RaycastPosition = RayCastHitPosition(tempPositions.StartPosition, tempPositions.EndPosition, projData[ID].ReadOnly.Targets, null, true);
+    Vector position: tempPositions.StartPosition;
+    Vector endPosition: tempPositions.EndPosition;
+    Vector raycast: tempPositions.RaycastPosition;
+
+
+    //Structuring the state check like this allows us to reuse the projs position instead of recalculating it
+    //StateCheck(ID, position);
+
+        //if (IsTrueForAny([position, endPosition, raycast], ArrayElement() == Vector.Zero)) {LogToInspector("!--POSITIONS REGISTERED ZERO--!");}
+
+        CreateBeamEffect(HostPlayer(), BeamType.GrappleBeam, position, raycast, Color.Red, EffectRev.None);
+        projData[ID].ReadOnly.VFX.ModAppend(LastCreatedEntity());
+        CreateEffect(HostPlayer(), Effect.Sphere, color, raycast, 0.25, EffectRev.None);
+        projData[ID].ReadOnly.VFX.ModAppend(LastCreatedEntity());
+        CreateEffect(HostPlayer(), Effect.Sphere, color, endPosition, 0.25, EffectRev.None);
+        projData[ID].ReadOnly.VFX.ModAppend(LastCreatedEntity());
+        CreateEffect(HostPlayer(), Effect.Sphere, color, position, 0.25, EffectRev.None);
+        projData[ID].ReadOnly.VFX.ModAppend(LastCreatedEntity());
+        //CreateEffect(HostPlayer(), Effect.Sphere, color, position, 0.25, EffectRev.None);
+        //projData[ID].ReadOnly.VFX.ModAppend(LastCreatedEntity());
+        
+
+//        if ([position, endPosition, raycast].IsTrueForAny(v => v == Vector.Zero)) {LogToInspector($"POSITIONS REGISTERED ZERO");}
+    if (raycast != endPosition) 
+    {
+        //By making the queue time {offset} shorter, you avoid false positives with PC (take the case of a projectile hitting reins shield)
+        //^ not needed if you just include objs in PD
+        //Number offset: 0.016*0;
+        //Number timeToDestroy: scopedInterval * Min(1, Max(0, LinearInterpolate(0, 1, (position.DistanceTo(raycast) / position.DistanceTo(endPosition))))) - offset;
+        Number timeToDestroy: scopedInterval * Min(1, Max(0, LinearInterpolate(0, 1, (position.DistanceTo(raycast) / position.DistanceTo(endPosition)))));
+        ProjDestructor.Queue(ID, timeToDestroy, TypeOfDestruction.Environment, scopedInterval - timeToDestroy); //Cant add an offset for visuals because it would mess up ricochets
+        LogToInspector($"Collided! (Proj {ID} queued with {timeToDestroy} seconds\n(Current Tick {(TotalTimeElapsed() / 0.016).Floor()} with {((timeToDestroy) / 0.016).Floor()} ticks to destruction\nExpected to be destroyed at tick {((time + timeToDestroy) / 0.016).Floor()}))");
+        //break;
+    } //stop raycasting if the latest one hit
+}

@@ -37,7 +37,7 @@ private playervar Number[] bigProjIDs = [];
 rule: 'Make big proj'
 Event.OngoingPlayer
 if (EventPlayer().IsButtonHeld(Button.PrimaryFire))
-if (!EventPlayer().IsButtonHeld(Button.Crouch))
+if (!EventPlayer().IsButtonHeld(Button.Crouch) && !EventPlayer().IsButtonHeld(Button.Interact))
 if (EventPlayer() == HostPlayer())
 {
     ProjectileArgs bigProj: {ProjFX: ProjFX.BaptisteBioticLauncher, Oversize: 0.2, Speed: 50, Lifetime: 2.5, ..ProjectileArgs.Default()};
@@ -79,7 +79,7 @@ if (bigProjIDs.Any(v => projData[v].ProjState == ProjState.Inactive))
     LoopIfConditionIsTrue();
 }
 
-rule: 'Track helix rockets'
+disabled rule: 'Track helix rockets'
 Event.OngoingPlayer
 if (EventPlayer().IsFiringSecondary())
 if (!EventPlayer().IsButtonHeld(Button.Crouch))

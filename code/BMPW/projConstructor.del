@@ -1,6 +1,7 @@
 //import "../../../Other/extraFunctions.ostw";
 import "structs.del";
 import "simpleProcessing.del";
+import "../_dev.del";
 Vector | Number lerp2(in Vector | Number a, in Vector | Number b, in Number t, in Number tMax): ((tMax - t)/tMax)*a + (t/tMax)*b;
 //lerp2(1, 5, 0.75, 1) = (1-0.75)*1 + (0.75)*5 = 0.25 + 3.75 = 4 "4 is 75% of the way from 1 to 5"
 //lerp2(1, 5, 1, 2) = 1(2 - 1)/2 + 5(1/2) = 1(0.5) + 5(0.5) = 0.5 + 2.5 = 3 
@@ -104,7 +105,14 @@ if (projConstructor.Length > 0)
         ReadOnlyProjData _tempArgsForConstructorTwo = projData[ID].ReadOnly;
 
         Number timeToMaxHeight: (tte + Max(0, -1 * Args.Speed * DotProduct(Args.Direction, Args.Gravity)/DotProduct(Args.Gravity, Args.Gravity)));
+        
+        
         Number ticksToMaxHeight: (((timeToMaxHeight%interval) / 0.016).Floor());
+        //the lower are for debugging
+        //Number ticksToMaxHeight: ((currentTick - ticksFromCurrentTick)%(interval/0.016));
+        //Number ticksToMaxHeight: ((currentTick - ticksFromCurrentTick)%(interval/0.016)) < 0 ? ((currentTick - ticksFromCurrentTick)%(interval/0.016)) + interval/0.016 : ((currentTick - ticksFromCurrentTick)%(interval/0.016));
+        //Number ticksToMaxHeight: 13;
+
         TimeInInterval.Queue(ID, ticksToMaxHeight);
         LogToInspector($"\nAdded to TII (ID: {ID})\nCurrentTick: {currentTick}, ProjTick: {ticksToMaxHeight}\nCurrentIndex: {intervalIndex}, ProjIndex: {timeInInterval.Map(v => v.ID).IndexOf(ID)}]\n");
         if (timeInInterval.Length > 1 && currentTick >= ticksToMaxHeight) {
@@ -112,12 +120,16 @@ if (projConstructor.Length > 0)
             intervalIndex++;
         }
 
-        //first ED Check
+        //first EC Check
         Number ModdedTimeToMaxHeight: (Max(0, -1 * Args.Speed * DotProduct(Args.Direction, Args.Gravity)/DotProduct(Args.Gravity, Args.Gravity)))%interval;
+        //for debugging
+        //Number ModdedTimeToMaxHeight: ((ticksToMaxHeight - currentTick < 0) ? (ticksToMaxHeight - currentTick + (interval/0.016)) : (ticksToMaxHeight - currentTick))*0.016;
+        
+        
         //ECollision(ID, (!ModdedTimeToMaxHeight ? interval : ModdedTimeToMaxHeight) + deltaT + 0.032, i => {return Args.StartPosition;}, Color.SkyBlue); //First EC. If there is no TTMH (the proj is created past its apex), run a full interval EC check
         LogToInspector($"OTQ here! (MTTMH: {ModdedTimeToMaxHeight})");
         TimeInInterval.OneTimeQueue(ID, <ECOneTimeCheck>{
-            _interval: (ModdedTimeToMaxHeight <= 0.016 ? interval : ModdedTimeToMaxHeight) + deltaT + 0.032,
+            _interval: (ModdedTimeToMaxHeight <= 0 ? interval : ModdedTimeToMaxHeight) + deltaT + 0.032,
             StartPosition: Args.StartPosition,
             color: Color.SkyBlue,
             MSTimeOfCall: TotalTimeElapsed() * 1000,

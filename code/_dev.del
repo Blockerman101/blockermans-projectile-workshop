@@ -61,7 +61,7 @@ rule: '[DEV] Text'
     _CreateDevText("TII: " + tte%interval);
     //_CreateDevText("[1] Time: " + timeInInterval.First.Time);
     _CreateDevText($"Entity Count: {EntityCount()}");
-    //_CreateDevText($"Proj 1 Pos: {projData[1].Position}");
+    //_CreateDevText($"deltaTicks: {ticksFromCurrentTick}");
 }
 
 
@@ -167,3 +167,13 @@ if ([Button.Crouch, Button.SecondaryFire].All(v => hp.IsButtonHeld(v)))
     DestroyAllEffects();
     DestroyAllInworldText();
 }
+
+
+//globalvar Number ticksFromCurrentTick = 5;
+//rule: '[DEV] Change projtick delay from current tick'
+//if ([Button.PrimaryFire, Button.SecondaryFire].Any(v => hp.IsButtonHeld(v)))
+//if (hp.IsButtonHeld(Button.Interact))
+//{
+//    Number incOrDec: hp.IsButtonHeld(Button.PrimaryFire) ? 1 : -1;
+//    ticksFromCurrentTick += incOrDec;
+//}

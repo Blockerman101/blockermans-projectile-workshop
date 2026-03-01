@@ -71,13 +71,9 @@ if (diff())
         //if (IsTrueForAny([position, endPosition, raycast], ArrayElement() == Vector.Zero)) {LogToInspector("!--POSITIONS REGISTERED ZERO--!");}
 
         CreateBeamEffect(HostPlayer(), BeamType.BadBeam, position, raycast, Color.Red, EffectRev.None);
-        projData[ID].ReadOnly.VFX.ModAppend(LastCreatedEntity());
         CreateEffect(HostPlayer(), Effect.Sphere, Color.LimeGreen, raycast, 0.25, EffectRev.None);
-        projData[ID].ReadOnly.VFX.ModAppend(LastCreatedEntity());
         CreateEffect(HostPlayer(), Effect.Sphere, Color.Red, endPosition, 0.24, EffectRev.None);
-        projData[ID].ReadOnly.VFX.ModAppend(LastCreatedEntity());
         CreateEffect(HostPlayer(), Effect.Sphere, Color.SkyBlue, position, 0.23, EffectRev.None);
-        projData[ID].ReadOnly.VFX.ModAppend(LastCreatedEntity());
         projData[ID].DEBUG_ECCheck++;
         CreateInWorldText(HostPlayer(), $"Proj {ID} EC {projData[ID].DEBUG_ECCheck}" + (IsOneTimeCheck ? " (OTC!)" : ""), position + Up() * 0.2 * projData.Length, 1, Clipping.DoNotClip, InworldTextRev.None, Color.White, Spectators.DefaultVisibility);
         
@@ -115,18 +111,18 @@ if (diff())
         timeInInterval.ModRemoveByIndex(timeInInterval.Length - 1);
     }
     else {
-        intervalIndex++; //Traverse to the next projectile 
+        intervalIndex++; //Traverse to the next projectile
     }
-    WaitUntil((diff() || !intervalIndex) && intervalIndex < timeInInterval.Length , interval - (time%interval)); //Wait until the next proj is ready to be checked, and if either if the loop ends, or until there is a value at timeInInterval[intervalIndex].Time
-    
+    //WaitUntil((diff()) && intervalIndex < timeInInterval.Length, interval - (time%interval)); //Wait until the next proj is ready to be checked, and if either if the loop ends, or until there is a value at timeInInterval[intervalIndex].Time
+
     //Heres the reason why '&& intervalIndex < timeInInterval.Lengh' is needed: First off, this code makes sure that your not reading an out-of-scope index.
     //Take the case where there is 1 projectile, with a ProjTick of 0. When the Current Tick is 0, it will check Proj 1, then traverse to Proj 2.
     //Because there is no Proj 2, diff(1) corresponds to timeInInterval[1].Time == 0 -> null == 0 -> true. Therefore, the WaitUntil never happens, and it loops to the next check.
     //This happens an infinite amount of times (with 0 waits inbetween), crashing the server.
     LoopIfConditionIsTrue();
     
-    //Wait(0, WaitBehavior.RestartWhenTrue);
-    //LoopIfConditionIsTrue();
+    Wait(0, WaitBehavior.RestartWhenTrue);
+    LoopIfConditionIsTrue();
 }
 
 rule: '[BMPW] Update State'
@@ -146,54 +142,10 @@ Number interval: ((rawInterval / 0.016).Ceil() * 0.016); //Rounded up to the nea
 //Cant use tte because of the bug with chased vars in conditions
 Number time: TotalTimeElapsed();
 Number currentTick: ((time%interval) / 0.016).Floor();
-//Number rayCastCount: 1;
-
-private void ECollision(in Number ID, in Number _interval, const Number => Vector StartPosition, in Color color) {
-    tempPositions.Temp = _interval;
-    Number scopedInterval: tempPositions.Temp;
 
 
-    LogToInspector($"coll checked! (ID: {ID}, CurrentTII: {currentTick}, interval: {scopedInterval}, TTE: {time})");
-    LogToInspector($"\ninterval: {scopedInterval}\n");
-    tempPositions.StartPosition = StartPosition(ID);
-    tempPositions.EndPosition = projData[ID].PositionAtTime(scopedInterval);
-    //This will need to include targets in order for their objects to be tracked
-    tempPositions.RaycastPosition = RayCastHitPosition(tempPositions.StartPosition, tempPositions.EndPosition, projData[ID].ReadOnly.Targets, null, true);
-    Vector position: tempPositions.StartPosition;
-    Vector endPosition: tempPositions.EndPosition;
-    Vector raycast: tempPositions.RaycastPosition;
 
 
-    //Structuring the state check like this allows us to reuse the projs position instead of recalculating it
-    //StateCheck(ID, position);
-
-        //if (IsTrueForAny([position, endPosition, raycast], ArrayElement() == Vector.Zero)) {LogToInspector("!--POSITIONS REGISTERED ZERO--!");}
-
-        CreateBeamEffect(HostPlayer(), BeamType.GrappleBeam, position, raycast, Color.Red, EffectRev.None);
-        projData[ID].ReadOnly.VFX.ModAppend(LastCreatedEntity());
-        CreateEffect(HostPlayer(), Effect.Sphere, color, raycast, 0.25, EffectRev.None);
-        projData[ID].ReadOnly.VFX.ModAppend(LastCreatedEntity());
-        CreateEffect(HostPlayer(), Effect.Sphere, color, endPosition, 0.25, EffectRev.None);
-        projData[ID].ReadOnly.VFX.ModAppend(LastCreatedEntity());
-        CreateEffect(HostPlayer(), Effect.Sphere, color, position, 0.25, EffectRev.None);
-        projData[ID].ReadOnly.VFX.ModAppend(LastCreatedEntity());
-        //CreateEffect(HostPlayer(), Effect.Sphere, color, position, 0.25, EffectRev.None);
-        //projData[ID].ReadOnly.VFX.ModAppend(LastCreatedEntity());
-        
-
-//        if ([position, endPosition, raycast].IsTrueForAny(v => v == Vector.Zero)) {LogToInspector($"POSITIONS REGISTERED ZERO");}
-    if (raycast != endPosition) 
-    {
-        //By making the queue time {offset} shorter, you avoid false positives with PC (take the case of a projectile hitting reins shield)
-        //^ not needed if you just include objs in PD
-        //Number offset: 0.016*0;
-        //Number timeToDestroy: scopedInterval * Min(1, Max(0, LinearInterpolate(0, 1, (position.DistanceTo(raycast) / position.DistanceTo(endPosition))))) - offset;
-        Number timeToDestroy: scopedInterval * Min(1, Max(0, LinearInterpolate(0, 1, (position.DistanceTo(raycast) / position.DistanceTo(endPosition)))));
-        ProjDestructor.Queue(ID, timeToDestroy, TypeOfDestruction.Environment, scopedInterval - timeToDestroy); //Cant add an offset for visuals because it would mess up ricochets
-        LogToInspector($"Collided! (Proj {ID} queued with {timeToDestroy} seconds\n(Current Tick {(TotalTimeElapsed() / 0.016).Floor()} with {((timeToDestroy) / 0.016).Floor()} ticks to destruction\nExpected to be destroyed at tick {((time + timeToDestroy) / 0.016).Floor()}))");
-        //break;
-    } //stop raycasting if the latest one hit
-}
 
 
 
