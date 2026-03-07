@@ -2,15 +2,15 @@
 import "BMPW/projDestructor.del";
 
 void _CreateDevText(in String str) {CreateHudText(HostPlayer(), str, null, null, Location.Left);}
-disabled rule: '[DEV] Spawn Dummies'
+rule: '[DEV] Spawn Dummies'
 Event.OngoingGlobal
-if (HostPlayer().IsButtonHeld(Button.Crouch) && HostPlayer().IsButtonHeld(Button.PrimaryFire))
+if (HostPlayer().IsButtonHeld(Button.Crouch) && HostPlayer().IsButtonHeld(Button.PrimaryFire) && !hp.IsButtonHeld(Button.Jump))
 {
     //CreateDummyBot(AllHeroes().Random(), OppositeTeamOf(HostPlayer().Team()), -1, PositionOf(HostPlayer()));
-    CreateDummyBot(Hero.Reinhardt, OppositeTeamOf(HostPlayer().Team()), -1, PositionOf(HostPlayer()), HostPlayer().FacingDirection());
+    CreateDummyBot(AllHeroes().Random(), OppositeTeamOf(HostPlayer().Team()), -1, PositionOf(HostPlayer()), HostPlayer().FacingDirection());
     LogToInspector($"{LastCreatedEntity()} Spawned");
-    Wait(0.25);
-    StartHoldingButton(LastCreatedEntity(), Button.SecondaryFire);
+    //Wait(0.25);
+    //StartHoldingButton(LastCreatedEntity(), Button.SecondaryFire);
 }
 
 disabled rule: '[DEV] Spawn Rein'
@@ -120,7 +120,7 @@ rule: '[DEV] show proj state'
 }
 globalvar Boolean slowmo;
 rule: '[DEV] slowdown'
-if (HostPlayer().IsButtonHeld(Button.Crouch) && hp.IsButtonHeld(Button.PrimaryFire))
+if (HostPlayer().IsButtonHeld(Button.Crouch) && hp.IsButtonHeld(Button.PrimaryFire) && hp.IsButtonHeld(Button.Jump))
 {
     slowmo = !slowmo;
     if (slowmo) {
