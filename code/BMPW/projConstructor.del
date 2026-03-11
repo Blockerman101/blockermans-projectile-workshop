@@ -96,10 +96,7 @@ if (projConstructor.Length > 0)
                 Gravity: Args.Gravity,
                 VFX: null
                 },
-
-            //this is for testing, not intended for user
-            HitPlayer: null,
-            DEBUG_ECCheck: null
+            HitPlayer: null
         };
 
         ReadOnlyProjData _tempArgsForConstructorTwo = projData[ID].ReadOnly;

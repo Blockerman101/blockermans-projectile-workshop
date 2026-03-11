@@ -47,7 +47,8 @@ if (diff())
     Number scopedInterval: tempPositions.Temp;
 
 
-    LogToInspector($"coll checked! (ID: {ID}, Check: {projData[ID].DEBUG_ECCheck + 1}, CurrentTII: {currentTick}, interval: {scopedInterval}, TTE: {time})");
+    //LogToInspector($"coll checked! (ID: {ID}, Check: {projData[ID].DEBUG_ECCheck + 1}, CurrentTII: {currentTick}, interval: {scopedInterval}, TTE: {time})");
+    LogToInspector($"coll checked! (ID: {ID}, CurrentTII: {currentTick}, interval: {scopedInterval}, TTE: {time})");
     LogToInspector($"\ninterval: {scopedInterval}\n");
 
     tempPositions.StartPosition = StartPosition(ID);
@@ -74,8 +75,8 @@ if (diff())
         CreateEffect(HostPlayer(), Effect.Sphere, Color.LimeGreen, raycast, 0.25, EffectRev.None);
         CreateEffect(HostPlayer(), Effect.Sphere, Color.Red, endPosition, 0.24, EffectRev.None);
         CreateEffect(HostPlayer(), Effect.Sphere, Color.SkyBlue, position, 0.23, EffectRev.None);
-        projData[ID].DEBUG_ECCheck++;
-        CreateInWorldText(HostPlayer(), $"Proj {ID} EC {projData[ID].DEBUG_ECCheck}" + (IsOneTimeCheck ? " (OTC!)" : ""), position + Up() * 0.2 * projData.Length, 1, Clipping.DoNotClip, InworldTextRev.None, Color.White, Spectators.DefaultVisibility);
+        //projData[ID].DEBUG_ECCheck++;
+        //CreateInWorldText(HostPlayer(), $"Proj {ID} EC {projData[ID].DEBUG_ECCheck}" + (IsOneTimeCheck ? " (OTC!)" : ""), position + Up() * 0.2 * projData.Length, 1, Clipping.DoNotClip, InworldTextRev.None, Color.White, Spectators.DefaultVisibility);
         
         projData[ID].ReadOnly.VFX.ModAppend(LastCreatedEntity());
         //CreateEffect(HostPlayer(), Effect.Sphere, color, position, 0.25, EffectRev.None);
