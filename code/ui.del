@@ -294,9 +294,11 @@ public String ButtonToText(in Button button) {
 //"_TimeOfCall",
 
 ProjectileArgs args: HostPlayer()._projArgs;
-Player hp: HostPlayer();
+
+
+Player host: HostPlayer();
 playervar ProjectileArgs _projArgs = ProjectileArgs.Default();
-ProjectileArgs defaultArgsWithVectors: {StartPosition: Vector(0,0,0), Direction: Vector(0,0,0), ..ProjectileArgs.Default(hp)};
+ProjectileArgs defaultArgsWithVectors: {StartPosition: Vector(0,0,0), Direction: Vector(0,0,0), ..ProjectileArgs.Default(host)};
 
 void updateInconstants(Player player=HostPlayer()) "Update Inconstants" {
     if (!UI[UIArgName.UseRawValues].ValueForNonArg) {
@@ -306,7 +308,8 @@ void updateInconstants(Player player=HostPlayer()) "Update Inconstants" {
             }
         }   
     }
-    UpdateOversizeByEffectiveSize();
+    //UpdateOversizeByEffectiveSize();
+    
 }
 
 single struct ActionsForUIPress
@@ -360,7 +363,7 @@ if (UI.Length)
     CreateEffect(UI[UIArgName.UseRawValues].ValueForNonArg ? lp : null, Effect.Sphere, Color.Red, args.StartPosition, 0.5, EffectRev.VisibleToPositionAndRadius);
     CreateEffect(UI[UIArgName.UseRawValues].ValueForNonArg ? lp : null, Effect.Sphere, Color.White, args.StartPosition + args.Direction.Normalize() * 0.5, 0.125, EffectRev.VisibleToPositionAndRadius);
     CreateBeamEffect(UI[UIArgName.UseRawValues].ValueForNonArg ? lp : null, BeamType.GrappleBeam, args.StartPosition, args.StartPosition + args.Direction.Normalize() * 0.5, Color.White, EffectRev.VisibleToPositionAndRadius);
-    CreateBeamEffect(UI[UIArgName.UseRawValues].ValueForNonArg && UI[UIArgName.DeltaVector].ValueForNonArg != null ? lp : null, BeamType.BrigitteFlailChainBeam, args.StartPosition, args.StartPosition + (hp._projArgs.Direction + Vector(0, UI[UIArgName.DeltaVector].ValueForNonArg, 0)).Normalize() * 3, Color.White, EffectRev.VisibleToPositionAndRadius);
+    CreateBeamEffect(UI[UIArgName.UseRawValues].ValueForNonArg && UI[UIArgName.DeltaVector].ValueForNonArg != null ? lp : null, BeamType.BrigitteFlailChainBeam, args.StartPosition, args.StartPosition + (host._projArgs.Direction + Vector(0, UI[UIArgName.DeltaVector].ValueForNonArg, 0)).Normalize() * 3, Color.White, EffectRev.VisibleToPositionAndRadius);
 
     Wait(1);
     CreateHudText(VisibleTo: LocalPlayer(),
@@ -382,7 +385,7 @@ if (UI.Length)
 
         //Split into 3 different strings, 1 for each vector component
         String[] valueToSplitVectorString: [<"<0>", XOf(current.Value(lp))>, <"<0>", YOf(current.Value(lp))>, <"<0>", ZOf(current.Value(lp))>];
-        Any addPointer: (ArgIndexForUI.First != current.Pointer || !hp.editingArgs ? "" : makeFG("fgFF0000FF", $"←±{changeSize}"));
+        Any addPointer: (ArgIndexForUI.First != current.Pointer || !host.editingArgs ? "" : makeFG("fgFF0000FF", $"←±{changeSize}"));
         
         if (!UI[i].Internal)
         {
@@ -536,7 +539,7 @@ if ((bindings.Any(v => IsButtonHeld(EventPlayer(), v.button)) && editingArgs) ||
                                 if (current.Value() == 1 || current.Value() == 0) {
                                     twoStepBooleanTimer.ModAppend([<Number>current.Pointer, TotalTimeElapsed()]);
                                 } else {
-                                    PlayEffect(HostPlayer(), PlayEffect.BuffImpactSound, null, EyePosition(hp), 150);
+                                    PlayEffect(HostPlayer(), PlayEffect.BuffImpactSound, null, EyePosition(host), 150);
                                 }
                                 if (current.IsArg) {
                                     EventPlayer()._projArgs[ArgIndexForUI.First] = (args[ArgIndexForUI.First] == false ?
@@ -568,11 +571,11 @@ if ((bindings.Any(v => IsButtonHeld(EventPlayer(), v.button)) && editingArgs) ||
                         }
                 //if current is not an arg
                 //} else {
-                //    SmallMessage(hp, "else fired!");
+                //    SmallMessage(host, "else fired!");
                 //    UI[ArgIndexForUI.First].ValueForNonArg = !current.ValueForNonArg;
                 //}
                 UI[ArgIndexForUI.First].UpdateOverriddenText();
-                updateInconstants(hp);
+                updateInconstants(host);
                 break;
             
             //DecreaseByChange
@@ -582,36 +585,36 @@ if ((bindings.Any(v => IsButtonHeld(EventPlayer(), v.button)) && editingArgs) ||
 }
 Number countOfProjFX: GetAllEnumValues<ProjFX>().Length;
 
-public void UpdateOversizeByEffectiveSize() {
-    //Data gathered by ispeakpeak
-    //https://discord.com/channels/570672959799164958/1253195280573136896/1253203348610486326
-    if (UI[UIArgName.EnableEffectiveSize].ValueForNonArg)
-    {
-        switch (hp._projArgs.ProjFX)
-        {
-            case ProjFX.BaptisteBioticLauncher:         UI[UIArgName.EffectiveSize].ValueForNonArg = Clamp(UI[UIArgName.EffectiveSize].ValueForNonArg, 00.150, 06.750);    hp._projArgs.Oversize = (UI[UIArgName.EffectiveSize].ValueForNonArg - 00.150) / (06.750 - 00.150);      break;
-            case ProjFX.BastionA36TacticalGrenade:      UI[UIArgName.EffectiveSize].ValueForNonArg = Clamp(UI[UIArgName.EffectiveSize].ValueForNonArg, 00.500, 07.500);    hp._projArgs.Oversize = (UI[UIArgName.EffectiveSize].ValueForNonArg - 00.500) / (07.500 - 00.500);      break;
-            case ProjFX.EchoStickyBomb:                 UI[UIArgName.EffectiveSize].ValueForNonArg = Clamp(UI[UIArgName.EffectiveSize].ValueForNonArg, 00.200, 05.000);    hp._projArgs.Oversize = (UI[UIArgName.EffectiveSize].ValueForNonArg - 00.200) / (05.000 - 00.200);      break;
-            case ProjFX.GenjiShuriken:                  UI[UIArgName.EffectiveSize].ValueForNonArg = Clamp(UI[UIArgName.EffectiveSize].ValueForNonArg, 00.100, 02.900);    hp._projArgs.Oversize = (UI[UIArgName.EffectiveSize].ValueForNonArg - 00.100) / (02.900 - 00.100);      break;
-            case ProjFX.LucioSonicAmplifier:            UI[UIArgName.EffectiveSize].ValueForNonArg = Clamp(UI[UIArgName.EffectiveSize].ValueForNonArg, 00.625, 05.000);    hp._projArgs.Oversize = (UI[UIArgName.EffectiveSize].ValueForNonArg - 00.625) / (05.000 - 00.625);      break;
-            case ProjFX.MeiIcicle:                      UI[UIArgName.EffectiveSize].ValueForNonArg = Clamp(UI[UIArgName.EffectiveSize].ValueForNonArg, 00.625, 09.750);    hp._projArgs.Oversize = (UI[UIArgName.EffectiveSize].ValueForNonArg - 00.625) / (09.750 - 00.625);      break;
-            case ProjFX.MercyCaduceusBlaster:           UI[UIArgName.EffectiveSize].ValueForNonArg = Clamp(UI[UIArgName.EffectiveSize].ValueForNonArg, 00.025, 01.200);    hp._projArgs.Oversize = (UI[UIArgName.EffectiveSize].ValueForNonArg - 00.025) / (01.200 - 00.025);      break;
-            case ProjFX.MoiraDamageOrb:                 UI[UIArgName.EffectiveSize].ValueForNonArg = Clamp(UI[UIArgName.EffectiveSize].ValueForNonArg, 00.650, 14.000);    hp._projArgs.Oversize = (UI[UIArgName.EffectiveSize].ValueForNonArg - 00.650) / (14.000 - 00.650);      break;
-            case ProjFX.MoiraHealOrb:                   UI[UIArgName.EffectiveSize].ValueForNonArg = Clamp(UI[UIArgName.EffectiveSize].ValueForNonArg, 00.650, 14.000);    hp._projArgs.Oversize = (UI[UIArgName.EffectiveSize].ValueForNonArg - 00.650) / (14.000 - 00.650);      break;
-            case ProjFX.OrbProjectile:                  UI[UIArgName.EffectiveSize].ValueForNonArg = Clamp(UI[UIArgName.EffectiveSize].ValueForNonArg, 00.500, 04.500);    hp._projArgs.Oversize = (UI[UIArgName.EffectiveSize].ValueForNonArg - 00.500) / (04.500 - 00.500);      break;
-            case ProjFX.OrisaFusionDriver:              UI[UIArgName.EffectiveSize].ValueForNonArg = Clamp(UI[UIArgName.EffectiveSize].ValueForNonArg, 00.325, 06.050);    hp._projArgs.Oversize = (UI[UIArgName.EffectiveSize].ValueForNonArg - 00.325) / (06.050 - 00.325);      break;
-            case ProjFX.PharahRocket:                   UI[UIArgName.EffectiveSize].ValueForNonArg = Clamp(UI[UIArgName.EffectiveSize].ValueForNonArg, 00.075, 02.350);    hp._projArgs.Oversize = (UI[UIArgName.EffectiveSize].ValueForNonArg - 00.075) / (02.350 - 00.075);      break;
-            case ProjFX.RamattraRavenousVortexSphere:   UI[UIArgName.EffectiveSize].ValueForNonArg = Clamp(UI[UIArgName.EffectiveSize].ValueForNonArg, 00.300, 05.750);    hp._projArgs.Oversize = (UI[UIArgName.EffectiveSize].ValueForNonArg - 00.300) / (05.750 - 00.300);      break;
-            case ProjFX.ReinhardtFireStrike:            UI[UIArgName.EffectiveSize].ValueForNonArg = Clamp(UI[UIArgName.EffectiveSize].ValueForNonArg, 01.300, 06.500);    hp._projArgs.Oversize = (UI[UIArgName.EffectiveSize].ValueForNonArg - 01.300) / (06.500 - 01.300);      break;
-            case ProjFX.RoadhogScrap:                   UI[UIArgName.EffectiveSize].ValueForNonArg = Clamp(UI[UIArgName.EffectiveSize].ValueForNonArg, 00.200, 00.850);    hp._projArgs.Oversize = (UI[UIArgName.EffectiveSize].ValueForNonArg - 00.200) / (00.850 - 00.200);      break;
-            case ProjFX.RoadhogScrapBall:               UI[UIArgName.EffectiveSize].ValueForNonArg = Clamp(UI[UIArgName.EffectiveSize].ValueForNonArg, 00.450, 06.000);    hp._projArgs.Oversize = (UI[UIArgName.EffectiveSize].ValueForNonArg - 00.450) / (06.000 - 00.450);      break;
-            case ProjFX.SigmaHypersphere:               UI[UIArgName.EffectiveSize].ValueForNonArg = Clamp(UI[UIArgName.EffectiveSize].ValueForNonArg, 00.100, 03.250);    hp._projArgs.Oversize = (UI[UIArgName.EffectiveSize].ValueForNonArg - 00.100) / (03.250 - 00.100);      break;
-            case ProjFX.SymmetraPhotonProjector:        UI[UIArgName.EffectiveSize].ValueForNonArg = Clamp(UI[UIArgName.EffectiveSize].ValueForNonArg, 00.150, 05.400);    hp._projArgs.Oversize = (UI[UIArgName.EffectiveSize].ValueForNonArg - 00.150) / (05.400 - 00.150);      break;
-            case ProjFX.ZaryaGraviton:                  UI[UIArgName.EffectiveSize].ValueForNonArg = Clamp(UI[UIArgName.EffectiveSize].ValueForNonArg, 00.200, 04.000);    hp._projArgs.Oversize = (UI[UIArgName.EffectiveSize].ValueForNonArg - 00.200) / (04.000 - 00.200);      break;
-            case ProjFX.ZaryaParticleCannon:            UI[UIArgName.EffectiveSize].ValueForNonArg = Clamp(UI[UIArgName.EffectiveSize].ValueForNonArg, 00.250, 08.500);    hp._projArgs.Oversize = (UI[UIArgName.EffectiveSize].ValueForNonArg - 00.250) / (08.500 - 00.250);      break;
-        }
-    }
-}
+//public void UpdateOversizeByEffectiveSize() {
+//    //Data gathered by ispeakpeak
+//    //https://discord.com/channels/570672959799164958/1253195280573136896/1253203348610486326
+//    if (UI[UIArgName.EnableEffectiveSize].ValueForNonArg)
+//    {
+//        switch (host._projArgs.ProjFX)
+//        {
+//            case ProjFX.BaptisteBioticLauncher:         UI[UIArgName.EffectiveSize].ValueForNonArg = Clamp(UI[UIArgName.EffectiveSize].ValueForNonArg, 00.150, 06.750);    host._projArgs.Oversize = (UI[UIArgName.EffectiveSize].ValueForNonArg - 00.150) / (06.750 - 00.150);      break;
+//            case ProjFX.BastionA36TacticalGrenade:      UI[UIArgName.EffectiveSize].ValueForNonArg = Clamp(UI[UIArgName.EffectiveSize].ValueForNonArg, 00.500, 07.500);    host._projArgs.Oversize = (UI[UIArgName.EffectiveSize].ValueForNonArg - 00.500) / (07.500 - 00.500);      break;
+//            case ProjFX.EchoStickyBomb:                 UI[UIArgName.EffectiveSize].ValueForNonArg = Clamp(UI[UIArgName.EffectiveSize].ValueForNonArg, 00.200, 05.000);    host._projArgs.Oversize = (UI[UIArgName.EffectiveSize].ValueForNonArg - 00.200) / (05.000 - 00.200);      break;
+//            case ProjFX.GenjiShuriken:                  UI[UIArgName.EffectiveSize].ValueForNonArg = Clamp(UI[UIArgName.EffectiveSize].ValueForNonArg, 00.100, 02.900);    host._projArgs.Oversize = (UI[UIArgName.EffectiveSize].ValueForNonArg - 00.100) / (02.900 - 00.100);      break;
+//            case ProjFX.LucioSonicAmplifier:            UI[UIArgName.EffectiveSize].ValueForNonArg = Clamp(UI[UIArgName.EffectiveSize].ValueForNonArg, 00.625, 05.000);    host._projArgs.Oversize = (UI[UIArgName.EffectiveSize].ValueForNonArg - 00.625) / (05.000 - 00.625);      break;
+//            case ProjFX.MeiIcicle:                      UI[UIArgName.EffectiveSize].ValueForNonArg = Clamp(UI[UIArgName.EffectiveSize].ValueForNonArg, 00.625, 09.750);    host._projArgs.Oversize = (UI[UIArgName.EffectiveSize].ValueForNonArg - 00.625) / (09.750 - 00.625);      break;
+//            case ProjFX.MercyCaduceusBlaster:           UI[UIArgName.EffectiveSize].ValueForNonArg = Clamp(UI[UIArgName.EffectiveSize].ValueForNonArg, 00.025, 01.200);    host._projArgs.Oversize = (UI[UIArgName.EffectiveSize].ValueForNonArg - 00.025) / (01.200 - 00.025);      break;
+//            case ProjFX.MoiraDamageOrb:                 UI[UIArgName.EffectiveSize].ValueForNonArg = Clamp(UI[UIArgName.EffectiveSize].ValueForNonArg, 00.650, 14.000);    host._projArgs.Oversize = (UI[UIArgName.EffectiveSize].ValueForNonArg - 00.650) / (14.000 - 00.650);      break;
+//            case ProjFX.MoiraHealOrb:                   UI[UIArgName.EffectiveSize].ValueForNonArg = Clamp(UI[UIArgName.EffectiveSize].ValueForNonArg, 00.650, 14.000);    host._projArgs.Oversize = (UI[UIArgName.EffectiveSize].ValueForNonArg - 00.650) / (14.000 - 00.650);      break;
+//            case ProjFX.OrbProjectile:                  UI[UIArgName.EffectiveSize].ValueForNonArg = Clamp(UI[UIArgName.EffectiveSize].ValueForNonArg, 00.500, 04.500);    host._projArgs.Oversize = (UI[UIArgName.EffectiveSize].ValueForNonArg - 00.500) / (04.500 - 00.500);      break;
+//            case ProjFX.OrisaFusionDriver:              UI[UIArgName.EffectiveSize].ValueForNonArg = Clamp(UI[UIArgName.EffectiveSize].ValueForNonArg, 00.325, 06.050);    host._projArgs.Oversize = (UI[UIArgName.EffectiveSize].ValueForNonArg - 00.325) / (06.050 - 00.325);      break;
+//            case ProjFX.PharahRocket:                   UI[UIArgName.EffectiveSize].ValueForNonArg = Clamp(UI[UIArgName.EffectiveSize].ValueForNonArg, 00.075, 02.350);    host._projArgs.Oversize = (UI[UIArgName.EffectiveSize].ValueForNonArg - 00.075) / (02.350 - 00.075);      break;
+//            case ProjFX.RamattraRavenousVortexSphere:   UI[UIArgName.EffectiveSize].ValueForNonArg = Clamp(UI[UIArgName.EffectiveSize].ValueForNonArg, 00.300, 05.750);    host._projArgs.Oversize = (UI[UIArgName.EffectiveSize].ValueForNonArg - 00.300) / (05.750 - 00.300);      break;
+//            case ProjFX.ReinhardtFireStrike:            UI[UIArgName.EffectiveSize].ValueForNonArg = Clamp(UI[UIArgName.EffectiveSize].ValueForNonArg, 01.300, 06.500);    host._projArgs.Oversize = (UI[UIArgName.EffectiveSize].ValueForNonArg - 01.300) / (06.500 - 01.300);      break;
+//            case ProjFX.RoadhogScrap:                   UI[UIArgName.EffectiveSize].ValueForNonArg = Clamp(UI[UIArgName.EffectiveSize].ValueForNonArg, 00.200, 00.850);    host._projArgs.Oversize = (UI[UIArgName.EffectiveSize].ValueForNonArg - 00.200) / (00.850 - 00.200);      break;
+//            case ProjFX.RoadhogScrapBall:               UI[UIArgName.EffectiveSize].ValueForNonArg = Clamp(UI[UIArgName.EffectiveSize].ValueForNonArg, 00.450, 06.000);    host._projArgs.Oversize = (UI[UIArgName.EffectiveSize].ValueForNonArg - 00.450) / (06.000 - 00.450);      break;
+//            case ProjFX.SigmaHypersphere:               UI[UIArgName.EffectiveSize].ValueForNonArg = Clamp(UI[UIArgName.EffectiveSize].ValueForNonArg, 00.100, 03.250);    host._projArgs.Oversize = (UI[UIArgName.EffectiveSize].ValueForNonArg - 00.100) / (03.250 - 00.100);      break;
+//            case ProjFX.SymmetraPhotonProjector:        UI[UIArgName.EffectiveSize].ValueForNonArg = Clamp(UI[UIArgName.EffectiveSize].ValueForNonArg, 00.150, 05.400);    host._projArgs.Oversize = (UI[UIArgName.EffectiveSize].ValueForNonArg - 00.150) / (05.400 - 00.150);      break;
+//            case ProjFX.ZaryaGraviton:                  UI[UIArgName.EffectiveSize].ValueForNonArg = Clamp(UI[UIArgName.EffectiveSize].ValueForNonArg, 00.200, 04.000);    host._projArgs.Oversize = (UI[UIArgName.EffectiveSize].ValueForNonArg - 00.200) / (04.000 - 00.200);      break;
+//            case ProjFX.ZaryaParticleCannon:            UI[UIArgName.EffectiveSize].ValueForNonArg = Clamp(UI[UIArgName.EffectiveSize].ValueForNonArg, 00.250, 08.500);    host._projArgs.Oversize = (UI[UIArgName.EffectiveSize].ValueForNonArg - 00.250) / (08.500 - 00.250);      break;
+//        }
+//    }
+//}
 public String PFXToText(in ProjFX pfx)
 {
     switch (pfx)
@@ -640,11 +643,11 @@ public String PFXToText(in ProjFX pfx)
 }
 
 rule: 'Switch heroes'
-if ([Button.Crouch, Button.SecondaryFire].All(v => hp.IsButtonHeld(v)))
+if ([Button.Crouch, Button.SecondaryFire].All(v => host.IsButtonHeld(v)))
 {
-    SetAllowedHeroes(hp, AllHeroes().Remove(hp.Hero()));
+    SetAllowedHeroes(host, AllHeroes().Remove(host.Hero()));
     MinWait();
-    SetAllowedHeroes(hp, AllHeroes());
+    SetAllowedHeroes(host, AllHeroes());
 }
 rule: '[DEV] show values'
 {
@@ -679,13 +682,13 @@ if (twoStepBooleanTimer.Any(v => v[1] <= TotalTimeElapsed() - TimeToTimeout))
     Number[] current = twoStepBooleanTimer.Filter(v => v[1] <= TotalTimeElapsed() - TimeToTimeout).First;
     if (UI[current[0]].Value()) {
         if (UI[current[0]].IsArg) {
-            hp._projArgs[current[0]] = true;
+            host._projArgs[current[0]] = true;
         } else {
             UI[current[0]].ValueForNonArg = true;
         }
     } else {
         if (UI[current[0]].IsArg) {
-            hp._projArgs[current[0]] = false;
+            host._projArgs[current[0]] = false;
         } else {
             UI[current[0]].ValueForNonArg = false;
         }
@@ -718,7 +721,7 @@ if (UI[UIArgName.ExportActions].ValueForNonArg)
     SmallMessage(HostPlayer(), "   Exported! (Check Inspector)");
     updateInconstants();
 
-    _projArgs = hp._projArgs;
+    _projArgs = host._projArgs;
     //argsInAnArray.ModAppend(HostPlayer()._projArgs);
 
     Wait(0.5);

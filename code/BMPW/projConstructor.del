@@ -71,6 +71,9 @@ if (projConstructor.Length > 0)
         //Make speed have min of 0
         projConstructor[0].Speed = Max(0, projConstructor[0].Speed);
 
+        //Convert the in-world / visual radius to oversize
+        EffectiveSizeToOversize(_tempArgsForConstructorOne);
+
         //Number buffer: (deltaT + 0.016*2 + (ServerLoadPeak() >= 200 ? 0.032 : 0.016));
         projData[ID] = <ProjData> {
             //This is used as the reference for other time-based values, so by modifying this, you modify everything else
@@ -90,7 +93,7 @@ if (projConstructor.Length > 0)
 
             ReadOnly: {
                 InitPos: Args.StartPosition,
-                Radius: 0,
+                Radius: Args.Radius,
                 Targets: Args.Targets,
                 Velocity: Args.Speed * Args.Direction,
                 Gravity: Args.Gravity,
@@ -100,6 +103,9 @@ if (projConstructor.Length > 0)
         };
 
         ReadOnlyProjData _tempArgsForConstructorTwo = projData[ID].ReadOnly;
+
+
+
 
         Number timeToMaxHeight: (tte + Max(0, -1 * Args.Speed * DotProduct(Args.Direction, Args.Gravity)/DotProduct(Args.Gravity, Args.Gravity)));
         
@@ -168,7 +174,7 @@ if (projConstructor.Length > 0)
                 fx => {
                     //Position (without beziers) is p_0 + t * (v_0 + g * t * 1/2)
                     //Direction is v_0 + g * t
-                    CreateProjectileEffect(AllPlayers(), fx, AllPlayers(), UpdateEveryFrame(projData[EvaluateOnce(ID)].Position(EvaluateOnce(_tempArgsForConstructorTwo))), EvaluateOnce(_tempArgsForConstructorTwo).Velocity + EvaluateOnce(_tempArgsForConstructorTwo).Gravity * projData[EvaluateOnce(ID)].time, EvaluateOnce(Args.Oversize), ProjectileEffectReeval.PositionDirectionAndSize);
+                    CreateProjectileEffect(AllPlayers(), fx, AllPlayers(), UpdateEveryFrame(projData[EvaluateOnce(ID)].Position(EvaluateOnce(_tempArgsForConstructorTwo))), EvaluateOnce(_tempArgsForConstructorTwo).Velocity + EvaluateOnce(_tempArgsForConstructorTwo).Gravity * projData[EvaluateOnce(ID)].time, EvaluateOnce(Args.VisualRadius), ProjectileEffectReeval.PositionDirectionAndSize);
                     }
             );
             //projData[ID].ReadOnly.VFX = LastCreatedEntity();

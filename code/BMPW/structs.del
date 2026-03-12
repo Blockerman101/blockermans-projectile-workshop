@@ -188,7 +188,8 @@ single struct ProjectileArgs
     public Vector Direction;
     public Player[] Targets;
     //public Number DamageAmount;
-    public Number Oversize;
+    public Number Radius;
+    public Number VisualRadius;
     public Number Speed;
     public Number Lifetime;
     //public Number Knockback;
@@ -197,16 +198,28 @@ single struct ProjectileArgs
     private Number _TimeOfCall;
         public Number _GetTOC() {return _TimeOfCall;}
         public ref void _SetTOC(in Number time) {_TimeOfCall = time;} 
-    public static ProjectileArgs Construct(): {ProjFX: ProjFX.OrbProjectile, StartPosition: Vector.Zero, Direction: Vector.Zero, Targets: null, Oversize: 0, Speed: 0, Lifetime: projDataInitLifetime, Gravity: Vector.Zero, _ProjID: 0, _TimeOfCall: 0};
+    public static ProjectileArgs Construct(): {
+        ProjFX: ProjFX.OrbProjectile, 
+        StartPosition: Vector.Zero, 
+        Direction: Vector.Zero, 
+        Targets: null, 
+        Radius: 0, 
+        VisualRadius: 0,
+        Speed: 0, 
+        Lifetime: 0, 
+        Gravity: Vector.Zero, 
+        _ProjID: 0, 
+        _TimeOfCall: 0
+        };
     public static ProjectileArgs Default(in Player player=EventPlayer()): {
         ProjFX: ProjFX.OrbProjectile, 
         StartPosition: EyePosition(player), 
         Direction: VerticalFacingAngleOf(player) <= -88.9 ? Up() : (VerticalFacingAngleOf(player) >= 88.9 ? Down() : player.FacingDirection()), 
         Targets: AllPlayers(OppositeTeamOf(TeamOf(player))), 
-        Oversize: 0, 
+        Radius: 0,
+        VisualRadius: 0.5,
         Speed: 20, 
-        Lifetime: 
-        projDataInitLifetime, 
+        Lifetime: projDataInitLifetime, 
         Gravity: Vector(Y: -5), 
         _ProjID: null, 
         _TimeOfCall: null
@@ -283,33 +296,39 @@ void CastPFX(in ProjFX pfx, const ProjectileType => void cast)
 }
 
 Number Clamp(in Number value, in Number min, in Number max): Min(Max(value, min), max);
-public Number EffectiveSizeToOversize(in ProjFX fx, in Number effectiveSize) {
+
+
+public void EffectiveSizeToOversize(ref ProjectileArgs projArgs) {
     //Data gathered by ispeakpeak
     //https://discord.com/channels/570672959799164958/1253195280573136896/1253203348610486326
-    switch (fx)
+
+    //doesnt clamp to [0, 1]
+    //(size - minSize)/(maxSize - minSize)
+    switch (projArgs.ProjFX)
     {
-        case ProjFX.BaptisteBioticLauncher:         return ((Clamp(effectiveSize - 00.150, 00.150, 06.750)) / (06.750 - 00.150));     break;
-        case ProjFX.BastionA36TacticalGrenade:      return ((Clamp(effectiveSize - 00.500, 00.500, 07.500)) / (07.500 - 00.500));     break;
-        case ProjFX.EchoStickyBomb:                 return ((Clamp(effectiveSize - 00.200, 00.200, 05.000)) / (05.000 - 00.200));     break;
-        case ProjFX.GenjiShuriken:                  return ((Clamp(effectiveSize - 00.100, 00.100, 02.900)) / (02.900 - 00.100));     break;
-        case ProjFX.LucioSonicAmplifier:            return ((Clamp(effectiveSize - 00.625, 00.625, 05.000)) / (05.000 - 00.625));     break;
-        case ProjFX.MeiIcicle:                      return ((Clamp(effectiveSize - 00.625, 00.625, 09.750)) / (09.750 - 00.625));     break;
-        case ProjFX.MercyCaduceusBlaster:           return ((Clamp(effectiveSize - 00.025, 00.025, 01.200)) / (01.200 - 00.025));     break;
-        case ProjFX.MoiraDamageOrb:                 return ((Clamp(effectiveSize - 00.650, 00.650, 14.000)) / (14.000 - 00.650));     break;
-        case ProjFX.MoiraHealOrb:                   return ((Clamp(effectiveSize - 00.650, 00.650, 14.000)) / (14.000 - 00.650));     break;
-        case ProjFX.OrbProjectile:                  return ((Clamp(effectiveSize - 00.500, 00.500, 04.500)) / (04.500 - 00.500));     break;
-        case ProjFX.OrisaFusionDriver:              return ((Clamp(effectiveSize - 00.325, 00.325, 06.050)) / (06.050 - 00.325));     break;
-        case ProjFX.PharahRocket:                   return ((Clamp(effectiveSize - 00.075, 00.075, 02.350)) / (02.350 - 00.075));     break;
-        case ProjFX.RamattraRavenousVortexSphere:   return ((Clamp(effectiveSize - 00.300, 00.300, 05.750)) / (05.750 - 00.300));     break;
-        case ProjFX.ReinhardtFireStrike:            return ((Clamp(effectiveSize - 01.300, 01.300, 06.500)) / (06.500 - 01.300));     break;
-        case ProjFX.RoadhogScrap:                   return ((Clamp(effectiveSize - 00.200, 00.200, 00.850)) / (00.850 - 00.200));     break;
-        case ProjFX.RoadhogScrapBall:               return ((Clamp(effectiveSize - 00.450, 00.450, 06.000)) / (06.000 - 00.450));     break;
-        case ProjFX.SigmaHypersphere:               return ((Clamp(effectiveSize - 00.100, 00.100, 03.250)) / (03.250 - 00.100));     break;
-        case ProjFX.SymmetraPhotonProjector:        return ((Clamp(effectiveSize - 00.150, 00.150, 05.400)) / (05.400 - 00.150));     break;
-        case ProjFX.ZaryaGraviton:                  return ((Clamp(effectiveSize - 00.200, 00.200, 04.000)) / (04.000 - 00.200));     break;
-        case ProjFX.ZaryaParticleCannon:            return ((Clamp(effectiveSize - 00.250, 00.250, 08.500)) / (08.500 - 00.250));     break;
+        case ProjFX.BaptisteBioticLauncher:         projArgs.VisualRadius = (((projArgs.VisualRadius) - 00.150) / (06.750 - 00.150));   break;
+        case ProjFX.BastionA36TacticalGrenade:      projArgs.VisualRadius = (((projArgs.VisualRadius) - 00.500) / (07.500 - 00.500));   break;
+        case ProjFX.EchoStickyBomb:                 projArgs.VisualRadius = (((projArgs.VisualRadius) - 00.200) / (05.000 - 00.200));   break;
+        case ProjFX.GenjiShuriken:                  projArgs.VisualRadius = (((projArgs.VisualRadius) - 00.100) / (02.900 - 00.100));   break;
+        case ProjFX.LucioSonicAmplifier:            projArgs.VisualRadius = (((projArgs.VisualRadius) - 00.625) / (05.000 - 00.625));   break;
+        case ProjFX.MeiIcicle:                      projArgs.VisualRadius = (((projArgs.VisualRadius) - 00.625) / (09.750 - 00.625));   break;
+        case ProjFX.MercyCaduceusBlaster:           projArgs.VisualRadius = (((projArgs.VisualRadius) - 00.025) / (01.200 - 00.025));   break;
+        case ProjFX.MoiraDamageOrb:                 projArgs.VisualRadius = (((projArgs.VisualRadius) - 00.650) / (14.000 - 00.650));   break;
+        case ProjFX.MoiraHealOrb:                   projArgs.VisualRadius = (((projArgs.VisualRadius) - 00.650) / (14.000 - 00.650));   break;
+        case ProjFX.OrbProjectile:                  projArgs.VisualRadius = (((projArgs.VisualRadius) - 00.500) / (04.500 - 00.500));   break;
+        case ProjFX.OrisaFusionDriver:              projArgs.VisualRadius = (((projArgs.VisualRadius) - 00.325) / (06.050 - 00.325));   break;
+        case ProjFX.PharahRocket:                   projArgs.VisualRadius = (((projArgs.VisualRadius) - 00.075) / (02.350 - 00.075));   break;
+        case ProjFX.RamattraRavenousVortexSphere:   projArgs.VisualRadius = (((projArgs.VisualRadius) - 00.300) / (05.750 - 00.300));   break;
+        case ProjFX.ReinhardtFireStrike:            projArgs.VisualRadius = (((projArgs.VisualRadius) - 01.300) / (06.500 - 01.300));   break;
+        case ProjFX.RoadhogScrap:                   projArgs.VisualRadius = (((projArgs.VisualRadius) - 00.200) / (00.850 - 00.200));   break;
+        case ProjFX.RoadhogScrapBall:               projArgs.VisualRadius = (((projArgs.VisualRadius) - 00.450) / (06.000 - 00.450));   break;
+        case ProjFX.SigmaHypersphere:               projArgs.VisualRadius = (((projArgs.VisualRadius) - 00.100) / (03.250 - 00.100));   break;
+        case ProjFX.SymmetraPhotonProjector:        projArgs.VisualRadius = (((projArgs.VisualRadius) - 00.150) / (05.400 - 00.150));   break;
+        case ProjFX.ZaryaGraviton:                  projArgs.VisualRadius = (((projArgs.VisualRadius) - 00.200) / (04.000 - 00.200));   break;
+        case ProjFX.ZaryaParticleCannon:            projArgs.VisualRadius = (((projArgs.VisualRadius) - 00.250) / (08.500 - 00.250));   break;
     }
 }
+
 
 enum RicochetTarget {Players, World, PlayersAndWorld}
 
