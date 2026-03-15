@@ -113,7 +113,7 @@ rule: '[DEV] show proj state'
 {
     WaitlessForLoop(1, v => v <= 10, 1, i => {
         CreateEffect((projData[EvaluateOnce(i)].ProjState == ProjState.Active) ? AllPlayers() : null, Effect.Sphere, complexProjs.Contains(EvaluateOnce(i)) ? Color.Blue : Color.Red, pos(EvaluateOnce(i)), rad(EvaluateOnce(i)), EffectRev.VisibleToPositionRadiusAndColor);
-        CreateEffect((projData[EvaluateOnce(i)].ProjState == ProjState.Active) ? AllPlayers() : null, Effect.Sphere, Color.Red, projData[EvaluateOnce(i)].Position(), 0.5, EffectRev.VisibleToPositionRadiusAndColor);
+        //CreateEffect((projData[EvaluateOnce(i)].ProjState == ProjState.Active) ? AllPlayers() : null, Effect.Sphere, Color.Red, projData[EvaluateOnce(i)].Position(), 0.5, EffectRev.VisibleToPositionRadiusAndColor);
         //CreateEffect((projData[EvaluateOnce(i)].ProjState == ProjState.Active) ? AllPlayers() : null, Effect.Sphere, Color.White, projData[EvaluateOnce(i)].PositionAtTime(0.016), 0.5, EffectRev.VisibleToPositionRadiusAndColor);
     
     });

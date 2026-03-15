@@ -40,8 +40,10 @@ if (EventPlayer().IsButtonHeld(Button.PrimaryFire))
 if (!EventPlayer().IsButtonHeld(Button.Crouch) && !EventPlayer().IsButtonHeld(Button.Interact))
 if (EventPlayer() == HostPlayer())
 {
-    ProjectileArgs bigProj: {ProjFX: ProjFX.BaptisteBioticLauncher, VisualRadius: 1, Speed: 50, Lifetime: 2.5, ..ProjectileArgs.Default()};
+    ProjectileArgs bigProj: {ProjFX: ProjFX.BaptisteBioticLauncher, Radius: 0.3, VisualRadius: 1, Speed: 50, Lifetime: 2.5, ..ProjectileArgs.Default()};
     CreateCustomProjectile(bigProj);
+    //ProjectileArgs sphere: {ProjFX: ProjFX.Sphere, ColorForFX: Color.Red, Radius: 0.3, VisualRadius: 0.5,  ..ProjectileArgs.Default()};
+    //CreateCustomProjectile(sphere);
     bigProjIDs.ModAppend(lastProjectileID);
     LogToInspector("I appended proj " + lastProjectileID);
     MinWait();

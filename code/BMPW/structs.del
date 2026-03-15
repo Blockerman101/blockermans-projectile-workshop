@@ -158,7 +158,7 @@ single struct TimeInInterval
 //}
 
 
-Number projDataInitLifetime: 5;
+Number projDataInitLifetime: 3;
 
 
 //A good design philosophy is to reference specific states, rather "Not" states
@@ -184,6 +184,7 @@ single struct ProjectileArgs
         public Number _GetID() {return _ProjID;}
         public ref void _SetID(in Number ID) {_ProjID = ID;}
     public ProjFX ProjFX;
+    public Color ColorForFX;
     public Vector StartPosition;
     public Vector Direction;
     public Player[] Targets;
@@ -200,6 +201,7 @@ single struct ProjectileArgs
         public ref void _SetTOC(in Number time) {_TimeOfCall = time;} 
     public static ProjectileArgs Construct(): {
         ProjFX: ProjFX.OrbProjectile, 
+        ColorForFX: null,
         StartPosition: Vector.Zero, 
         Direction: Vector.Zero, 
         Targets: null, 
@@ -213,6 +215,7 @@ single struct ProjectileArgs
         };
     public static ProjectileArgs Default(in Player player=EventPlayer()): {
         ProjFX: ProjFX.OrbProjectile, 
+        ColorForFX: null,
         StartPosition: EyePosition(player), 
         Direction: VerticalFacingAngleOf(player) <= -88.9 ? Up() : (VerticalFacingAngleOf(player) >= 88.9 ? Down() : player.FacingDirection()), 
         Targets: AllPlayers(OppositeTeamOf(TeamOf(player))), 
@@ -265,33 +268,51 @@ enum ProjFX
     SigmaHypersphere,
     SymmetraPhotonProjector,
     ZaryaGraviton,
-    ZaryaParticleCannon
+    ZaryaParticleCannon,
+    //Other effects
+    Sphere,
+    LightShaft,
+    Orb,
+    Ring,
+    Cloud,
+    Sparkles,
+    GoodAura,
+    BadAura
 }
 
-void CastPFX(in ProjFX pfx, const ProjectileType => void cast)
+void CastPFX(in ProjFX pfx, const ProjectileType => void castProjFX, const Effect => void castFX)
 {
     switch (pfx)
     {
-        case ProjFX.BaptisteBioticLauncher:         cast(ProjectileType.BaptisteBioticLauncher);        break;
-        case ProjFX.BastionA36TacticalGrenade:      cast(ProjectileType.BastionA36TacticalGrenade);     break;
-        case ProjFX.EchoStickyBomb:                 cast(ProjectileType.EchoStickyBomb);                break;
-        case ProjFX.GenjiShuriken:                  cast(ProjectileType.GenjiShuriken);                 break;
-        case ProjFX.LucioSonicAmplifier:            cast(ProjectileType.LucioSonicAmplifier);           break;
-        case ProjFX.MeiIcicle:                      cast(ProjectileType.MeiIcicle);                     break;
-        case ProjFX.MercyCaduceusBlaster:           cast(ProjectileType.MercyCaduceusBlaster);          break;
-        case ProjFX.MoiraDamageOrb:                 cast(ProjectileType.MoiraDamageOrb);                break;
-        case ProjFX.MoiraHealOrb:                   cast(ProjectileType.MoiraHealOrb);                  break;
-        case ProjFX.OrbProjectile:                  cast(ProjectileType.OrbProjectile);                 break;
-        case ProjFX.OrisaFusionDriver:              cast(ProjectileType.OrisaFusionDriver);             break;
-        case ProjFX.PharahRocket:                   cast(ProjectileType.PharahRocket);                  break;
-        case ProjFX.RamattraRavenousVortexSphere:   cast(ProjectileType.RamattraRavenousVortexSphere);  break;
-        case ProjFX.ReinhardtFireStrike:            cast(ProjectileType.ReinhardtFireStrike);           break;
-        case ProjFX.RoadhogScrap:                   cast(ProjectileType.RoadhogScrap);                  break;
-        case ProjFX.RoadhogScrapBall:               cast(ProjectileType.RoadhogScrapBall);              break;
-        case ProjFX.SigmaHypersphere:               cast(ProjectileType.SigmaHypersphere);              break;
-        case ProjFX.SymmetraPhotonProjector:        cast(ProjectileType.SymmetraPhotonProjector);       break;
-        case ProjFX.ZaryaGraviton:                  cast(ProjectileType.ZaryaGraviton);                 break;
-        case ProjFX.ZaryaParticleCannon:            cast(ProjectileType.ZaryaParticleCannon);           break;
+        case ProjFX.BaptisteBioticLauncher:         castProjFX(ProjectileType.BaptisteBioticLauncher);        break;
+        case ProjFX.BastionA36TacticalGrenade:      castProjFX(ProjectileType.BastionA36TacticalGrenade);     break;
+        case ProjFX.EchoStickyBomb:                 castProjFX(ProjectileType.EchoStickyBomb);                break;
+        case ProjFX.GenjiShuriken:                  castProjFX(ProjectileType.GenjiShuriken);                 break;
+        case ProjFX.LucioSonicAmplifier:            castProjFX(ProjectileType.LucioSonicAmplifier);           break;
+        case ProjFX.MeiIcicle:                      castProjFX(ProjectileType.MeiIcicle);                     break;
+        case ProjFX.MercyCaduceusBlaster:           castProjFX(ProjectileType.MercyCaduceusBlaster);          break;
+        case ProjFX.MoiraDamageOrb:                 castProjFX(ProjectileType.MoiraDamageOrb);                break;
+        case ProjFX.MoiraHealOrb:                   castProjFX(ProjectileType.MoiraHealOrb);                  break;
+        case ProjFX.OrbProjectile:                  castProjFX(ProjectileType.OrbProjectile);                 break;
+        case ProjFX.OrisaFusionDriver:              castProjFX(ProjectileType.OrisaFusionDriver);             break;
+        case ProjFX.PharahRocket:                   castProjFX(ProjectileType.PharahRocket);                  break;
+        case ProjFX.RamattraRavenousVortexSphere:   castProjFX(ProjectileType.RamattraRavenousVortexSphere);  break;
+        case ProjFX.ReinhardtFireStrike:            castProjFX(ProjectileType.ReinhardtFireStrike);           break;
+        case ProjFX.RoadhogScrap:                   castProjFX(ProjectileType.RoadhogScrap);                  break;
+        case ProjFX.RoadhogScrapBall:               castProjFX(ProjectileType.RoadhogScrapBall);              break;
+        case ProjFX.SigmaHypersphere:               castProjFX(ProjectileType.SigmaHypersphere);              break;
+        case ProjFX.SymmetraPhotonProjector:        castProjFX(ProjectileType.SymmetraPhotonProjector);       break;
+        case ProjFX.ZaryaGraviton:                  castProjFX(ProjectileType.ZaryaGraviton);                 break;
+        case ProjFX.ZaryaParticleCannon:            castProjFX(ProjectileType.ZaryaParticleCannon);           break;
+        //Other effects
+        case ProjFX.Sphere:                         castFX(Effect.Sphere);                                    break;
+        case ProjFX.LightShaft:                     castFX(Effect.LightShaft);                                break;
+        case ProjFX.Orb:                            castFX(Effect.Orb);                                       break;
+        case ProjFX.Ring:                           castFX(Effect.Ring);                                      break;
+        case ProjFX.Cloud:                          castFX(Effect.Cloud);                                     break;
+        case ProjFX.Sparkles:                       castFX(Effect.Sparkles);                                  break;
+        case ProjFX.GoodAura:                       castFX(Effect.GoodAura);                                  break;
+        case ProjFX.BadAura:                        castFX(Effect.BadAura);                                   break;
     }
 }
 
@@ -327,6 +348,7 @@ public void EffectiveSizeToOversize(ref ProjectileArgs projArgs) {
         case ProjFX.ZaryaGraviton:                  projArgs.VisualRadius = (((projArgs.VisualRadius) - 00.200) / (04.000 - 00.200));   break;
         case ProjFX.ZaryaParticleCannon:            projArgs.VisualRadius = (((projArgs.VisualRadius) - 00.250) / (08.500 - 00.250));   break;
     }
+    //If this is not a projFX, it doesnt have size reqs and doesnt need to change
 }
 
 
