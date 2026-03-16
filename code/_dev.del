@@ -24,27 +24,6 @@ if (HasSpawned(HostPlayer()))
     //StartHoldingButton(LastCreatedEntity(), Button.SecondaryFire);
 }
 
-globalvar Player ent;
-disabled rule: '[DEV] Spawn Soldier'
-Event.OngoingGlobal
-if (HasSpawned(HostPlayer()))
-{
-    //CreateDummyBot(AllHeroes().Random(), OppositeTeamOf(HostPlayer().Team()), -1, PositionOf(HostPlayer()));
-    CreateDummyBot(Hero.Soldier76, OppositeTeamOf(HostPlayer().Team()), -1, null, null);
-    ent = LastCreatedEntity();
-    LogToInspector($"{ent} Spawned");
-    //Wait(0.25);
-    //StartHoldingButton(LastCreatedEntity(), Button.SecondaryFire);
-}
-disabled rule: '[DEV] Soldier fires'
-if ([ent, HostPlayer()].All(v => HasSpawned(v)))
-{
-    Wait(0.2);
-    StartHoldingButton(ent, Button.PrimaryFire);
-    Wait(0.032);
-    StopHoldingButton(ent, Button.PrimaryFire);
-    LoopIfConditionIsTrue();
-}
 disabled rule: '[DEV] Destroy Dummies'
 Event.OngoingGlobal
 if (HostPlayer().IsButtonHeld(Button.Crouch) && HostPlayer().IsButtonHeld(Button.SecondaryFire))
@@ -61,6 +40,7 @@ rule: '[DEV] Text'
     _CreateDevText("TII: " + tte%interval);
     //_CreateDevText("[1] Time: " + timeInInterval.First.Time);
     _CreateDevText($"Entity Count: {EntityCount()}");
+    _CreateDevText($"Target: {projData[1].ReadOnly.Targets.Sort(v => v.DistanceTo(projData[1].Position())).First}");
     //_CreateDevText($"deltaTicks: {ticksFromCurrentTick}");
 }
 
@@ -168,6 +148,19 @@ if ([Button.Crouch, Button.SecondaryFire].All(v => hp.IsButtonHeld(v)))
     DestroyAllInworldText();
 }
 
+rule: '[DEV] track >0 rad'
+{
+    ProjData proj: projData[1];
+    Player target: proj.ReadOnly.Targets.Sort(v => v.DistanceTo(proj.Position())).First;
+    Vector feetToEyes: (target.Position().Towards(target.EyePosition()));
+    //The projectile pos, projected onto a line from the feet of the target to the eyes of the target
+    Vector projectedPos: target.Position() + feetToEyes * Clamp(DotProduct(feetToEyes, proj.Position() - target.Position())/DotProduct(feetToEyes), 0, 1);
+    Vector projPosToProjectedPos: proj.Position().Towards(projectedPos);
+    
+    Vector newStartPos: proj.Position() + Clamp(projPosToProjectedPos.Magnitude, 0, proj.ReadOnly.Radius) * projPosToProjectedPos.Normalize(); 
+
+    CreateEffect(HostPlayer(), Effect.Sphere, Color.White, newStartPos, 0.3, EffectRev.VisibleToPositionAndRadius);
+}
 
 //globalvar Number ticksFromCurrentTick = 5;
 //rule: '[DEV] Change projtick delay from current tick'

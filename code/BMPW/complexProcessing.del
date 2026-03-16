@@ -11,9 +11,29 @@ if (complexProjs.Length)
     });
 }
 
+globalvar DataForProjInPC _dataForProjInPC = EmptyArray();
+single struct DataForProjInPC
+{
+    public Vector Position;
+    public Player Target;
+    public Vector ShiftForRaycastPositions;
+}
 private void checkPCollision(in Number ID, in Number ticks) {
+    //calculations: https://www.desmos.com/3d/c7ypcrhnqw
     ProjData proj: projData[ID];
-    projData[ID].HitPlayer = RayCastHitPlayer(projData[ID].Position(), proj.PositionAtTime(0.016*ticks), proj.ReadOnly.Targets, null, true);
+    _dataForProjInPC.Position = proj.Position();
+    _dataForProjInPC.Target = proj.ReadOnly.Targets.Sort(v => v.DistanceTo(_dataForProjInPC.Position)).First;
+    Vector feetToEyes: (_dataForProjInPC.Target.Position().Towards(_dataForProjInPC.Target.EyePosition()));
+    //The projectile pos, projected onto a line from the feet of the target to the eyes of the target
+    Vector projectedPos: _dataForProjInPC.Target.Position() + feetToEyes * Clamp(DotProduct(feetToEyes, _dataForProjInPC.Position - _dataForProjInPC.Target.Position())/DotProduct(feetToEyes), 0, 1);
+    
+    //Vector from projPos towards projectedPos
+    _dataForProjInPC.ShiftForRaycastPositions = _dataForProjInPC.Position.Towards(projectedPos);
+    
+    //Shift
+    _dataForProjInPC.ShiftForRaycastPositions = Clamp(_dataForProjInPC.ShiftForRaycastPositions.Magnitude, 0, proj.ReadOnly.Radius) * _dataForProjInPC.ShiftForRaycastPositions.Normalize();
+    
+    projData[ID].HitPlayer = RayCastHitPlayer(_dataForProjInPC.Position + _dataForProjInPC.ShiftForRaycastPositions, proj.PositionAtTime(0.016*ticks) + _dataForProjInPC.ShiftForRaycastPositions, proj.ReadOnly.Targets, null, true);
     //PlayEffect(HostPlayer(), PlayEffect.GoodExplosion, Color.White, proj.Position(), 0.5);
     //PlayEffect(HostPlayer(), PlayEffect.GoodExplosion, Color.White, proj.PositionAtTime(0.016*ticks), 0.5);
     if (proj.HitPlayer)

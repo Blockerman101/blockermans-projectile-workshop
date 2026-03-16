@@ -884,3 +884,27 @@ private void ECollision(in Number ID, in Number _interval, const Number => Vecto
         //break;
     } //stop raycasting if the latest one hit
 }
+
+
+_dev.del
+globalvar Player ent;
+disabled rule: '[DEV] Spawn Soldier'
+Event.OngoingGlobal
+if (HasSpawned(HostPlayer()))
+{
+    //CreateDummyBot(AllHeroes().Random(), OppositeTeamOf(HostPlayer().Team()), -1, PositionOf(HostPlayer()));
+    CreateDummyBot(Hero.Soldier76, OppositeTeamOf(HostPlayer().Team()), -1, null, null);
+    ent = LastCreatedEntity();
+    LogToInspector($"{ent} Spawned");
+    //Wait(0.25);
+    //StartHoldingButton(LastCreatedEntity(), Button.SecondaryFire);
+}
+disabled rule: '[DEV] Soldier fires'
+if ([ent, HostPlayer()].All(v => HasSpawned(v)))
+{
+    Wait(0.2);
+    StartHoldingButton(ent, Button.PrimaryFire);
+    Wait(0.032);
+    StopHoldingButton(ent, Button.PrimaryFire);
+    LoopIfConditionIsTrue();
+}
