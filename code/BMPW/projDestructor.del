@@ -43,7 +43,7 @@ if (projDestructor.First.time <= TotalTimeElapsed())
             LogToInspector($"prevented destruction of proj {ID}");
             //ECollision(ID, projDestructor.First.TimeLeft, i => {return projData[i].PositionAtTime(-0.032);}, Color.LimeGreen);
             SmallMessage(HostPlayer(), "queued OTC for destruction");
-            LogToInspector("queued OTC for destruction");
+            LogToInspector("queued OTC from destructor");
             TimeInInterval.OneTimeQueue(ID, <ECOneTimeCheck>{
                 _interval: projDestructor.First.TimeLeft,
                 StartPosition: projData[ID].PositionAtTime(-0.032),

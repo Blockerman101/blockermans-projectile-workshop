@@ -87,9 +87,9 @@ public void NestedWaitlessForLoop(in Number start, const Number => Boolean end, 
     }  
 }
 
-public void WaitlessForLoop(in Number start, const Number => Boolean end, in Number step, const (Number|Number[]) => void func) {
+public void WaitlessForLoop(in Number start, const Number => Boolean loopWhileThisIsTrue, in Number step, const (Number|Number[]) => void func) {
     _waitlessIterator = start;
-    while (end(_waitlessIterator))
+    while (loopWhileThisIsTrue.Invoke(_waitlessIterator))
     {
         func(_waitlessIterator);
         _waitlessIterator += step;

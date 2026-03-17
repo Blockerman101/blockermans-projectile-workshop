@@ -118,8 +118,8 @@ single struct RaycastPositions
     public Vector StartPosition;
     public Vector EndPosition;
     public Vector RaycastPosition;
-    public Number Temp;
-    public static RaycastPositions Construct(): {StartPosition: Vector.Zero, EndPosition: Vector.Zero, RaycastPosition: Vector.Zero, Temp: null};
+    public Number Interval;
+    public static RaycastPositions Construct(): {StartPosition: Vector.Zero, EndPosition: Vector.Zero, RaycastPosition: Vector.Zero, Interval: null};
 }
 
 single struct ECOneTimeCheck
