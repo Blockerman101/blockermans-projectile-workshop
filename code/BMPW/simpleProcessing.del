@@ -4,6 +4,11 @@ import "complexProcessing.del";
 globalvar private RaycastPositions tempPositions;
 globalvar Number intervalIndex;
 
+public Vector RotateVector(in Vector vector, in Vector axis, in Number radians) {
+    return (vector * CosineFromRadians(radians)) + (CrossProduct(axis, vector) * SineFromRadians(radians)) + (axis * DotProduct(axis, vector) * (1 - CosineFromRadians(radians)));
+}
+
+
 rule: '[BMPW] Reset intervalIndex on lap end'
 if (timeInInterval.Length)
 //if (currentTick == 0 || currentTick == 1)
