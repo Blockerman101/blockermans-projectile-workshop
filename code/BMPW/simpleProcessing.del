@@ -49,31 +49,60 @@ if (diff())
 
 
 
+    ProjData current: projData[timeInInterval[intervalIndex].ID];
+
+
+
     //EC starts
-    Number lapCount: 2;
+    Number lapCount: 4;
 
     WaitlessForLoop(0, i => i <= lapCount - 1, 1, currentLap => {
+
+        
 
         LogToInspector($"On lap {currentLap}");
 
 
 
-        //can use this field temporarily to save eles
+
+
+        //Set base positions before shifting
+        tempPositions.StartPosition = StartPosition;
+        tempPositions.EndPosition = projData[ID].PositionAtTime(_interval);
+
+        Vector currentDirection: (tempPositions.EndPosition - tempPositions.StartPosition).Normalize();
+        
+        //can use this field temporarily, to save eles
+        //This evaluates to the projectiles relative right
+        tempPositions.Interval = CrossProduct(Down(), currentDirection);
+        Vector relativeRight: <Vector>tempPositions.Interval;
+
+        Number rotationAmountsForCurrentlap: [null, 0, 2*Pi()/3, 4*Pi()/3][currentLap];
+
+        //Shift start/end pos of laps 1-3 by rotating them
+        Vector startRotation: current.ReadOnly.Radius * Normalize(RotateVector(relativeRight, currentDirection, rotationAmountsForCurrentlap)) * 2 / SquareRoot(3);
+
+        Vector endRotation: current.ReadOnly.Radius * Normalize(RotateVector(relativeRight, currentDirection, rotationAmountsForCurrentlap + Pi()/3)) * 2 / SquareRoot(3);
+        
+        //Shift start/end pos along the direction of the check
+        Vector verticalOffset: (currentDirection * current.ReadOnly.Radius / SquareRoot(6));
+
+        //A vertical shift to make the start and end points be at the end of the capsule
+        Vector firstLapShift: currentDirection * current.ReadOnly.Radius;
+
+        tempPositions.StartPosition += !currentLap ? -1*firstLapShift : (startRotation - verticalOffset);
+        tempPositions.EndPosition += !currentLap ? firstLapShift : (endRotation + verticalOffset);
+
+
+        //This will need to include targets in order for their objects to be tracked
+        tempPositions.RaycastPosition = RayCastHitPosition(tempPositions.StartPosition, tempPositions.EndPosition, projData[ID].ReadOnly.Targets, null, true);
+        
         tempPositions.Interval = _interval;
         Number scopedInterval: tempPositions.Interval;
-
-        //this displaces the start and end pos of the raycast
-        Vector ShiftBasedOnCheck: (currentLap > 0 ? Vector(0,3,0) : Vector.Zero);
 
         //LogToInspector($"coll checked! (ID: {ID}, Check: {projData[ID].DEBUG_ECCheck + 1}, CurrentTII: {currentTick}, interval: {scopedInterval}, TTE: {time})");
         LogToInspector($"coll checked! (ID: {ID}, CurrentTII: {currentTick}, interval: {scopedInterval}, TTE: {time})");
         LogToInspector($"\ninterval: {scopedInterval}\n");
-
-        tempPositions.StartPosition = StartPosition + ShiftBasedOnCheck;
-        tempPositions.EndPosition = projData[ID].PositionAtTime(scopedInterval) + ShiftBasedOnCheck;
-        //This will need to include targets in order for their objects to be tracked
-        tempPositions.RaycastPosition = RayCastHitPosition(tempPositions.StartPosition, tempPositions.EndPosition, projData[ID].ReadOnly.Targets, null, true);
-        
         
         
         Vector position: tempPositions.StartPosition;
@@ -89,7 +118,7 @@ if (diff())
 
             //if (IsTrueForAny([position, endPosition, raycast], ArrayElement() == Vector.Zero)) {LogToInspector("!--POSITIONS REGISTERED ZERO--!");}
 
-            CreateBeamEffect(HostPlayer(), BeamType.BadBeam, position, raycast, Color.Red, EffectRev.None);
+            CreateBeamEffect(HostPlayer(), BeamType.GrappleBeam, position, raycast, Color.Red, EffectRev.None);
             CreateEffect(HostPlayer(), Effect.Sphere, Color.LimeGreen, raycast, 0.25, EffectRev.None);
             CreateEffect(HostPlayer(), Effect.Sphere, Color.Red, endPosition, 0.24, EffectRev.None);
             CreateEffect(HostPlayer(), Effect.Sphere, Color.SkyBlue, position, 0.23, EffectRev.None);
@@ -114,10 +143,14 @@ if (diff())
 
 
             //stop laps on collision
+            currentLap = lapCount;
         }
 
 
-
+    //Break loop, to prevent outer raycasts, if proj radius is below a certain threshold
+    if (current.ReadOnly.Radius < 0.7) {
+        currentLap = lapCount;
+    }
 
 
     });
