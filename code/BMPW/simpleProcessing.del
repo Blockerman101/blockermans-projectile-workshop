@@ -142,14 +142,14 @@ if (diff())
             //break;
 
 
-            //stop laps on collision
-            currentLap = lapCount;
+            //stop laps on collision (_waitlessIterator is currentLap)
+            _waitlessIterator = lapCount;
         }
 
 
-    //Break loop, to prevent outer raycasts, if proj radius is below a certain threshold
+    //Break loop, to prevent outer raycasts, if proj radius is below a certain threshold (_waitlessIterator is currentLap)
     if (current.ReadOnly.Radius < 0.7) {
-        currentLap = lapCount;
+        _waitlessIterator = lapCount;
     }
 
 
