@@ -46,15 +46,16 @@ single struct ProjDestructor
     //the length (in time) of the check subtracted by how much of the check was checked
     //equivalent to scopedInterval - timeToDestroy
     public Number TimeLeft;
+    public Number TimeOfLastJITCheck;
     //Queue proj to be destroyed, the proj will be destroyed `time` seconds from when the method is called
 
     //public static void Queue(in Number ID, in Number time) {projDestructor = projDestructor.Append({ID: ID, time: tte + time}).Sort(v => v.time);} //TTE() is automatically included, so the extra time is relative
-    public static void Queue(in Number ID, in Number time, in TypeOfDestruction typeOfDestruction, in Number TimeLeft=null) {projDestructor = projDestructor.Append({ID: ID, time: tte + time, TypeOfDestruction: typeOfDestruction, TimeLeft: TimeLeft}).Sort(v => v.time);}
-    public static void QueueRaw(in Number ID, in Number time, in TypeOfDestruction typeOfDestruction, in Number TimeLeft=null) {projDestructor = projDestructor.Append({ID: ID, time: time, TypeOfDestruction: typeOfDestruction, TimeLeft: TimeLeft}).Sort(v => v.time);} //Queue without the automated TTE, letting you have full control over when, specifically, the proj is deleted
+    public static void Queue(in Number ID, in Number time, in TypeOfDestruction typeOfDestruction, in Number TimeLeft=null, in Number TimeOfLastJITCheck=null) {projDestructor = projDestructor.Append({ID: ID, time: tte + time, TypeOfDestruction: typeOfDestruction, TimeLeft: TimeLeft, TimeOfLastJITCheck: TimeOfLastJITCheck}).Sort(v => v.time);}
+    public static void QueueRaw(in Number ID, in Number time, in TypeOfDestruction typeOfDestruction, in Number TimeLeft=null, in Number TimeOfLastJITCheck=null) {projDestructor = projDestructor.Append({ID: ID, time: time, TypeOfDestruction: typeOfDestruction, TimeLeft: TimeLeft, TimeOfLastJITCheck: TimeOfLastJITCheck}).Sort(v => v.time);} //Queue without the automated TTE, letting you have full control over when, specifically, the proj is deleted
     public static void SortQueue() {projDestructor = projDestructor.Sort(v => v.time);}
     
     //Destroy proj ASAP
-    public static void Destroy(in Number ID) {projDestructor = projDestructor.Append({ID: ID, time: null, TypeOfDestruction: null, TimeLeft: null}).Sort(v => v.time);}
+    public static void Destroy(in Number ID) {projDestructor = projDestructor.Append({ID: ID, time: null, TypeOfDestruction: null, TimeLeft: null, TimeOfLastJITCheck: null}).Sort(v => v.time);}
     public static void ClearFromQueue(in Number ID) {projDestructor = projDestructor.Filter(v => v.ID != ID);}
 }
 
@@ -134,17 +135,18 @@ single struct TimeInInterval
 {
     public Number ID;
     //also serves as the data for a one time check
-    public Number Time;
-    public ECOneTimeCheck Data;
-    public static TimeInInterval Construct(): {Time: null, ID: null, Data: null};
+    public Number|ECOneTimeCheck TimeOrData;
+    public static TimeInInterval Construct(): {ID: null, TimeOrData: null};
+
+    //Sink One-Time Queues to the end of the array
     public static void Queue(in Number ID, in Number Time) {
         timeInInterval = timeInInterval
-            .Append({ID: ID, Time: Time, Data: null})
-            .Sort(v => v.Time)
-            .Sort((ele, idx) => idx + (ele.Data ? 1000 : 0));
-        
+            .Append({ID: ID, TimeOrData: Time})
+            .Sort(v => v.TimeOrData)
+            .Sort((v, idx) => idx + CountOf(v.TimeOrData) * 1000)
+            ;
     }
-    public static void OneTimeQueue(in Number ID, in ECOneTimeCheck data) {timeInInterval.ModAppend({ID: ID, Time: null, Data: data});}
+    public static void OneTimeQueue(in Number ID, in ECOneTimeCheck data) {timeInInterval.ModAppend({ID: ID, TimeOrData: data});}
     public static void ClearFromQueue(in Number ID) {timeInInterval = timeInInterval.Filter(v => v.ID != ID);}
 }
 
@@ -354,36 +356,36 @@ public void EffectiveSizeToOversize(ref ProjectileArgs projArgs) {
 
 enum RicochetTarget {Players, World, PlayersAndWorld}
 
-struct Dictionary<K, V>
-{
-    public K[] Keys;
-    public V[] Values;
-
-    public V Get(K key)
-    {
-        return Values[Keys.IndexOf(key)];
-    }
-    
-    // Sets a value in the dictionary.
-    public ref void Set(in K key, in V value)
-    {
-        Values[Keys.IndexOf(key)] = value;
-    }
-    
-    // Adds a value to the dictionary.
-    public ref void Add(in K key, in V value)
-    {
-        Keys += key;
-        Values += value;
-    }
-
-    // Sets a value in the dictionary. Will add the key if it doesn't exist.
-    public ref void SetOrAdd(in K key, in V value)
-    {
-        Number index = Keys.IndexOf(key);
-        if (index == -1) // Key not found; add it.
-            Add(key, value);
-        else
-            Values[index] = value;
-    }
-}
+//struct Dictionary<K, V>
+//{
+//    public K[] Keys;
+//    public V[] Values;
+//
+//    public V Get(K key)
+//    {
+//        return Values[Keys.IndexOf(key)];
+//    }
+//    
+//    // Sets a value in the dictionary.
+//    public ref void Set(in K key, in V value)
+//    {
+//        Values[Keys.IndexOf(key)] = value;
+//    }
+//    
+//    // Adds a value to the dictionary.
+//    public ref void Add(in K key, in V value)
+//    {
+//        Keys += key;
+//        Values += value;
+//    }
+//
+//    // Sets a value in the dictionary. Will add the key if it doesn't exist.
+//    public ref void SetOrAdd(in K key, in V value)
+//    {
+//        Number index = Keys.IndexOf(key);
+//        if (index == -1) // Key not found; add it.
+//            Add(key, value);
+//        else
+//            Values[index] = value;
+//    }
+//}

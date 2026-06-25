@@ -6,6 +6,8 @@ rule: '[DEV] Spawn Dummies'
 Event.OngoingGlobal
 if (HostPlayer().IsButtonHeld(Button.Crouch) && HostPlayer().IsButtonHeld(Button.PrimaryFire) && !hp.IsButtonHeld(Button.Jump))
 {
+    WaitUntil(!hp.IsButtonHeld(Button.PrimaryFire), 9999);
+    AbortIf(hp.IsButtonHeld(Button.Jump));
     //CreateDummyBot(AllHeroes().Random(), OppositeTeamOf(HostPlayer().Team()), -1, PositionOf(HostPlayer()));
     CreateDummyBot(AllHeroes().Random(), OppositeTeamOf(HostPlayer().Team()), -1, PositionOf(HostPlayer()), HostPlayer().FacingDirection());
     LogToInspector($"{LastCreatedEntity()} Spawned");

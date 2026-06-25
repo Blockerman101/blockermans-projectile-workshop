@@ -4,6 +4,7 @@ import "complexProcessing.del";
 globalvar private RaycastPositions tempPositions;
 globalvar Number intervalIndex;
 
+//Rotates a vector along a given axis
 public Vector RotateVector(in Vector vector, in Vector axis, in Number radians) {
     return (vector * CosineFromRadians(radians)) + (CrossProduct(axis, vector) * SineFromRadians(radians)) + (axis * DotProduct(axis, vector) * (1 - CosineFromRadians(radians)));
 }
@@ -18,17 +19,17 @@ if (!currentTick)
     LogToInspector($"Lap ended. (Index returned to 0) (TTE: {time})");
 }
 
-Boolean diff(): (timeInInterval[intervalIndex].Time == currentTick || timeInInterval.Last.Data);
+Boolean diff(): (timeInInterval[intervalIndex].TimeOrData == currentTick || CountOf(timeInInterval.Last.TimeOrData));
 rule: '[BMPW] Check EC'
 //This might fix a (potential?) bug
 if (intervalIndex < timeInInterval.Length)
 if (diff())
 {
-    Boolean IsOneTimeCheck: (timeInInterval.Last.Data);
+    Boolean IsOneTimeCheck: (CountOf(timeInInterval.Last.TimeOrData));
     TimeInInterval OneTimeData: timeInInterval.Last;
 
     if (IsOneTimeCheck) {
-        LogToInspector($"Doing OTC for Proj {OneTimeData.ID}\ntimePassed (ms): {TotalTimeElapsed() * 1000 - OneTimeData.Data.MSTimeOfCall}");
+        LogToInspector($"Doing OTC for Proj {OneTimeData.ID}\ntimePassed (ms): {TotalTimeElapsed() * 1000 - OneTimeData.TimeOrData.MSTimeOfCall}");
         SmallMessage(HostPlayer(), $"Doing OTC for Proj {OneTimeData.ID}");
     }
 
@@ -39,13 +40,13 @@ if (diff())
     Number ID:                      IsOneTimeCheck ? OneTimeData.ID                                 : timeInInterval[intervalIndex].ID;
 
     //called once (stored in tempPositions.Temp / scopedInterval)
-    Number _interval:               IsOneTimeCheck ? OneTimeData.Data._interval                     : (interval + 0.032);
+    Number _interval:               IsOneTimeCheck ? OneTimeData.TimeOrData._interval                     : (interval + 0.032);
 
     //called once (stored in tempPositions.StartPosition)
-    Vector StartPosition:           IsOneTimeCheck ? OneTimeData.Data.StartPosition                 : projData[ID].Position();
+    Vector StartPosition:           IsOneTimeCheck ? OneTimeData.TimeOrData.StartPosition                 : projData[ID].Position();
 
     //called twice, but its cosmetic
-    Color color:                    IsOneTimeCheck ? OneTimeData.Data.color                         : Color.White;
+    Color color:                    IsOneTimeCheck ? OneTimeData.TimeOrData.color                         : Color.White;
 
 
 
@@ -119,9 +120,9 @@ if (diff())
             //if (IsTrueForAny([position, endPosition, raycast], ArrayElement() == Vector.Zero)) {LogToInspector("!--POSITIONS REGISTERED ZERO--!");}
 
             CreateBeamEffect(HostPlayer(), BeamType.GrappleBeam, position, raycast, Color.Red, EffectRev.None);
-            CreateEffect(HostPlayer(), Effect.Sphere, Color.LimeGreen, raycast, 0.25, EffectRev.None);
-            CreateEffect(HostPlayer(), Effect.Sphere, Color.Red, endPosition, 0.24, EffectRev.None);
-            CreateEffect(HostPlayer(), Effect.Sphere, Color.SkyBlue, position, 0.23, EffectRev.None);
+            CreateEffect(HostPlayer(), Effect.Sphere, color, raycast, 0.25, EffectRev.None);
+            CreateEffect(HostPlayer(), Effect.Sphere, color, endPosition, 0.24, EffectRev.None);
+            CreateEffect(HostPlayer(), Effect.Sphere, color, position, 0.23, EffectRev.None);
             //projData[ID].DEBUG_ECCheck++;
             //CreateInWorldText(HostPlayer(), $"Proj {ID} EC {projData[ID].DEBUG_ECCheck}" + (IsOneTimeCheck ? " (OTC!)" : ""), position + Up() * 0.2 * projData.Length, 1, Clipping.DoNotClip, InworldTextRev.None, Color.White, Spectators.DefaultVisibility);
             //projData[ID].ReadOnly.VFX.ModAppend(LastCreatedEntity());

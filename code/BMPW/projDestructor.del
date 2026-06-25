@@ -97,7 +97,7 @@ if (projDestructor.First.time <= TotalTimeElapsed())
     //For decrementing the intervalIndex of timeInInterval
     Boolean[] reqsForDec: [
         //timeInInterval.Length > 1,
-        currentTick >= timeInInterval[timeInInterval.Map(v => v.ID).IndexOf(ID)].Time,
+        currentTick >= timeInInterval[timeInInterval.Map(v => v.ID).IndexOf(ID)].TimeOrData,
         intervalIndex //make sure it isnt 0, because if it was it would go to index -1
     ];
     if (IsTrueForAll(reqsForDec, ArrayElement())) {
