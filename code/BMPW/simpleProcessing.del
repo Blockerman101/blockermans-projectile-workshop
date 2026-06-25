@@ -37,7 +37,7 @@ if (diff())
     //ECollision(timeInInterval[intervalIndex].ID, (interval + 0.032), ID => {return projData[ID].Position();}, Color.White); //Check this projectile
 
     //called 4 times without debug stuff
-    Number ID:                      IsOneTimeCheck ? OneTimeData.ID                                 : timeInInterval[intervalIndex].ID;
+    Number ID:                      IsOneTimeCheck ? OneTimeData.ID                                       : timeInInterval[intervalIndex].ID;
 
     //called once (stored in tempPositions.Temp / scopedInterval)
     Number _interval:               IsOneTimeCheck ? OneTimeData.TimeOrData._interval                     : (interval + 0.032);
@@ -47,6 +47,9 @@ if (diff())
 
     //called twice, but its cosmetic
     Color color:                    IsOneTimeCheck ? OneTimeData.TimeOrData.color                         : Color.White;
+
+    //called once
+    Number TimeOfLastJITCheck:      IsOneTimeCheck ? OneTimeData.TimeOrData.TimeOfLastJITCheck            : null;
 
 
 
@@ -138,7 +141,7 @@ if (diff())
             //Number offset: 0.016*0;
             //Number timeToDestroy: scopedInterval * Min(1, Max(0, LinearInterpolate(0, 1, (position.DistanceTo(raycast) / position.DistanceTo(endPosition))))) - offset;
             Number timeToDestroy: scopedInterval * Min(1, Max(0, LinearInterpolate(0, 1, (position.DistanceTo(raycast) / position.DistanceTo(endPosition)))));
-            ProjDestructor.Queue(ID, timeToDestroy, TypeOfDestruction.Environment, scopedInterval - timeToDestroy); //Cant add an offset for visuals because it would mess up ricochets
+            ProjDestructor.Queue(ID, timeToDestroy, TypeOfDestruction.Environment, scopedInterval - timeToDestroy, TimeOfLastJITCheck); //Cant add an offset for visuals because it would mess up ricochets
             LogToInspector($"Collided! (Proj {ID} queued with {timeToDestroy} seconds\n(Current Tick {(TotalTimeElapsed() / 0.016).Floor()} with {((timeToDestroy) / 0.016).Floor()} ticks to destruction\nExpected to be destroyed at tick {((time + timeToDestroy) / 0.016).Floor()}))");
             //break;
 

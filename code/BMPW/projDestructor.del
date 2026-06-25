@@ -10,8 +10,11 @@ if (projDestructor.First.time <= TotalTimeElapsed())
     Number ID: projDestructor.First.ID;
     ProjDestructor current: projDestructor.First;
 
+    //JIT checks will be limited to this much (at least) time between them
+    Number JITTimeout: 0.5;
+
     //JIT check for EC
-    if (current.TypeOfDestruction == TypeOfDestruction.Environment)
+    if (current.TypeOfDestruction == TypeOfDestruction.Environment && (TotalTimeElapsed() - current.TimeOfLastJITCheck > JITTimeout))
     {
 
         //An alternative solution is checking earlier temporally rather than retrospectively back-checking (with timeBackwards & timeForwards)
@@ -48,7 +51,8 @@ if (projDestructor.First.time <= TotalTimeElapsed())
                 _interval: projDestructor.First.TimeLeft,
                 StartPosition: projData[ID].PositionAtTime(-0.032),
                 color: Color.LimeGreen,
-                MSTimeOfCall: TotalTimeElapsed() * 1000
+                MSTimeOfCall: TotalTimeElapsed() * 1000,
+                TimeOfLastJITCheck: TotalTimeElapsed()
             });
             projDestructor.ModRemoveByIndex(0);
             MinWait();

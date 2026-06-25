@@ -132,6 +132,7 @@ if (projConstructor.Length > 0)
         
         //ECollision(ID, (!ModdedTimeToMaxHeight ? interval : ModdedTimeToMaxHeight) + deltaT + 0.032, i => {return Args.StartPosition;}, Color.SkyBlue); //First EC. If there is no TTMH (the proj is created past its apex), run a full interval EC check
         LogToInspector($"OTQ here! (MTTMH: {ModdedTimeToMaxHeight})");
+        
         TimeInInterval.OneTimeQueue(ID, <ECOneTimeCheck>{
             _interval: (ModdedTimeToMaxHeight <= 0 ? interval : ModdedTimeToMaxHeight) + deltaT + 0.032,
             StartPosition: Args.StartPosition,
