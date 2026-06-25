@@ -1,10 +1,6 @@
 import "../customGameSettings.json";
 //import "../../../Other/extraFunctions.ostw";
-import "BMPW/simpleProcessing.del";
-import "BMPW/complexProcessing.del";
-import "BMPW/projConstructor.del";
-import "BMPW/projDestructor.del";
-import "BMPW/structs.del";
+import "BMPW/index.ostw";
 import "_flight.del";
 import "_dev.del";
 //import "ui.del";
@@ -16,6 +12,8 @@ if (HasSpawned(HostPlayer()))
     StartDamageModification(HostPlayer(), AllPlayers(OppositeTeamOf(HostPlayer().Team())), 0.5, DamageModificationRev.ReceiversAndDamagers);
     SetKnockbackReceived(HostPlayer(), 0);
 }
+
+
 
 //rule: 'Make my projectile'
 //Event.OngoingPlayer

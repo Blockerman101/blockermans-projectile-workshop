@@ -15,7 +15,7 @@ if (HostPlayer().IsButtonHeld(Button.Crouch) && HostPlayer().IsButtonHeld(Button
     //StartHoldingButton(LastCreatedEntity(), Button.SecondaryFire);
 }
 
-disabled rule: '[DEV] Spawn Rein'
+rule: '[DEV] Spawn Rein'
 Event.OngoingGlobal
 if (HasSpawned(HostPlayer()))
 {
