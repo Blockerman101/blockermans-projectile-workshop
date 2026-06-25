@@ -1,7 +1,6 @@
 //import "../../../Other/extraFunctions.ostw";
 import "structs.del";
 import "simpleProcessing.del";
-import "../_dev.del";
 Vector | Number lerp2(in Vector | Number a, in Vector | Number b, in Number t, in Number tMax): ((tMax - t)/tMax)*a + (t/tMax)*b;
 //lerp2(1, 5, 0.75, 1) = (1-0.75)*1 + (0.75)*5 = 0.25 + 3.75 = 4 "4 is 75% of the way from 1 to 5"
 //lerp2(1, 5, 1, 2) = 1(2 - 1)/2 + 5(1/2) = 1(0.5) + 5(0.5) = 0.5 + 2.5 = 3 

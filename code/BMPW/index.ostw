@@ -1,5 +1,6 @@
 import "structs.del";
+import "projDestructor.del";
 import "simpleProcessing.del";
 import "complexProcessing.del";
 import "projConstructor.del";
-import "projDestructor.del";
+

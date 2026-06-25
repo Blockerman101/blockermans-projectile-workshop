@@ -1,9 +1,0 @@
-import "../../customGameSettings.json";
-
-import "one.del";
-import "two.del";
-
-rule: 'main'
-{
-    
-}
