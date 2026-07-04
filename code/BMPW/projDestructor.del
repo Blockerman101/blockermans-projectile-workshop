@@ -1,5 +1,4 @@
-import "structs.del";
-
+import "index.ostw";
 globalvar ProjDestructor[] projDestructor = []; 
 
 rule: '[BMPW] Destructor - Destroy Proj'

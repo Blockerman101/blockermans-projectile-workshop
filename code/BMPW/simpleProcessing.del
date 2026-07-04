@@ -1,5 +1,4 @@
-import "projConstructor.del";
-import "complexProcessing.del";
+import "index.ostw";
 
 globalvar private RaycastPositions tempPositions;
 globalvar Number intervalIndex;

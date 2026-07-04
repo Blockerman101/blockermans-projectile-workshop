@@ -1,5 +1,4 @@
-import "projConstructor.del";
-import "projDestructor.del";
+import "index.ostw";
 
 globalvar Number tte;
 rule: '[BMPW] Initialize TTE var'

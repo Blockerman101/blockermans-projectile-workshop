@@ -1,4 +1,4 @@
-import "simpleProcessing.del";
+import "index.ostw";
 globalvar Number[] complexProjs = EmptyArray();
 
 rule: '[BMPW] Player Collision'
