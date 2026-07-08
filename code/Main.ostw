@@ -49,6 +49,8 @@ if (EventPlayer() == HostPlayer())
     //LoopIfConditionIsTrue();
 }
 
+
+
 rule: 'Explode big projs!'
 Event.OngoingPlayer
 if (bigProjIDs.Any(v => projData[v].ProjState == ProjState.Inactive))
