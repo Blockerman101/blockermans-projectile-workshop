@@ -25,7 +25,7 @@ private void checkPCollision(in Number ID, in Number ticks) {
     _dataForProjInPC.Target = proj.ReadOnly.Targets.Sort(v => v.DistanceTo(_dataForProjInPC.Position)).First;
     Vector feetToEyes: (_dataForProjInPC.Target.Position().Towards(_dataForProjInPC.Target.EyePosition()));
     //The projectile pos, projected onto a line from the feet of the target to the eyes of the target
-    Vector projectedPos: _dataForProjInPC.Target.Position() + feetToEyes * Clamp(DotProduct(feetToEyes, _dataForProjInPC.Position - _dataForProjInPC.Target.Position())/DotProduct(feetToEyes), 0, 1);
+    Vector projectedPos: _dataForProjInPC.Target.Position() + feetToEyes * Clamp(DotProduct(feetToEyes, _dataForProjInPC.Position - _dataForProjInPC.Target.Position())/DotProduct(feetToEyes, feetToEyes), 0, 1);
     
     //Vector from projPos towards projectedPos
     _dataForProjInPC.ShiftForRaycastPositions = _dataForProjInPC.Position.Towards(projectedPos);

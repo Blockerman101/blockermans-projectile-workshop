@@ -156,12 +156,17 @@ rule: '[DEV] track >0 rad'
     Player target: proj.ReadOnly.Targets.Sort(v => v.DistanceTo(proj.Position())).First;
     Vector feetToEyes: (target.Position().Towards(target.EyePosition()));
     //The projectile pos, projected onto a line from the feet of the target to the eyes of the target
-    Vector projectedPos: target.Position() + feetToEyes * Clamp(DotProduct(feetToEyes, proj.Position() - target.Position())/DotProduct(feetToEyes), 0, 1);
+    Vector projectedPos: target.Position() + feetToEyes * Clamp(DotProduct(feetToEyes, proj.Position() - target.Position())/DotProduct(feetToEyes, feetToEyes), 0, 1);
     Vector projPosToProjectedPos: proj.Position().Towards(projectedPos);
     
     Vector newStartPos: proj.Position() + Clamp(projPosToProjectedPos.Magnitude, 0, proj.ReadOnly.Radius) * projPosToProjectedPos.Normalize(); 
 
     CreateEffect(HostPlayer(), Effect.Sphere, Color.White, newStartPos, 0.3, EffectRev.VisibleToPositionAndRadius);
+
+    //_CreateDevText($"Feet: {target.Position()}");
+    //_CreateDevText($"Eyes: {target.EyePosition()}");
+    //_CreateDevText($"Feet to Eyes: {feetToEyes}");
+    //_CreateDevText($"Dot Product: {(DotProduct(feetToEyes, proj.Position() - target.Position())/DotProduct(feetToEyes, feetToEyes))}");
 }
 
 //globalvar Number ticksFromCurrentTick = 5;
