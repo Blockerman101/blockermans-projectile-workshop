@@ -219,17 +219,25 @@ single struct ProjectileArgs
         ProjFX: ProjFX.OrbProjectile, 
         ColorForFX: null,
         StartPosition: EyePosition(player), 
-        Direction: VerticalFacingAngleOf(player) <= -88.9 ? Up() : (VerticalFacingAngleOf(player) >= 88.9 ? Down() : player.FacingDirection()), 
+        Direction: player.FacingDirection(), 
         Targets: AllPlayers(OppositeTeamOf(TeamOf(player))), 
         Radius: 0,
         VisualRadius: 0.5,
         Speed: 20, 
         Lifetime: projDataInitLifetime, 
-        Gravity: Vector(Y: -5), 
+        Gravity: Down() * 5, 
         _ProjID: null, 
         _TimeOfCall: null
         };
-    public static void Queue(in ProjectileArgs args) {projConstructor.ModAppend(args);}
+
+    public ProjectileArgs CommonPatches(in Player player=EventPlayer()) {
+        return {
+            StartPosition: this.StartPosition + this.Direction * this.Radius, //ensure proj starts out of player
+            Direction: VerticalFacingAngleOf(player) <= -88.9 ? Up() : (VerticalFacingAngleOf(player) >= 88.9 ? Down() : this.Direction), //fix gimbal locking
+            ..this
+        };
+    }
+    //public static void Queue(in ProjectileArgs args) {projConstructor.ModAppend(args);}
 
     //public Any _PointerToArg(in Number p) {return <Any[]>this[p];}
 //    public Any _PointerToArg(in Number p) {
