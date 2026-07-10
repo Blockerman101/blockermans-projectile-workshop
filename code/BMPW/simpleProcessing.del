@@ -1,7 +1,8 @@
 import "index.ostw";
 
-globalvar private RaycastPositions tempPositions;
-globalvar Number intervalIndex;
+globalvar private RaycastPositions _TEMP_tempPositions;
+globalvar Number _envCollisionIndex;
+globalvar TimeInInterval[] _envCollisionList = [];
 
 //Rotates a vector along a given axis
 public Vector RotateVector(in Vector vector, in Vector axis, in Number radians) {
@@ -9,23 +10,26 @@ public Vector RotateVector(in Vector vector, in Vector axis, in Number radians) 
 }
 
 
-rule: '[BMPW] Reset intervalIndex on lap end'
-if (timeInInterval.Length)
+rule: '[BMPW] Reset _envCollisionIndex on lap end'
+if (_envCollisionList.Length)
 //if (currentTick == 0 || currentTick == 1)
 if (!currentTick)
 {
-    intervalIndex = 0;
+    _envCollisionIndex = 0;
     LogToInspector($"Lap ended. (Index returned to 0) (TTE: {time})");
 }
 
-Boolean diff(): (timeInInterval[intervalIndex].TimeOrData == currentTick || CountOf(timeInInterval.Last.TimeOrData));
+Boolean diff(): (_envCollisionList[_envCollisionIndex].TimeOrData == currentTick || CountOf(_envCollisionList.Last.TimeOrData));
 rule: '[BMPW] Check EC'
 //This might fix a (potential?) bug
-if (intervalIndex < timeInInterval.Length)
+if (_envCollisionIndex < _envCollisionList.Length)
 if (diff())
 {
-    Boolean IsOneTimeCheck: (CountOf(timeInInterval.Last.TimeOrData));
-    TimeInInterval OneTimeData: timeInInterval.Last;
+    //If the proj radius is below this, skip extra EC
+    Number thresholdForExtraEC: 0.7;
+
+    Boolean IsOneTimeCheck: (CountOf(_envCollisionList.Last.TimeOrData));
+    TimeInInterval OneTimeData: _envCollisionList.Last;
 
     if (IsOneTimeCheck) {
         LogToInspector($"Doing OTC for Proj {OneTimeData.ID}\ntimePassed (ms): {TotalTimeElapsed() * 1000 - OneTimeData.TimeOrData.MSTimeOfCall}");
@@ -33,15 +37,15 @@ if (diff())
     }
 
     //Adding a bit to interval so the checks slightly overlap, prevents edgecase bugs
-    //ECollision(timeInInterval[intervalIndex].ID, (interval + 0.032), ID => {return projData[ID].Position();}, Color.White); //Check this projectile
+    //ECollision(_envCollisionList[_envCollisionIndex].ID, (interval + 0.032), ID => {return projData[ID].Position();}, Color.White); //Check this projectile
 
     //called 4 times without debug stuff
-    Number ID:                      IsOneTimeCheck ? OneTimeData.ID                                       : timeInInterval[intervalIndex].ID;
+    Number ID:                      IsOneTimeCheck ? OneTimeData.ID                                       : _envCollisionList[_envCollisionIndex].ID;
 
-    //called once (stored in tempPositions.Temp / scopedInterval)
+    //called once (stored in _TEMP_tempPositions.Temp / scopedInterval)
     Number _interval:               IsOneTimeCheck ? OneTimeData.TimeOrData._interval                     : (interval + 0.032);
 
-    //called once (stored in tempPositions.StartPosition)
+    //called once (stored in _TEMP_tempPositions.StartPosition)
     Vector StartPosition:           IsOneTimeCheck ? OneTimeData.TimeOrData.StartPosition                 : projData[ID].Position();
 
     //called twice, but its cosmetic
@@ -52,7 +56,7 @@ if (diff())
 
 
 
-    ProjData current: projData[timeInInterval[intervalIndex].ID];
+    ProjData current: projData[_envCollisionList[_envCollisionIndex].ID];
 
 
 
@@ -70,15 +74,15 @@ if (diff())
 
 
         //Set base positions before shifting
-        tempPositions.StartPosition = StartPosition;
-        tempPositions.EndPosition = projData[ID].PositionAtTime(_interval);
+        _TEMP_tempPositions.StartPosition = StartPosition;
+        _TEMP_tempPositions.EndPosition = projData[ID].PositionAtTime(_interval);
 
-        Vector currentDirection: (tempPositions.EndPosition - tempPositions.StartPosition).Normalize();
+        Vector currentDirection: (_TEMP_tempPositions.EndPosition - _TEMP_tempPositions.StartPosition).Normalize();
         
         //can use this field temporarily, to save eles
         //This evaluates to the projectiles relative right
-        tempPositions.Interval = CrossProduct(Down(), currentDirection);
-        Vector relativeRight: <Vector>tempPositions.Interval;
+        _TEMP_tempPositions.Interval = CrossProduct(Down(), currentDirection);
+        Vector relativeRight: <Vector>_TEMP_tempPositions.Interval;
 
         Number rotationAmountsForCurrentlap: [null, 0, 2*Pi()/3, 4*Pi()/3][currentLap];
 
@@ -93,24 +97,24 @@ if (diff())
         //A vertical shift to make the start and end points be at the end of the capsule
         Vector firstLapShift: currentDirection * current.ReadOnly.Radius;
 
-        tempPositions.StartPosition += !currentLap ? -1*firstLapShift : (startRotation - verticalOffset);
-        tempPositions.EndPosition += !currentLap ? firstLapShift : (endRotation + verticalOffset);
+        _TEMP_tempPositions.StartPosition += !currentLap ? -1*firstLapShift : (startRotation - verticalOffset);
+        _TEMP_tempPositions.EndPosition += !currentLap ? firstLapShift : (endRotation + verticalOffset);
 
 
         //This will need to include targets in order for their objects to be tracked
-        tempPositions.RaycastPosition = RayCastHitPosition(tempPositions.StartPosition, tempPositions.EndPosition, projData[ID].ReadOnly.Targets, null, true);
+        _TEMP_tempPositions.RaycastPosition = RayCastHitPosition(_TEMP_tempPositions.StartPosition, _TEMP_tempPositions.EndPosition, projData[ID].ReadOnly.Targets, null, true);
         
-        tempPositions.Interval = _interval;
-        Number scopedInterval: tempPositions.Interval;
+        _TEMP_tempPositions.Interval = _interval;
+        Number scopedInterval: _TEMP_tempPositions.Interval;
 
         //LogToInspector($"coll checked! (ID: {ID}, Check: {projData[ID].DEBUG_ECCheck + 1}, CurrentTII: {currentTick}, interval: {scopedInterval}, TTE: {time})");
         LogToInspector($"coll checked! (ID: {ID}, CurrentTII: {currentTick}, interval: {scopedInterval}, TTE: {time})");
         LogToInspector($"\ninterval: {scopedInterval}\n");
         
         
-        Vector position: tempPositions.StartPosition;
-        Vector endPosition: tempPositions.EndPosition;
-        Vector raycast: tempPositions.RaycastPosition;
+        Vector position: _TEMP_tempPositions.StartPosition;
+        Vector endPosition: _TEMP_tempPositions.EndPosition;
+        Vector raycast: _TEMP_tempPositions.RaycastPosition;
 
 
 
@@ -138,12 +142,12 @@ if (diff())
     //        if ([position, endPosition, raycast].IsTrueForAny(v => v == Vector.Zero)) {LogToInspector($"POSITIONS REGISTERED ZERO");}
         if (raycast != endPosition) 
         {
-            projData[ID].HitPlayer = RayCastHitPlayer(tempPositions.StartPosition, tempPositions.EndPosition, projData[ID].ReadOnly.Targets, null, true);
-            //Perform a player-collision check
-            if (projData[ID].HitPlayer)
-            {
-                //do player destruction
-            }
+//            projData[ID].HitPlayer = RayCastHitPlayer(_TEMP_tempPositions.StartPosition, _TEMP_tempPositions.EndPosition, projData[ID].ReadOnly.Targets, null, true);
+//            //Perform a player-collision check
+//            if (projData[ID].HitPlayer)
+//            {
+//                //do player destruction
+//            }
 
 
             //By making the queue time {offset} shorter, you avoid false positives with PC (take the case of a projectile hitting reins shield)
@@ -156,14 +160,15 @@ if (diff())
             //break;
 
 
-            //stop laps on collision (_waitlessIterator is currentLap)
-            _waitlessIterator = lapCount;
+            //stop laps on collision (UTILS_waitlessIterator is currentLap)
+            UTILS_waitlessIterator = lapCount;
         }
 
 
-    //Break loop, to prevent outer raycasts, if proj radius is below a certain threshold (_waitlessIterator is currentLap)
-    if (current.ReadOnly.Radius < 0.7) {
-        _waitlessIterator = lapCount;
+    //Break loop, to prevent outer raycasts, if proj radius is below a certain threshold (UTILS_waitlessIterator is currentLap)
+
+    if (current.ReadOnly.Radius < thresholdForExtraEC) {
+        UTILS_waitlessIterator = lapCount;
     }
 
 
@@ -184,16 +189,16 @@ if (diff())
 
     if (IsOneTimeCheck) {
         LogToInspector("entered IsOTC");
-        timeInInterval.ModRemoveByIndex(timeInInterval.Length - 1);
+        _envCollisionList.ModRemoveByIndex(_envCollisionList.Length - 1);
     }
     else {
-        intervalIndex++; //Traverse to the next projectile
+        _envCollisionIndex++; //Traverse to the next projectile
     }
-    //WaitUntil((diff()) && intervalIndex < timeInInterval.Length, interval - (time%interval)); //Wait until the next proj is ready to be checked, and if either if the loop ends, or until there is a value at timeInInterval[intervalIndex].Time
+    //WaitUntil((diff()) && _envCollisionIndex < _envCollisionList.Length, interval - (time%interval)); //Wait until the next proj is ready to be checked, and if either if the loop ends, or until there is a value at _envCollisionList[_envCollisionIndex].Time
 
-    //Heres the reason why '&& intervalIndex < timeInInterval.Lengh' is needed: First off, this code makes sure that your not reading an out-of-scope index.
+    //Heres the reason why '&& _envCollisionIndex < _envCollisionList.Lengh' is needed: First off, this code makes sure that your not reading an out-of-scope index.
     //Take the case where there is 1 projectile, with a ProjTick of 0. When the Current Tick is 0, it will check Proj 1, then traverse to Proj 2.
-    //Because there is no Proj 2, diff(1) corresponds to timeInInterval[1].Time == 0 -> null == 0 -> true. Therefore, the WaitUntil never happens, and it loops to the next check.
+    //Because there is no Proj 2, diff(1) corresponds to _envCollisionList[1].Time == 0 -> null == 0 -> true. Therefore, the WaitUntil never happens, and it loops to the next check.
     //This happens an infinite amount of times (with 0 waits inbetween), crashing the server.
     LoopIfConditionIsTrue();
     
@@ -203,9 +208,9 @@ if (diff())
 
 
 rule: '[BMPW] Update State'
-if (timeInInterval.Length)
+if (_envCollisionList.Length)
 {
-    SpreadOverTicks(timeInInterval, 15, tte, i => {
+    SpreadOverTicks(_envCollisionList, 15, UTILS_tte, i => {
         //i is the index of the array entered
         StateCheck(i.ID, projData[i.ID].Position());
         //LogToInspector($"Checked state of proj {i} (TTE: {time})");
@@ -241,15 +246,15 @@ private void StateCheck(in Number ID, in Vector position)
     //Criteria for complex state
     if (projData[ID].ReadOnly.Targets.Any(v => v.DistanceTo(pos(ID)) <= rad(ID)))
     {
-        if (complexProjs.All(v => v != ID))
+        if (_complexProjs.All(v => v != ID))
         {
-            complexProjs.ModAppend(ID);
+            _complexProjs.ModAppend(ID);
             //This should be the same as ticks in PC
             checkPCollision(ID, 5);
         }
     }
     else
     {
-        complexProjs.ModRemoveByValue(ID);
+        _complexProjs.ModRemoveByValue(ID);
     }
 }

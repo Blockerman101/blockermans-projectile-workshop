@@ -1,13 +1,13 @@
 import "index.ostw";
-globalvar ProjDestructor[] projDestructor = []; 
+globalvar ProjDestructor[] _projDestructorQueue = []; 
 
 rule: '[BMPW] Destructor - Destroy Proj'
 Event.OngoingGlobal
-if (projDestructor.Length)
-if (projDestructor.First.time <= TotalTimeElapsed())
+if (_projDestructorQueue.Length)
+if (_projDestructorQueue.First.time <= TotalTimeElapsed())
 {
-    Number ID: projDestructor.First.ID;
-    ProjDestructor current: projDestructor.First;
+    Number ID: _projDestructorQueue.First.ID;
+    ProjDestructor current: _projDestructorQueue.First;
 
     //JIT checks will be limited to this much (at least) time between them
     Number JITTimeout: 0.5;
@@ -22,38 +22,38 @@ if (projDestructor.First.time <= TotalTimeElapsed())
 
         Number timeBackwards: -0.1;
         Number timeForwards:   0.1;
-        tempPositions.StartPosition = projData[ID].PositionAtTime(timeBackwards);
-        tempPositions.EndPosition = projData[ID].PositionAtTime(timeForwards);
+        _TEMP_tempPositions.StartPosition = projData[ID].PositionAtTime(timeBackwards);
+        _TEMP_tempPositions.EndPosition = projData[ID].PositionAtTime(timeForwards);
         //This will need to include targets in order for their objects to be tracked
-        tempPositions.RaycastPosition = RayCastHitPosition(tempPositions.StartPosition, tempPositions.EndPosition, projData[ID].ReadOnly.Targets, null, true);
+        _TEMP_tempPositions.RaycastPosition = RayCastHitPosition(_TEMP_tempPositions.StartPosition, _TEMP_tempPositions.EndPosition, projData[ID].ReadOnly.Targets, null, true);
 
-        //CreateBeamEffect(HostPlayer(), BeamType.BrigitteFlailChainBeam, tempPositions.StartPosition, tempPositions.EndPosition, Color.Red, EffectRev.None);
+        //CreateBeamEffect(HostPlayer(), BeamType.BrigitteFlailChainBeam, _TEMP_tempPositions.StartPosition, _TEMP_tempPositions.EndPosition, Color.Red, EffectRev.None);
         //    projData[ID].ReadOnly.VFX.ModAppend(LastCreatedEntity());
-        //CreateEffect(HostPlayer(), Effect.Sphere, Color.Purple, tempPositions.RaycastPosition, 0.25, EffectRev.None);
+        //CreateEffect(HostPlayer(), Effect.Sphere, Color.Purple, _TEMP_tempPositions.RaycastPosition, 0.25, EffectRev.None);
         //    projData[ID].ReadOnly.VFX.ModAppend(LastCreatedEntity());
-        //CreateBeamEffect(HostPlayer(), BeamType.GoodBeam, (tempPositions.StartPosition + tempPositions.EndPosition) / 2, tempPositions.EndPosition, Color.Black, EffectRev.None);
+        //CreateBeamEffect(HostPlayer(), BeamType.GoodBeam, (_TEMP_tempPositions.StartPosition + _TEMP_tempPositions.EndPosition) / 2, _TEMP_tempPositions.EndPosition, Color.Black, EffectRev.None);
         //    projData[ID].ReadOnly.VFX.ModAppend(LastCreatedEntity());
-        //CreateEffect(HostPlayer(), Effect.Sphere, Color.Orange, (tempPositions.StartPosition + tempPositions.EndPosition) / 2, 0.15, EffectRev.None);
+        //CreateEffect(HostPlayer(), Effect.Sphere, Color.Orange, (_TEMP_tempPositions.StartPosition + _TEMP_tempPositions.EndPosition) / 2, 0.15, EffectRev.None);
         //    projData[ID].ReadOnly.VFX.ModAppend(LastCreatedEntity());
 
-        Number timeToDestroy: (timeBackwards + (timeBackwards.Abs() + timeForwards) * Min(1, Max(0, LinearInterpolate(0, 1, (tempPositions.StartPosition.DistanceTo(tempPositions.RaycastPosition) / tempPositions.StartPosition.DistanceTo(tempPositions.EndPosition))))));
-        //LogToInspector($"proj {ID}\nold: {projDestructor.First.extra}\nnew: {tempPositions.RaycastPosition}");
+        Number timeToDestroy: (timeBackwards + (timeBackwards.Abs() + timeForwards) * Min(1, Max(0, LinearInterpolate(0, 1, (_TEMP_tempPositions.StartPosition.DistanceTo(_TEMP_tempPositions.RaycastPosition) / _TEMP_tempPositions.StartPosition.DistanceTo(_TEMP_tempPositions.EndPosition))))));
+        //LogToInspector($"proj {ID}\nold: {_projDestructorQueue.First.extra}\nnew: {_TEMP_tempPositions.RaycastPosition}");
 
         //If we didn't collide with something, prevent destruction & check the remainder of the projs EC interval
-        if (tempPositions.RaycastPosition == tempPositions.EndPosition)
+        if (_TEMP_tempPositions.RaycastPosition == _TEMP_tempPositions.EndPosition)
         {
             LogToInspector($"prevented destruction of proj {ID}");
-            //ECollision(ID, projDestructor.First.TimeLeft, i => {return projData[i].PositionAtTime(-0.032);}, Color.LimeGreen);
+            //ECollision(ID, _projDestructorQueue.First.TimeLeft, i => {return projData[i].PositionAtTime(-0.032);}, Color.LimeGreen);
             SmallMessage(HostPlayer(), "queued OTC from destructor");
             LogToInspector("queued OTC from destructor");
             TimeInInterval.OneTimeQueue(ID, <ECOneTimeCheck>{
-                _interval: projDestructor.First.TimeLeft,
+                _interval: _projDestructorQueue.First.TimeLeft,
                 StartPosition: projData[ID].PositionAtTime(-0.032),
                 color: Color.LimeGreen,
                 MSTimeOfCall: TotalTimeElapsed() * 1000,
                 TimeOfLastJITCheck: TotalTimeElapsed()
             });
-            projDestructor.ModRemoveByIndex(0);
+            _projDestructorQueue.ModRemoveByIndex(0);
             MinWait();
             LoopIfConditionIsTrue();
             Abort();
@@ -67,12 +67,12 @@ if (projDestructor.First.time <= TotalTimeElapsed())
 
             //Update current, doing time last just to be safe
 
-            projDestructor[0] = {
+            _projDestructorQueue[0] = {
                 time: current.time + timeToDestroy,
                 TypeOfDestruction: TypeOfDestruction.JustInTime,
                 ..current
             };
-            //projDestructor.First.time += timeToDestroy;
+            //_projDestructorQueue.First.time += timeToDestroy;
             ProjDestructor.SortQueue();
 
             MinWait();
@@ -95,17 +95,17 @@ if (projDestructor.First.time <= TotalTimeElapsed())
 
     //LogToInspector($"Destroyed fx {projData[ID].ReadOnly.VFX} from proj {ID}");
     projData[ID].ProjState = ProjState.Inactive;
-    complexProjs.ModRemoveByValue(ID);
+    _complexProjs.ModRemoveByValue(ID);
 
-    //For decrementing the intervalIndex of timeInInterval
+    //For decrementing the _envCollisionIndex of _envCollisionList
     Boolean[] reqsForDec: [
-        //timeInInterval.Length > 1,
-        currentTick >= timeInInterval[timeInInterval.Map(v => v.ID).IndexOf(ID)].TimeOrData,
-        intervalIndex //make sure it isnt 0, because if it was it would go to index -1
+        //_envCollisionList.Length > 1,
+        currentTick >= _envCollisionList[_envCollisionList.Map(v => v.ID).IndexOf(ID)].TimeOrData,
+        _envCollisionIndex //make sure it isnt 0, because if it was it would go to index -1
     ];
     if (IsTrueForAll(reqsForDec, ArrayElement())) {
-        //LogToInspector($"Dec'd Index. (Index {timeInInterval.Map(v => v.ID).IndexOf(ID)} with ID {ID}, Index: {intervalIndex} -> {intervalIndex + 1})");
-        intervalIndex--;
+        //LogToInspector($"Dec'd Index. (Index {_envCollisionList.Map(v => v.ID).IndexOf(ID)} with ID {ID}, Index: {_envCollisionIndex} -> {_envCollisionIndex + 1})");
+        _envCollisionIndex--;
         }
 
     //This doesnt need to maintain indices like projData, so when a projectile is made Inactive, its simply removed from this array
@@ -114,7 +114,7 @@ if (projDestructor.First.time <= TotalTimeElapsed())
     LogToInspector($"Destroyed Proj {ID} (Tick {(time/0.016).Floor()})");
 
     //Do this last, ID is tied to ProjDestructor
-    projDestructor.ModRemoveByIndex(0);
+    _projDestructorQueue.ModRemoveByIndex(0);
     MinWait();
 
     //
@@ -122,8 +122,8 @@ if (projDestructor.First.time <= TotalTimeElapsed())
     //
     
     //The closest power of 2 to the size of projData, rounded down (so if length is 25, this is 16, so you can check)
-    _waitlessIterator = [4, 8, 16, 32, 64, 128, 256].Filter((v, idx) => projData.Length - 1 > v).Last;
-    Number floorPowerOfTwo: _waitlessIterator;
+    UTILS_waitlessIterator = [4, 8, 16, 32, 64, 128, 256].Filter((v, idx) => projData.Length - 1 > v).Last;
+    Number floorPowerOfTwo: UTILS_waitlessIterator;
 
     //Half the size of the database, if possible
     if (projData.All(v => v.ProjState == ProjState.Inactive || CurrentArrayIndex() <= floorPowerOfTwo) && floorPowerOfTwo)
@@ -131,8 +131,8 @@ if (projDestructor.First.time <= TotalTimeElapsed())
         //LogToInspector($"size: {projData.Length}, FPOT: {floorPowerOfTwo}");
 
         //want the indices from 0 through floorPowerOfTwo
-        _waitlessIterator = projData.Map(v => CurrentArrayIndex() <= floorPowerOfTwo ? CurrentArrayIndex() : -1).Filter(i => i != -1);
-        Number[] indexes: _waitlessIterator;
+        UTILS_waitlessIterator = projData.Map(v => CurrentArrayIndex() <= floorPowerOfTwo ? CurrentArrayIndex() : -1).Filter(i => i != -1);
+        Number[] indexes: UTILS_waitlessIterator;
         projData = indexes.Map(v => projData[v]);
         //projData = projData[indexes];
         //projData = projData.Filter((v, idx) => idx < floorPowerOfTwo);
@@ -145,7 +145,7 @@ if (projDestructor.First.time <= TotalTimeElapsed())
 rule: '[BMPW] Destructor - Clear Projectile Data'
 Event.OngoingGlobal
 if (projData.Length > 1)
-if (!projConstructor.Length)
+if (!_projConstructorQueue.Length)
 if (projData.All(v => v.ProjState == ProjState.Inactive || !CurrentArrayIndex())) //If all real projectiles are inactive
 {
     Wait(0.25, WaitBehavior.AbortWhenFalse);
@@ -160,13 +160,13 @@ private void WipeData() {
     projData = [ProjData.Construct()];
     //projData_VFX = [0];
 
-    projConstructor = [];
-    projDestructor = [];
+    _projConstructorQueue = [];
+    _projDestructorQueue = [];
 
-    timeInInterval = [];
-    intervalIndex = 0;
+    _envCollisionList = [];
+    _envCollisionIndex = 0;
 
-    complexProjs = [];
+    _complexProjs = [];
     
     lastProjectileID = 0;
 }

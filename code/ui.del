@@ -302,9 +302,9 @@ ProjectileArgs defaultArgsWithVectors: {StartPosition: Vector(0,0,0), Direction:
 
 void updateInconstants(Player player=HostPlayer()) "Update Inconstants" {
     if (!UI[UIArgName.UseRawValues].ValueForNonArg) {
-        for (_waitlessIterator = 0; _waitlessIterator < CountOf(player._projArgs); _waitlessIterator++) {
-            if (UI[_waitlessIterator].TextForInconstantValue) {
-            player._projArgs[_waitlessIterator] = ProjectileArgs.Default(player)[_waitlessIterator];
+        for (UTILS_waitlessIterator = 0; UTILS_waitlessIterator < CountOf(player._projArgs); UTILS_waitlessIterator++) {
+            if (UI[UTILS_waitlessIterator].TextForInconstantValue) {
+            player._projArgs[UTILS_waitlessIterator] = ProjectileArgs.Default(player)[UTILS_waitlessIterator];
             }
         }   
     }
@@ -373,9 +373,9 @@ if (UI.Length)
     CreateHudText(VisibleTo: LocalPlayer(),
         Header: !lp.editingArgs ? "" : $"Down: {makeFG(colorForBindings, bindings[0].toString)} | Up: {makeFG(colorForBindings, bindings[1].toString)}\nIncrease Change: {makeFG(colorForBindings, bindings[2].toString)} | Decrease Change: {makeFG(colorForBindings, bindings[3].toString)}\nIncrease By Change: {makeFG(colorForBindings, bindings[4].toString)} | Decrease By Change: {makeFG(colorForBindings, bindings[5].toString)}\n{makeFG('fgC4BAE8FF', 'These args')} are add-ons, not actually proj args",
         Location: Location.Left, SortOrder: -1, Reevaluation: HudTextRev.VisibleToAndString, Spectators: Spectators.DefaultVisibility);
-    for (_waitlessIterator = 0; _waitlessIterator < UI.Length; _waitlessIterator++)
+    for (UTILS_waitlessIterator = 0; UTILS_waitlessIterator < UI.Length; UTILS_waitlessIterator++)
     {
-        Number i: _waitlessIterator;
+        Number i: UTILS_waitlessIterator;
         Number ie: EvaluateOnce(i);
         ProjArgData current: UI[ie];
 
@@ -447,11 +447,11 @@ if ((bindings.Any(v => IsButtonHeld(EventPlayer(), v.button)) && editingArgs) ||
     if (IsButtonHeld(EventPlayer(), Button.Crouch) && IsButtonHeld(EventPlayer(), Button.PrimaryFire)) {
         editingArgs = !editingArgs;
         //toggle bindings
-            for (_waitlessIterator = 0; _waitlessIterator < bindings.Length; _waitlessIterator++) {
+            for (UTILS_waitlessIterator = 0; UTILS_waitlessIterator < bindings.Length; UTILS_waitlessIterator++) {
         if (editingArgs) {
-            DisallowButton(EventPlayer(), bindings[_waitlessIterator].button);
+            DisallowButton(EventPlayer(), bindings[UTILS_waitlessIterator].button);
         } else {
-            AllowButton(EventPlayer(), bindings[_waitlessIterator].button);
+            AllowButton(EventPlayer(), bindings[UTILS_waitlessIterator].button);
         }
         }
     } else if (editingArgs) {

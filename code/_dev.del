@@ -35,12 +35,12 @@ if (HostPlayer().IsButtonHeld(Button.Crouch) && HostPlayer().IsButtonHeld(Button
 
 rule: '[DEV] Text'
 {
-    _CreateDevText($"tte: {tte}");
+    _CreateDevText($"tte: {UTILS_tte}");
     CreateHudText(HostPlayer(), "Load Avg: " + ServerLoadAverage(), null, null, Location.Right, -1, ServerLoadAverage() >= 100 ? (ServerLoadAverage() >= 200 ? Color.Red : Color.Yellow) : Color.Green, null, null, HudTextRev.VisibleToSortOrderStringAndColor, Spectators.DefaultVisibility);
     _CreateDevText("Data Array Size: " + projData.Length);
-    _CreateDevText("Destructor Size: " + projDestructor.Length);
-    _CreateDevText("TII: " + tte%interval);
-    //_CreateDevText("[1] Time: " + timeInInterval.First.Time);
+    _CreateDevText("Destructor Size: " + _projDestructorQueue.Length);
+    _CreateDevText("TII: " + UTILS_tte%interval);
+    //_CreateDevText("[1] Time: " + _envCollisionList.First.Time);
     _CreateDevText($"Entity Count: {EntityCount()}");
     _CreateDevText($"Target: {projData[1].ReadOnly.Targets.Sort(v => v.DistanceTo(projData[1].Position())).First}");
     //_CreateDevText($"deltaTicks: {ticksFromCurrentTick}");
@@ -73,12 +73,12 @@ if (currentTick != EvaluateOnce(currentTick))
 globalvar Number count;
 globalvar Number conCount;
 disabled rule: '[DEV] show inactive projstate'
-if (conCount != projConstructor.Length || count != projData.Map(v => v.ProjState).Filter(v => v == ProjState.Inactive).Length)
+if (conCount != _projConstructorQueue.Length || count != projData.Map(v => v.ProjState).Filter(v => v == ProjState.Inactive).Length)
 {
     count = projData.Map(v => v.ProjState).Filter(v => v == ProjState.Inactive).Length;
-    conCount = projConstructor.Length;
+    conCount = _projConstructorQueue.Length;
     LogToInspector($"Size: {projData.Length} ({projData.Map(v => v.ProjState).Filter(v => v == ProjState.Active).Length} Active {count} Inactive {projData.Map(v => v.ProjState).Filter(v => v == ProjState.NULL).Length} Null)
-    {projConstructor.Length} Con Requests");
+    {_projConstructorQueue.Length} Con Requests");
     Wait(0.016, WaitBehavior.RestartWhenTrue);
     LoopIfConditionIsTrue();
 }
@@ -86,7 +86,7 @@ if (conCount != projConstructor.Length || count != projData.Map(v => v.ProjState
 disabled rule: '[DEV] show ticks'
 if (projData.Length > 1)
 {
-    LogToInspector($"Tick {(tte/0.016).Floor()}");
+    LogToInspector($"Tick {(UTILS_tte/0.016).Floor()}");
     MinWait();
     LoopIfConditionIsTrue();
 }
@@ -94,7 +94,7 @@ if (projData.Length > 1)
 rule: '[DEV] show proj state'
 {
     WaitlessForLoop(1, v => v <= 10, 1, i => {
-        CreateEffect((projData[EvaluateOnce(i)].ProjState == ProjState.Active) ? AllPlayers() : null, Effect.Sphere, complexProjs.Contains(EvaluateOnce(i)) ? Color.Blue : Color.Red, pos(EvaluateOnce(i)), rad(EvaluateOnce(i)), EffectRev.VisibleToPositionRadiusAndColor);
+        CreateEffect((projData[EvaluateOnce(i)].ProjState == ProjState.Active) ? AllPlayers() : null, Effect.Sphere, _complexProjs.Contains(EvaluateOnce(i)) ? Color.Blue : Color.Red, pos(EvaluateOnce(i)), rad(EvaluateOnce(i)), EffectRev.VisibleToPositionRadiusAndColor);
         //CreateEffect((projData[EvaluateOnce(i)].ProjState == ProjState.Active) ? AllPlayers() : null, Effect.Sphere, Color.Red, projData[EvaluateOnce(i)].Position(), 0.5, EffectRev.VisibleToPositionRadiusAndColor);
         //CreateEffect((projData[EvaluateOnce(i)].ProjState == ProjState.Active) ? AllPlayers() : null, Effect.Sphere, Color.White, projData[EvaluateOnce(i)].PositionAtTime(0.016), 0.5, EffectRev.VisibleToPositionRadiusAndColor);
     
@@ -117,7 +117,7 @@ private Player hp: HostPlayer();
 disabled rule: 'Track test proj'
 if (projData.Length > 1)
 {
-    //Vector ogPos: (EvaluateOnce(EyePosition(hp) + 10 * WorldVectorOf(Forward(), hp, LocalVector.Rotation)) + Up() * 40 * (tte - EvaluateOnce(<Vector>tte)));
+    //Vector ogPos: (EvaluateOnce(EyePosition(hp) + 10 * WorldVectorOf(Forward(), hp, LocalVector.Rotation)) + Up() * 40 * (UTILS_tte - EvaluateOnce(<Vector>UTILS_tte)));
     StopCamera(hp);
     StartCamera(hp, projData[1].Position() + hp.FacingDirection() * 3, projData[1].Position(), 0);
     Wait(1.5);

@@ -1,9 +1,9 @@
 import "index.ostw";
 
-globalvar Number tte;
+globalvar Number UTILS_tte;
 rule: '[BMPW] Initialize TTE var'
 {
-    ChaseVariableAtRate(tte, 9999, 1, RateChaseReevaluation.None);
+    ChaseVariableAtRate(UTILS_tte, 9999, 1, RateChaseReevaluation.None);
 }
 rule: '[BMPW] Sync TTE var (interval)'
 {
@@ -12,7 +12,7 @@ rule: '[BMPW] Sync TTE var (interval)'
     Loop();
 }
 void SyncTTE() {
-    tte = TotalTimeElapsed();
+    UTILS_tte = TotalTimeElapsed();
 }
 
 
@@ -23,7 +23,7 @@ void SyncTTE() {
 //    //public Number type;
 //    public ProjectileArgs args;
 //    public static ProjConstructor Construct(): {args: ProjectileArgs.Construct()};
-//    public static void Queue(in ProjConstructor projArguments) {projConstructor.ModAppend(projArguments);}
+//    public static void Queue(in ProjConstructor projArguments) {_projConstructorQueue.ModAppend(projArguments);}
 //
 //}
 
@@ -48,19 +48,19 @@ single struct ProjDestructor
     public Number TimeOfLastJITCheck;
     //Queue proj to be destroyed, the proj will be destroyed `time` seconds from when the method is called
 
-    //public static void Queue(in Number ID, in Number time) {projDestructor = projDestructor.Append({ID: ID, time: tte + time}).Sort(v => v.time);} //TTE() is automatically included, so the extra time is relative
-    public static void Queue(in Number ID, in Number time, in TypeOfDestruction typeOfDestruction, in Number TimeLeft=null, in Number TimeOfLastJITCheck=null) {projDestructor = projDestructor.Append({ID: ID, time: tte + time, TypeOfDestruction: typeOfDestruction, TimeLeft: TimeLeft, TimeOfLastJITCheck: TimeOfLastJITCheck}).Sort(v => v.time);}
-    public static void QueueRaw(in Number ID, in Number time, in TypeOfDestruction typeOfDestruction, in Number TimeLeft=null, in Number TimeOfLastJITCheck=null) {projDestructor = projDestructor.Append({ID: ID, time: time, TypeOfDestruction: typeOfDestruction, TimeLeft: TimeLeft, TimeOfLastJITCheck: TimeOfLastJITCheck}).Sort(v => v.time);} //Queue without the automated TTE, letting you have full control over when, specifically, the proj is deleted
-    public static void SortQueue() {projDestructor = projDestructor.Sort(v => v.time);}
+    //public static void Queue(in Number ID, in Number time) {_projDestructorQueue = _projDestructorQueue.Append({ID: ID, time: UTILS_tte + time}).Sort(v => v.time);} //TTE() is automatically included, so the extra time is relative
+    public static void Queue(in Number ID, in Number time, in TypeOfDestruction typeOfDestruction, in Number TimeLeft=null, in Number TimeOfLastJITCheck=null) {_projDestructorQueue = _projDestructorQueue.Append({ID: ID, time: UTILS_tte + time, TypeOfDestruction: typeOfDestruction, TimeLeft: TimeLeft, TimeOfLastJITCheck: TimeOfLastJITCheck}).Sort(v => v.time);}
+    public static void QueueRaw(in Number ID, in Number time, in TypeOfDestruction typeOfDestruction, in Number TimeLeft=null, in Number TimeOfLastJITCheck=null) {_projDestructorQueue = _projDestructorQueue.Append({ID: ID, time: time, TypeOfDestruction: typeOfDestruction, TimeLeft: TimeLeft, TimeOfLastJITCheck: TimeOfLastJITCheck}).Sort(v => v.time);} //Queue without the automated TTE, letting you have full control over when, specifically, the proj is deleted
+    public static void SortQueue() {_projDestructorQueue = _projDestructorQueue.Sort(v => v.time);}
     
     //Destroy proj ASAP
-    public static void Destroy(in Number ID) {projDestructor = projDestructor.Append({ID: ID, time: null, TypeOfDestruction: null, TimeLeft: null, TimeOfLastJITCheck: null}).Sort(v => v.time);}
-    public static void ClearFromQueue(in Number ID) {projDestructor = projDestructor.Filter(v => v.ID != ID);}
+    public static void Destroy(in Number ID) {_projDestructorQueue = _projDestructorQueue.Append({ID: ID, time: null, TypeOfDestruction: null, TimeLeft: null, TimeOfLastJITCheck: null}).Sort(v => v.time);}
+    public static void ClearFromQueue(in Number ID) {_projDestructorQueue = _projDestructorQueue.Filter(v => v.ID != ID);}
 }
 
 struct ProjData
 {
-    public Number time: (tte - this.TimeOfCreation);
+    public Number time: (UTILS_tte - this.TimeOfCreation);
     public ProjState ProjState;
 
     //public PositionsForProjData ControlPoints;
@@ -70,7 +70,7 @@ struct ProjData
 
     public Player HitPlayer; //this is for testing, not intended for user
     //public Vector Position: (
-    //    ((this.ReadOnly.Lifetime - (tte - this.TimeOfCreation))/this.ReadOnly.Lifetime)*(((this.ReadOnly.Lifetime - (tte - this.TimeOfCreation))/this.ReadOnly.Lifetime)*(this.RarelyChange.Bezierp0) + ((tte - this.TimeOfCreation)/this.ReadOnly.Lifetime)*this.RarelyChange.Bezierp1) + ((tte - this.TimeOfCreation)/this.ReadOnly.Lifetime)*(((this.ReadOnly.Lifetime - (tte - this.TimeOfCreation))/this.ReadOnly.Lifetime)*this.RarelyChange.Bezierp1 + ((tte - this.TimeOfCreation)/this.ReadOnly.Lifetime)*this.RarelyChange.Bezierp2)
+    //    ((this.ReadOnly.Lifetime - (UTILS_tte - this.TimeOfCreation))/this.ReadOnly.Lifetime)*(((this.ReadOnly.Lifetime - (UTILS_tte - this.TimeOfCreation))/this.ReadOnly.Lifetime)*(this.RarelyChange.Bezierp0) + ((UTILS_tte - this.TimeOfCreation)/this.ReadOnly.Lifetime)*this.RarelyChange.Bezierp1) + ((UTILS_tte - this.TimeOfCreation)/this.ReadOnly.Lifetime)*(((this.ReadOnly.Lifetime - (UTILS_tte - this.TimeOfCreation))/this.ReadOnly.Lifetime)*this.RarelyChange.Bezierp1 + ((UTILS_tte - this.TimeOfCreation)/this.ReadOnly.Lifetime)*this.RarelyChange.Bezierp2)
     //);
     //public Vector Position: b0;
 
@@ -140,14 +140,14 @@ single struct TimeInInterval
 
     //Sink One-Time Queues to the end of the array
     public static void Queue(in Number ID, in Number Time) {
-        timeInInterval = timeInInterval
+        _envCollisionList = _envCollisionList
             .Append({ID: ID, TimeOrData: Time})
             .Sort(v => v.TimeOrData)
             .Sort((v, idx) => idx + CountOf(v.TimeOrData) * 1000)
             ;
     }
-    public static void OneTimeQueue(in Number ID, in ECOneTimeCheck data) {timeInInterval.ModAppend({ID: ID, TimeOrData: data});}
-    public static void ClearFromQueue(in Number ID) {timeInInterval = timeInInterval.Filter(v => v.ID != ID);}
+    public static void OneTimeQueue(in Number ID, in ECOneTimeCheck data) {_envCollisionList.ModAppend({ID: ID, TimeOrData: data});}
+    public static void ClearFromQueue(in Number ID) {_envCollisionList = _envCollisionList.Filter(v => v.ID != ID);}
 }
 
 //single struct PositionsForProjData
@@ -199,7 +199,10 @@ single struct ProjectileArgs
     public Vector Gravity;
     //private Number ProjID;
     private Number _TimeOfCall;
+        //get Time of Call
         public Number _GetTOC() {return _TimeOfCall;}
+
+        //set Time of Call
         public ref void _SetTOC(in Number time) {_TimeOfCall = time;} 
     public static ProjectileArgs Construct(): {
         ProjFX: ProjFX.OrbProjectile, 
@@ -237,7 +240,7 @@ single struct ProjectileArgs
             ..this
         };
     }
-    //public static void Queue(in ProjectileArgs args) {projConstructor.ModAppend(args);}
+    //public static void Queue(in ProjectileArgs args) {_projConstructorQueue.ModAppend(args);}
 
     //public Any _PointerToArg(in Number p) {return <Any[]>this[p];}
 //    public Any _PointerToArg(in Number p) {

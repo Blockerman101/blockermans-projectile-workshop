@@ -1,18 +1,18 @@
 import "index.ostw";
-globalvar Number[] complexProjs = EmptyArray();
+globalvar Number[] _complexProjs = EmptyArray();
 
 rule: '[BMPW] Player Collision'
-if (complexProjs.Length)
+if (_complexProjs.Length)
 {
     Number ticks: 5;
-    SpreadOverTicks(complexProjs, ticks, tte, i => {
+    SpreadOverTicks(_complexProjs, ticks, UTILS_tte, i => {
         checkPCollision(i, ticks);
         //if (projData[i].Position == Vector.Zero) {LogToInspector($"\n\n\n!-- REGISTERED ZERO (PC) --!\n\n\n");}
     });
 }
 
-globalvar DataForProjInPC _dataForProjInPC = EmptyArray();
-single struct DataForProjInPC
+globalvar PCData _playerCollisionData = EmptyArray();
+single struct PCData
 {
     public Vector Position;
     public Player Target;
@@ -21,19 +21,19 @@ single struct DataForProjInPC
 private void checkPCollision(in Number ID, in Number ticks) {
     //calculations: https://www.desmos.com/3d/c7ypcrhnqw
     ProjData proj: projData[ID];
-    _dataForProjInPC.Position = proj.Position();
-    _dataForProjInPC.Target = proj.ReadOnly.Targets.Sort(v => v.DistanceTo(_dataForProjInPC.Position)).First;
-    Vector feetToEyes: (_dataForProjInPC.Target.Position().Towards(_dataForProjInPC.Target.EyePosition()));
+    _playerCollisionData.Position = proj.Position();
+    _playerCollisionData.Target = proj.ReadOnly.Targets.Sort(v => v.DistanceTo(_playerCollisionData.Position)).First;
+    Vector feetToEyes: (_playerCollisionData.Target.Position().Towards(_playerCollisionData.Target.EyePosition()));
     //The projectile pos, projected onto a line from the feet of the target to the eyes of the target
-    Vector projectedPos: _dataForProjInPC.Target.Position() + feetToEyes * Clamp(DotProduct(feetToEyes, _dataForProjInPC.Position - _dataForProjInPC.Target.Position())/DotProduct(feetToEyes, feetToEyes), 0, 1);
+    Vector projectedPos: _playerCollisionData.Target.Position() + feetToEyes * Clamp(DotProduct(feetToEyes, _playerCollisionData.Position - _playerCollisionData.Target.Position())/DotProduct(feetToEyes, feetToEyes), 0, 1);
     
     //Vector from projPos towards projectedPos
-    _dataForProjInPC.ShiftForRaycastPositions = _dataForProjInPC.Position.Towards(projectedPos);
+    _playerCollisionData.ShiftForRaycastPositions = _playerCollisionData.Position.Towards(projectedPos);
     
     //Shift
-    _dataForProjInPC.ShiftForRaycastPositions = Clamp(_dataForProjInPC.ShiftForRaycastPositions.Magnitude, 0, proj.ReadOnly.Radius) * _dataForProjInPC.ShiftForRaycastPositions.Normalize();
+    _playerCollisionData.ShiftForRaycastPositions = Clamp(_playerCollisionData.ShiftForRaycastPositions.Magnitude, 0, proj.ReadOnly.Radius) * _playerCollisionData.ShiftForRaycastPositions.Normalize();
     
-    projData[ID].HitPlayer = RayCastHitPlayer(_dataForProjInPC.Position + _dataForProjInPC.ShiftForRaycastPositions, proj.PositionAtTime(0.016*ticks) + _dataForProjInPC.ShiftForRaycastPositions, proj.ReadOnly.Targets, null, true);
+    projData[ID].HitPlayer = RayCastHitPlayer(_playerCollisionData.Position + _playerCollisionData.ShiftForRaycastPositions, proj.PositionAtTime(0.016*ticks) + _playerCollisionData.ShiftForRaycastPositions, proj.ReadOnly.Targets, null, true);
     //PlayEffect(HostPlayer(), PlayEffect.GoodExplosion, Color.White, proj.Position(), 0.5);
     //PlayEffect(HostPlayer(), PlayEffect.GoodExplosion, Color.White, proj.PositionAtTime(0.016*ticks), 0.5);
     if (proj.HitPlayer)
@@ -77,21 +77,21 @@ public void SpreadOverTicks<T>(in T[] Array, in Number NumberOfTicks, in Number 
 }
 
 //If you need to store a value to use it multiple times in the same tick, this var can be used for that as well
-globalvar (Any|Any[]) _waitlessIterator;
+globalvar (Any|Any[]) UTILS_waitlessIterator;
 public void NestedWaitlessForLoop(in Number start, const Number => Boolean end, in Number step, const (Number|Number[]) => void func, in Number nestedLevel=0) {
-    _waitlessIterator[nestedLevel] = start;
-    while (end(_waitlessIterator[nestedLevel]))
+    UTILS_waitlessIterator[nestedLevel] = start;
+    while (end(UTILS_waitlessIterator[nestedLevel]))
     {
-        func(_waitlessIterator[nestedLevel]);
-        _waitlessIterator[nestedLevel] += step;
+        func(UTILS_waitlessIterator[nestedLevel]);
+        UTILS_waitlessIterator[nestedLevel] += step;
     }  
 }
 
 public void WaitlessForLoop(in Number start, const Number => Boolean loopWhileThisIsTrue, in Number step, const (Number|Number[]) => void func) {
-    _waitlessIterator = start;
-    while (loopWhileThisIsTrue.Invoke(_waitlessIterator))
+    UTILS_waitlessIterator = start;
+    while (loopWhileThisIsTrue.Invoke(UTILS_waitlessIterator))
     {
-        func(_waitlessIterator);
-        _waitlessIterator += step;
+        func(UTILS_waitlessIterator);
+        UTILS_waitlessIterator += step;
     }  
 }

@@ -9,11 +9,11 @@ Vector | Number lerp2(in Vector | Number a, in Vector | Number b, in Number t, i
 globalvar Number lastProjectileID = 0;
 globalvar ProjData[] projData = [ProjData.Construct()];
 //globalvar (Number|Number[])[] projData_VFX = [null];
-globalvar ProjectileArgs[] projConstructor = [];
-//globalvar ProjectileArgs[] constructorData = [EmptyArray()];  //This var isnt be needed with 1 constructor, you can just ref `projConstructor.First`
-globalvar TimeInInterval[] timeInInterval = [];
+globalvar ProjectileArgs[] _projConstructorQueue = [];
+//globalvar ProjectileArgs[] constructorData = [EmptyArray()];  //This var isnt be needed with 1 constructor, you can just ref `_projConstructorQueue.First`
 
-void CreateCustomProjectile(ProjectileArgs Args) "[BMPW] CreateProj Sub"
+
+void CreateCustomProjectile(ProjectileArgs projectileArgs) "[BMPW] CreateProj Sub"
 {
     //if (projData.Any(v => v.ProjState == ProjState.Inactive))
     if (IsTrueForAny(projData.Map(v => v.ProjState), ArrayElement() == ProjState.Inactive)) //Make new lastProjID
@@ -25,13 +25,13 @@ void CreateCustomProjectile(ProjectileArgs Args) "[BMPW] CreateProj Sub"
         lastProjectileID = projData.Length;
     }
     //Args.ProjID = lastProjectileID;
-    Args._SetID(lastProjectileID);
-    Args._SetTOC(tte);
+    projectileArgs._SetID(lastProjectileID);
+    projectileArgs._SetTOC(UTILS_tte);
     projData[lastProjectileID].ProjState = ProjState.NULL; //setting a projstate value so `lastProjectileID = projData.Length` increments correctly with >1 proj in a single tick
     
 
     //LogToInspector($"Last ID: {lastProjectileID}");
-    projConstructor.ModAppend(Args); //Add this proj call to the construction queue
+    _projConstructorQueue.ModAppend(projectileArgs); //Add this proj call to the construction queue
 
     //DEV
     //Args = null;
@@ -39,13 +39,13 @@ void CreateCustomProjectile(ProjectileArgs Args) "[BMPW] CreateProj Sub"
 
 rule: '[BMPW] Constructor'
 Event.OngoingGlobal
-if (projConstructor.Length > 0)
+if (_projConstructorQueue.Length > 0)
 {
 
     //LogToInspector("Constructor Fired!");
 
-    ProjectileArgs _tempArgsForConstructorOne = projConstructor.First;
-    ProjectileArgs Args: _tempArgsForConstructorOne;
+    ProjectileArgs _TEMP_argsForConstructor = _projConstructorQueue.First;
+    ProjectileArgs Args: _TEMP_argsForConstructor;
 
     Any ID: Args._GetID();
 
@@ -53,7 +53,7 @@ if (projConstructor.Length > 0)
     //This is useful because instead of making the projectile at the current time, I can buffer it to act as if it was created at its time of call
     Number deltaTMax: 0.5;
     //This also kind of updates (because its a macro), so it doesnt need to be reevaled manually after waits
-    Number deltaT: Min(deltaTMax, tte - Args._GetTOC()); 
+    Number deltaT: Min(deltaTMax, UTILS_tte - Args._GetTOC()); 
     //Number deltaT: 0.45;
     //LogToInspector($"proj {ID} has {Args.Lifetime}s LT and {deltaT} deltaT");
     
@@ -64,14 +64,14 @@ if (projConstructor.Length > 0)
         //dataAdd -> TII add -> first ED -> first SD -> WAIT
 
         //Normalize dir internally (redundancy) //For reference, if you do .First instead of [0] OSTW throws an error
-        projConstructor[0].Direction = projConstructor[0].Direction.Normalize();
+        _projConstructorQueue[0].Direction = _projConstructorQueue[0].Direction.Normalize();
 
         //Make speed have min of 0
-        projConstructor[0].Speed = Max(0, projConstructor[0].Speed);
+        _projConstructorQueue[0].Speed = Max(0, _projConstructorQueue[0].Speed);
 
         //Convert the in-world / visual radius to oversize
         //Should try to make this 1 action
-        EffectiveSizeToOversize(_tempArgsForConstructorOne);
+        EffectiveSizeToOversize(_TEMP_argsForConstructor);
 
         //Number buffer: (deltaT + 0.016*2 + (ServerLoadPeak() >= 200 ? 0.032 : 0.016));
         projData[ID] = <ProjData> {
@@ -101,12 +101,12 @@ if (projConstructor.Length > 0)
             HitPlayer: null
         };
 
-        ReadOnlyProjData _tempArgsForConstructorTwo = projData[ID].ReadOnly;
+        ReadOnlyProjData _TEMP_argsForConstructor2 = projData[ID].ReadOnly;
 
 
 
 
-        Number timeToMaxHeight: (tte + Max(0, -1 * Args.Speed * DotProduct(Args.Direction, Args.Gravity)/DotProduct(Args.Gravity, Args.Gravity)));
+        Number timeToMaxHeight: (UTILS_tte + Max(0, -1 * Args.Speed * DotProduct(Args.Direction, Args.Gravity)/DotProduct(Args.Gravity, Args.Gravity)));
         
         
         Number ticksToMaxHeight: (((timeToMaxHeight%interval) / 0.016).Floor());
@@ -116,10 +116,10 @@ if (projConstructor.Length > 0)
         //Number ticksToMaxHeight: 13;
 
         TimeInInterval.Queue(ID, ticksToMaxHeight);
-        LogToInspector($"\nAdded to TII (ID: {ID})\nCurrentTick: {currentTick}, ProjTick: {ticksToMaxHeight}\nCurrentIndex: {intervalIndex}, ProjIndex: {timeInInterval.Map(v => v.ID).IndexOf(ID)}]\n");
-        if (timeInInterval.Length > 1 && currentTick >= ticksToMaxHeight) {
-            //LogToInspector($"Inc'd Index. (Index {timeInInterval.Map(v => v.ID).IndexOf(ID)} with ID {ID}, Index: {intervalIndex} -> {intervalIndex + 1})"); 
-            intervalIndex++;
+        LogToInspector($"\nAdded to TII (ID: {ID})\nCurrentTick: {currentTick}, ProjTick: {ticksToMaxHeight}\nCurrentIndex: {_envCollisionIndex}, ProjIndex: {_envCollisionList.Map(v => v.ID).IndexOf(ID)}]\n");
+        if (_envCollisionList.Length > 1 && currentTick >= ticksToMaxHeight) {
+            //LogToInspector($"Inc'd Index. (Index {_envCollisionList.Map(v => v.ID).IndexOf(ID)} with ID {ID}, Index: {_envCollisionIndex} -> {_envCollisionIndex + 1})"); 
+            _envCollisionIndex++;
         }
 
         //first EC Check
@@ -168,16 +168,16 @@ if (projConstructor.Length > 0)
         if (projData[ID].ProjState != ProjState.Inactive && projData[ID].ProjState != ProjState.NULL)
         {
             SyncTTE();
-            LogToInspector($"Kept Creation! (proj {ID}, tick {(tte / 0.016).Floor()})");
+            LogToInspector($"Kept Creation! (proj {ID}, tick {(UTILS_tte / 0.016).Floor()})");
             CastPFX(
                 pfx: Args.ProjFX,
                 fx => {
                     //Position (without beziers) is p_0 + t * (v_0 + g * t * 1/2)
                     //Direction is v_0 + g * t
-                    CreateProjectileEffect(AllPlayers(), fx, AllPlayers(), UpdateEveryFrame(projData[EvaluateOnce(ID)].Position(EvaluateOnce(_tempArgsForConstructorTwo))), EvaluateOnce(_tempArgsForConstructorTwo).Velocity + EvaluateOnce(_tempArgsForConstructorTwo).Gravity * projData[EvaluateOnce(ID)].time, EvaluateOnce(Args.VisualRadius), ProjectileEffectReeval.PositionDirectionAndSize);
+                    CreateProjectileEffect(AllPlayers(), fx, AllPlayers(), UpdateEveryFrame(projData[EvaluateOnce(ID)].Position(EvaluateOnce(_TEMP_argsForConstructor2))), EvaluateOnce(_TEMP_argsForConstructor2).Velocity + EvaluateOnce(_TEMP_argsForConstructor2).Gravity * projData[EvaluateOnce(ID)].time, EvaluateOnce(Args.VisualRadius), ProjectileEffectReeval.PositionDirectionAndSize);
                     },
                 fx => {
-                    CreateEffect(AllPlayers(), fx, Args.ColorForFX, UpdateEveryFrame(projData[EvaluateOnce(ID)].Position(EvaluateOnce(_tempArgsForConstructorTwo))), EvaluateOnce(Args.VisualRadius), EffectRev.PositionAndRadius);
+                    CreateEffect(AllPlayers(), fx, Args.ColorForFX, UpdateEveryFrame(projData[EvaluateOnce(ID)].Position(EvaluateOnce(_TEMP_argsForConstructor2))), EvaluateOnce(Args.VisualRadius), EffectRev.PositionAndRadius);
                 }
             );
             //projData[ID].ReadOnly.VFX = LastCreatedEntity();
@@ -194,7 +194,7 @@ if (projConstructor.Length > 0)
     //        else {
                 //MinWait();
     //        }
-        } else {LogToInspector($"Skipped creation! (proj {ID}, tick {(tte / 0.016).Floor()})");}
+        } else {LogToInspector($"Skipped creation! (proj {ID}, tick {(UTILS_tte / 0.016).Floor()})");}
     }
     else
     {
@@ -214,10 +214,10 @@ if (projConstructor.Length > 0)
     }
 
     //All done with first in queue, get ready for next
-    projConstructor.ModRemoveByIndex(0); 
+    _projConstructorQueue.ModRemoveByIndex(0); 
 
     LoopIfConditionIsTrue();
-    //LogToInspector($"NO LOOP ({projConstructor.Length} Con Queues)");
+    //LogToInspector($"NO LOOP ({_projConstructorQueue.Length} Con Queues)");
     MinWait();
     LoopIfConditionIsTrue();
 }
