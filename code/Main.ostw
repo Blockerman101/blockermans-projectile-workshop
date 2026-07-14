@@ -1,7 +1,7 @@
 import "../customGameSettings.json";
 //import "../../../Other/extraFunctions.ostw";
 import "BMPW/index.ostw";
-//import "_flight.del";
+import "_flight.del";
 //import "_dev.del";
 //import "ui.del";
 
@@ -38,7 +38,7 @@ if (EventPlayer() == HostPlayer())
 {
     //ProjectileArgs bigProj: {ProjFX: ProjFX.BaptisteBioticLauncher, Radius: 0.3, VisualRadius: 1, Speed: 50, Lifetime: 2.5, ..ProjectileArgs.Default()};
     //CreateCustomProjectile(bigProj);
-    ProjectileArgs sphere: <ProjectileArgs>{ProjFX: ProjFX.BaptisteBioticLauncher, ColorForFX: Color.Red, Radius: 0.5, VisualRadius: 0.5,  ..ProjectileArgs.Default()}.CommonPatches();
+    ProjectileArgs sphere: <ProjectileArgs>{ProjFX: ProjFX.BaptisteBioticLauncher, ColorForFX: Color.Red, Radius: 0.5, VisualRadius: 0.5, Lifetime: 7,  ..ProjectileArgs.Default()}.CommonPatches();
     ProjectileArgs sphereNoGravSlow: {ProjFX: ProjFX.Sphere, ColorForFX: Color.Red, Radius: 1, VisualRadius: 1, Speed: 5, Gravity: Vector.Zero, Lifetime: 10,  ..ProjectileArgs.Default()}.CommonPatches();
     CreateCustomProjectile(sphere);
     bigProjIDs.ModAppend(lastProjectileID);

@@ -3,7 +3,7 @@ import "index.ostw";
 globalvar Number UTILS_tte;
 rule: '[BMPW] Initialize TTE var'
 {
-    ChaseVariableAtRate(UTILS_tte, 9999, 1, RateChaseReevaluation.None);
+    ChaseVariableAtRate(UTILS_tte, 99999, 1, RateChaseReevaluation.None);
 }
 rule: '[BMPW] Sync TTE var (interval)'
 {
