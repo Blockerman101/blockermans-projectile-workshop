@@ -114,7 +114,9 @@ if (_projDestructorQueue.First.time <= TotalTimeElapsed())
     LogToInspector($"Destroyed Proj {ID} (Tick {(time/0.016).Floor()})");
 
     //Do this last, ID is tied to ProjDestructor
-    _projDestructorQueue.ModRemoveByIndex(0);
+    _projDestructorQueue = _projDestructorQueue.Filter(v => v.ID != ID);
+    //_projDestructorQueue.ModRemoveByIndex(0); //ts does NOT work when theres >1 queue for any proj
+    
     MinWait();
 
     //
@@ -136,7 +138,7 @@ if (_projDestructorQueue.First.time <= TotalTimeElapsed())
         projData = indexes.Map(v => projData[v]);
         //projData = projData[indexes];
         //projData = projData.Filter((v, idx) => idx < floorPowerOfTwo);
-        //LogToInspector($"Made size smaller! (shrank to {floorPowerOfTwo}, from {indexes.First} through {indexes.Last})");
+        LogToInspector($"Made size smaller! (shrank to {floorPowerOfTwo}, from {indexes.First} through {indexes.Last})");
     }
     LoopIfConditionIsTrue();
 }

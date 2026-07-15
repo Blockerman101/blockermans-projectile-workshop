@@ -177,7 +177,7 @@ if (diff())
 
 
     });
-    LogToInspector($"\n\n\nLOOP EXITED\n\n\n");
+    LogToInspector($"LOOP EXITED");
 
 
 

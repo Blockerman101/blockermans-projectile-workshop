@@ -6,10 +6,11 @@ rule: '[BMPW] Initialize TTE var'
     ChaseVariableAtRate(UTILS_tte, 99999, 1, RateChaseReevaluation.None);
 }
 rule: '[BMPW] Sync TTE var (interval)'
+if (EntityCount())
 {
     SyncTTE();
     Wait(0.5);
-    Loop();
+    LoopIfConditionIsTrue();
 }
 void SyncTTE() {
     UTILS_tte = TotalTimeElapsed();
@@ -240,25 +241,8 @@ single struct ProjectileArgs
             ..this
         };
     }
-    //public static void Queue(in ProjectileArgs args) {_projConstructorQueue.ModAppend(args);}
-
-    //public Any _PointerToArg(in Number p) {return <Any[]>this[p];}
-//    public Any _PointerToArg(in Number p) {
-//        switch (p)
-//        {
-//            case 0: return _ProjID;         break;
-//            case 1: return ProjFX;          break;
-//            case 2: return StartPosition;   break;
-//            case 3: return Direction;       break;
-//            case 4: return Targets;         break;
-//            case 5: return Oversize;        break;
-//            case 6: return Speed;           break;
-//            case 7: return Lifetime;        break;
-//            case 8: return Gravity;         break;
-//            case 9: return _TimeOfCall;     break;
-//        }
-//    }
 }
+
 
 enum ProjFX
 {

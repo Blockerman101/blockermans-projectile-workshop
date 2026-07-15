@@ -4,7 +4,8 @@
         "Lobby":
         {
             "Max Team 1 Players": 1,
-            "Max Team 2 Players": 7
+            "Max Team 2 Players": 7,
+            "Minimum Latency milliseconds": "150000000"
         },
 
         "Modes":

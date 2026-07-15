@@ -20,7 +20,7 @@ Event.OngoingGlobal
 if (HasSpawned(HostPlayer()))
 {
     //CreateDummyBot(AllHeroes().Random(), OppositeTeamOf(HostPlayer().Team()), -1, PositionOf(HostPlayer()));
-    CreateDummyBot(Hero.Reinhardt, OppositeTeamOf(HostPlayer().Team()), -1, null, null);
+    CreateDummyBot(Hero.Reinhardt, OppositeTeamOf(HostPlayer().Team()), -1, Vector(-15, 0, 0), null);
     LogToInspector($"{LastCreatedEntity()} Spawned");
     //Wait(0.25);
     //StartHoldingButton(LastCreatedEntity(), Button.SecondaryFire);
