@@ -243,6 +243,13 @@ single struct ProjectileArgs
     }
 }
 
+single struct PCData
+{
+    public Vector Position;
+    public Player Target;
+    public Vector ShiftForRaycastPositions;
+}
+
 
 enum ProjFX
 {
@@ -346,37 +353,3 @@ public void EffectiveSizeToOversize(ref ProjectileArgs projArgs) {
 
 
 enum RicochetTarget {Players, World, PlayersAndWorld}
-
-//struct Dictionary<K, V>
-//{
-//    public K[] Keys;
-//    public V[] Values;
-//
-//    public V Get(K key)
-//    {
-//        return Values[Keys.IndexOf(key)];
-//    }
-//    
-//    // Sets a value in the dictionary.
-//    public ref void Set(in K key, in V value)
-//    {
-//        Values[Keys.IndexOf(key)] = value;
-//    }
-//    
-//    // Adds a value to the dictionary.
-//    public ref void Add(in K key, in V value)
-//    {
-//        Keys += key;
-//        Values += value;
-//    }
-//
-//    // Sets a value in the dictionary. Will add the key if it doesn't exist.
-//    public ref void SetOrAdd(in K key, in V value)
-//    {
-//        Number index = Keys.IndexOf(key);
-//        if (index == -1) // Key not found; add it.
-//            Add(key, value);
-//        else
-//            Values[index] = value;
-//    }
-//}

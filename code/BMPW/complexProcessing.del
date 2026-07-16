@@ -14,12 +14,7 @@ if (_complexProjs.Length)
 }
 
 globalvar PCData _playerCollisionData = EmptyArray();
-single struct PCData
-{
-    public Vector Position;
-    public Player Target;
-    public Vector ShiftForRaycastPositions;
-}
+
 private void checkPCollision(in Number ID, in Number ticks) {
     //calculations: https://www.desmos.com/3d/c7ypcrhnqw
     ProjData proj: projData[ID];
