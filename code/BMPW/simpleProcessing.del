@@ -221,7 +221,10 @@ if (_envCollisionList.Length)
     });
 }
 
-Boolean approxEqual(in Number one, in Number two, in Number leniency): ((one - two).Abs() <= leniency);
+
+
+
+//Boolean approxEqual(in Number one, in Number two, in Number leniency): ((one - two).Abs() <= leniency);
 Number rawInterval: 0.5; //How often to check for collision
 Number interval: ((rawInterval / 0.016).Ceil() * 0.016); //Rounded up to the nearest multiple of 0.016 (Rounded up to the nearest tick)
 

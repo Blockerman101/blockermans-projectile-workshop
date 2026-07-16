@@ -1,4 +1,6 @@
 import "index.ostw";
+
+//a list of proj IDs
 globalvar Number[] _complexProjs = EmptyArray();
 
 rule: '[BMPW] Player Collision'

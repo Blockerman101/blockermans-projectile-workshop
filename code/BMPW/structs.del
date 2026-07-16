@@ -315,37 +315,33 @@ void CastPFX(in ProjFX pfx, const ProjectileType => void castProjFX, const Effec
 
 Number Clamp(in Number value, in Number min, in Number max): Min(Max(value, min), max);
 
-
 public void EffectiveSizeToOversize(ref ProjectileArgs projArgs) {
-    //Data gathered by ispeakpeak
-    //https://discord.com/channels/570672959799164958/1253195280573136896/1253203348610486326
-
-    //doesnt clamp to [0, 1]
-    //(size - minSize)/(maxSize - minSize)
-    switch (projArgs.ProjFX)
-    {
-        case ProjFX.BaptisteBioticLauncher:         projArgs.VisualRadius = (((projArgs.VisualRadius) - 00.150) / (06.750 - 00.150));   break;
-        case ProjFX.BastionA36TacticalGrenade:      projArgs.VisualRadius = (((projArgs.VisualRadius) - 00.500) / (07.500 - 00.500));   break;
-        case ProjFX.EchoStickyBomb:                 projArgs.VisualRadius = (((projArgs.VisualRadius) - 00.200) / (05.000 - 00.200));   break;
-        case ProjFX.GenjiShuriken:                  projArgs.VisualRadius = (((projArgs.VisualRadius) - 00.100) / (02.900 - 00.100));   break;
-        case ProjFX.LucioSonicAmplifier:            projArgs.VisualRadius = (((projArgs.VisualRadius) - 00.625) / (05.000 - 00.625));   break;
-        case ProjFX.MeiIcicle:                      projArgs.VisualRadius = (((projArgs.VisualRadius) - 00.625) / (09.750 - 00.625));   break;
-        case ProjFX.MercyCaduceusBlaster:           projArgs.VisualRadius = (((projArgs.VisualRadius) - 00.025) / (01.200 - 00.025));   break;
-        case ProjFX.MoiraDamageOrb:                 projArgs.VisualRadius = (((projArgs.VisualRadius) - 00.650) / (14.000 - 00.650));   break;
-        case ProjFX.MoiraHealOrb:                   projArgs.VisualRadius = (((projArgs.VisualRadius) - 00.650) / (14.000 - 00.650));   break;
-        case ProjFX.OrbProjectile:                  projArgs.VisualRadius = (((projArgs.VisualRadius) - 00.500) / (04.500 - 00.500));   break;
-        case ProjFX.OrisaFusionDriver:              projArgs.VisualRadius = (((projArgs.VisualRadius) - 00.325) / (06.050 - 00.325));   break;
-        case ProjFX.PharahRocket:                   projArgs.VisualRadius = (((projArgs.VisualRadius) - 00.075) / (02.350 - 00.075));   break;
-        case ProjFX.RamattraRavenousVortexSphere:   projArgs.VisualRadius = (((projArgs.VisualRadius) - 00.300) / (05.750 - 00.300));   break;
-        case ProjFX.ReinhardtFireStrike:            projArgs.VisualRadius = (((projArgs.VisualRadius) - 01.300) / (06.500 - 01.300));   break;
-        case ProjFX.RoadhogScrap:                   projArgs.VisualRadius = (((projArgs.VisualRadius) - 00.200) / (00.850 - 00.200));   break;
-        case ProjFX.RoadhogScrapBall:               projArgs.VisualRadius = (((projArgs.VisualRadius) - 00.450) / (06.000 - 00.450));   break;
-        case ProjFX.SigmaHypersphere:               projArgs.VisualRadius = (((projArgs.VisualRadius) - 00.100) / (03.250 - 00.100));   break;
-        case ProjFX.SymmetraPhotonProjector:        projArgs.VisualRadius = (((projArgs.VisualRadius) - 00.150) / (05.400 - 00.150));   break;
-        case ProjFX.ZaryaGraviton:                  projArgs.VisualRadius = (((projArgs.VisualRadius) - 00.200) / (04.000 - 00.200));   break;
-        case ProjFX.ZaryaParticleCannon:            projArgs.VisualRadius = (((projArgs.VisualRadius) - 00.250) / (08.500 - 00.250));   break;
-    }
-    //If this is not a projFX, it doesnt have size reqs and doesnt need to change
+    projArgs.VisualRadius = [
+        //fx,                                      minSize,    maxSize - minSize
+        //<idx>                                    [0]         [1]
+        /*ProjFX.BaptisteBioticLauncher         */ [00.150,    (06.750 - 00.150)],
+        /*ProjFX.BastionA36TacticalGrenade      */ [00.500,    (07.500 - 00.500)],
+        /*ProjFX.EchoStickyBomb                 */ [00.200,    (05.000 - 00.200)],
+        /*ProjFX.GenjiShuriken                  */ [00.100,    (02.900 - 00.100)],
+        /*ProjFX.LucioSonicAmplifier            */ [00.625,    (05.000 - 00.625)],
+        /*ProjFX.MeiIcicle                      */ [00.625,    (09.750 - 00.625)],
+        /*ProjFX.MercyCaduceusBlaster           */ [00.025,    (01.200 - 00.025)],
+        /*ProjFX.MoiraDamageOrb                 */ [00.650,    (14.000 - 00.650)],
+        /*ProjFX.MoiraHealOrb                   */ [00.650,    (14.000 - 00.650)],
+        /*ProjFX.OrbProjectile                  */ [00.500,    (04.500 - 00.500)],
+        /*ProjFX.OrisaFusionDriver              */ [00.325,    (06.050 - 00.325)],
+        /*ProjFX.PharahRocket                   */ [00.075,    (02.350 - 00.075)],
+        /*ProjFX.RamattraRavenousVortexSphere   */ [00.300,    (05.750 - 00.300)],
+        /*ProjFX.ReinhardtFireStrike            */ [01.300,    (06.500 - 01.300)],
+        /*ProjFX.RoadhogScrap                   */ [00.200,    (00.850 - 00.200)],
+        /*ProjFX.RoadhogScrapBall               */ [00.450,    (06.000 - 00.450)],
+        /*ProjFX.SigmaHypersphere               */ [00.100,    (03.250 - 00.100)],
+        /*ProjFX.SymmetraPhotonProjector        */ [00.150,    (05.400 - 00.150)],
+        /*ProjFX.ZaryaGraviton                  */ [00.200,    (04.000 - 00.200)],
+        /*ProjFX.ZaryaParticleCannon            */ [00.250,    (08.500 - 00.250)]
+    //if the projFX matches up with the index, set that ele to the corrected size, and all others to 99999. Then sort and take the first
+    //correction is (startSize - minSize)/(maxSize - minSize)
+    ].Map((v, idx) => (projArgs.ProjFX == idx) ? ((projArgs.VisualRadius - v.First) / v[1]) : 99999).Sort(v => v).First;
 }
 
 
