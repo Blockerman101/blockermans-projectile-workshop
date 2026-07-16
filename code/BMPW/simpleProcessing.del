@@ -33,7 +33,7 @@ if (diff())
 
     if (IsOneTimeCheck) {
         LogToInspector($"Doing OTC for Proj {OneTimeData.ID}\ntimePassed (ms): {TotalTimeElapsed() * 1000 - OneTimeData.TimeOrData.MSTimeOfCall}");
-        SmallMessage(HostPlayer(), $"Doing OTC for Proj {OneTimeData.ID}");
+        //SmallMessage(HostPlayer(), $"Doing OTC for Proj {OneTimeData.ID}");
     }
 
     //Adding a bit to interval so the checks slightly overlap, prevents edgecase bugs

@@ -15,12 +15,14 @@ if (HostPlayer().IsButtonHeld(Button.Crouch) && HostPlayer().IsButtonHeld(Button
     //StartHoldingButton(LastCreatedEntity(), Button.SecondaryFire);
 }
 
+globalvar Player dummyRein;
 rule: '[DEV] Spawn Rein'
 Event.OngoingGlobal
 if (HasSpawned(HostPlayer()))
 {
     //CreateDummyBot(AllHeroes().Random(), OppositeTeamOf(HostPlayer().Team()), -1, PositionOf(HostPlayer()));
-    CreateDummyBot(Hero.Reinhardt, OppositeTeamOf(HostPlayer().Team()), -1, Vector(-15, 0, 0), null);
+    CreateDummyBot(Hero.Reinhardt, OppositeTeamOf(HostPlayer().Team()), -1, Vector(-20, 0, 0), null);
+    dummyRein = LastCreatedEntity();
     LogToInspector($"{LastCreatedEntity()} Spawned");
     //Wait(0.25);
     //StartHoldingButton(LastCreatedEntity(), Button.SecondaryFire);

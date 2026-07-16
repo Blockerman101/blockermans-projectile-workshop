@@ -30,7 +30,12 @@ private void checkPCollision(in Number ID, in Number ticks) {
     //Shift
     _playerCollisionData.ShiftForRaycastPositions = Clamp(_playerCollisionData.ShiftForRaycastPositions.Magnitude, 0, proj.ReadOnly.Radius) * _playerCollisionData.ShiftForRaycastPositions.Normalize();
     
-    projData[ID].HitPlayer = RayCastHitPlayer(_playerCollisionData.Position + _playerCollisionData.ShiftForRaycastPositions, proj.PositionAtTime(0.016*ticks) + _playerCollisionData.ShiftForRaycastPositions, proj.ReadOnly.Targets, null, true);
+    projData[ID].HitPlayer = RayCastHitPlayer(
+        _playerCollisionData.Position + _playerCollisionData.ShiftForRaycastPositions,
+        proj.PositionAtTime(0.016*ticks) + _playerCollisionData.ShiftForRaycastPositions,
+        proj.ReadOnly.Targets,
+        null,
+        true);
     //PlayEffect(HostPlayer(), PlayEffect.GoodExplosion, Color.White, proj.Position(), 0.5);
     //PlayEffect(HostPlayer(), PlayEffect.GoodExplosion, Color.White, proj.PositionAtTime(0.016*ticks), 0.5);
     if (proj.HitPlayer)

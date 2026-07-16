@@ -40,8 +40,9 @@ if (EventPlayer() == HostPlayer())
     //CreateCustomProjectile(bigProj);
     ProjectileArgs sphere: <ProjectileArgs>{ProjFX: ProjFX.BaptisteBioticLauncher, ColorForFX: Color.Red, Radius: 0.5, VisualRadius: 0.5, Lifetime: 7,  ..ProjectileArgs.Default()}.CommonPatches();
     ProjectileArgs sphereNoGravSlow: {ProjFX: ProjFX.Sphere, ColorForFX: Color.Red, Radius: 1, VisualRadius: 1, Speed: 5, Gravity: Vector.Zero, Lifetime: 10,  ..ProjectileArgs.Default()}.CommonPatches();
-    ProjectileArgs constArgs: <ProjectileArgs>{StartPosition: Vector(5, 0.5, 0), Direction: Vector(-1, 0.2, 0), ..sphere};
-    CreateCustomProjectile(sphere);
+    Vector startPos = Vector(5, 0.5, RandomInteger(-10, 10));
+    ProjectileArgs constArgs: <ProjectileArgs>{StartPosition: startPos, Direction: startPos.Towards(Vector(-20, 6, 0)), ..sphere};
+    CreateCustomProjectile(constArgs);
     bigProjIDs.ModAppend(lastProjectileID);
     LogToInspector("I appended proj " + lastProjectileID);
     MinWait();
