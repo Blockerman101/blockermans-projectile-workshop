@@ -40,9 +40,9 @@ if (EventPlayer() == HostPlayer())
     //CreateCustomProjectile(bigProj);
     ProjectileArgs sphere: <ProjectileArgs>{ProjFX: ProjFX.BaptisteBioticLauncher, ColorForFX: Color.Red, Radius: 0.5, VisualRadius: 0.5, Lifetime: 7,  ..ProjectileArgs.Default()}.CommonPatches();
     ProjectileArgs sphereNoGravSlow: {ProjFX: ProjFX.Sphere, ColorForFX: Color.Red, Radius: 1, VisualRadius: 1, Speed: 5, Gravity: Vector.Zero, Lifetime: 10,  ..ProjectileArgs.Default()}.CommonPatches();
-    Vector startPos = Vector(5, 0.5, RandomInteger(-10, 10));
+    Vector startPos = Vector(5, 0.5, RandomReal(-10, 10));
     ProjectileArgs constArgs: <ProjectileArgs>{StartPosition: startPos, Direction: startPos.Towards(Vector(-20, 6, 0)), ..sphere};
-    CreateCustomProjectile(constArgs);
+    CreateCustomProjectile(sphere);
     bigProjIDs.ModAppend(lastProjectileID);
     LogToInspector("I appended proj " + lastProjectileID);
     MinWait();
@@ -67,6 +67,7 @@ if (bigProjIDs.Any(v => projData[v].ProjState == ProjState.Inactive))
                 //PlayEffect(AllPlayers(), PlayEffect.GoodExplosion, Color.Red, current.Position(), 15);
                 //PlayEffect(AllPlayers(), PlayEffect.BuffExplosionSound, TeamOf(EventPlayer()), current.Position(), 150);
                 SetStatus(current.HitPlayer, EventPlayer(), Status.KnockedDown, 0.2);
+                Damage(current.HitPlayer, EventPlayer(), 1);
                 LogToInspector($"registered that proj {bigProjIDs[UTILS_waitlessIterator]} hit! (trying to hit {current.HitPlayer})");
                 //Damage(current.HitPlayer, EventPlayer(), 50);
             }
