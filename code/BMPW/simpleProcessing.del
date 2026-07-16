@@ -214,11 +214,11 @@ if (diff())
 rule: '[BMPW] Update State'
 if (_envCollisionList.Length)
 {
-    SpreadOverTicks(_envCollisionList, 15, UTILS_tte, i => {
+    SpreadOverTicks(_envCollisionList, 15, i => {
         //i is the index of the array entered
         StateCheck(i.ID, projData[i.ID].Position());
         //LogToInspector($"Checked state of proj {i} (TTE: {time})");
-    });
+    }, UTILS_tte);
 }
 
 

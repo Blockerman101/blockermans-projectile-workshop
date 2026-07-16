@@ -7,10 +7,10 @@ rule: '[BMPW] Player Collision'
 if (_complexProjs.Length)
 {
     Number ticks: 5;
-    SpreadOverTicks(_complexProjs, ticks, UTILS_tte, i => {
+    SpreadOverTicks(_complexProjs, ticks, i => {
         checkPCollision(i, ticks);
         //if (projData[i].Position == Vector.Zero) {LogToInspector($"\n\n\n!-- REGISTERED ZERO (PC) --!\n\n\n");}
-    });
+    }, UTILS_tte);
 }
 
 globalvar PCData _playerCollisionData = EmptyArray();
@@ -41,34 +41,22 @@ private void checkPCollision(in Number ID, in Number ticks) {
 }
 
 
-public void SpreadOverTicks<T>(in T[] Array, in Number NumberOfTicks, in Number time, const T => void func) {
+public void SpreadOverTicks<T>(in T[] Array, in Number NumberOfTicks, const T => void func, in Number TotalTimeElapsed=TotalTimeElapsed()) {
     
     //Ticks start at 0 (end at NumberOfTicks - 1), so they easily convert to indices
 
     //CAN be a macro, but higher element count (and harder to read in inspector for debugging)
     //Put it in extendedCollection to make every instance part of an array rather their own variable
-    Number currentTick! = (time/0.016).Floor()%NumberOfTicks;
+    Number currentTick! = (TotalTimeElapsed/0.016).Floor()%NumberOfTicks;
 
+
+    WaitlessForLoop(0, i => (currentTick + i * NumberOfTicks <= Array.Length - 1), 1, i => {
+        //modular system which uses multiples of NumberOfTicks
+        //Number currentIndex: currentTick + NumberOfTicks * i; //Cant use macro bcs this is a custom lambda
+        func.Invoke(Array[currentTick + NumberOfTicks * i]);
+
+    });
     
-    Number start: LinearInterpolate(0, Array.Length, currentTick/NumberOfTicks).Floor();
-    Number end: LinearInterpolate(0, Array.Length, (currentTick+1)/NumberOfTicks).Floor();
-
-    //if the length is smaller than or equal to the number of ticks, just reference the tick for the index
-    if (Array.Length <= NumberOfTicks) {
-
-        //ensure the 'index' (currentTick) is not less than the array size. array lengths start at index 1, ticks at index 0, so they cant be equal, as ArrayLength 3 has a max index of 2, so it shouldnt be checking index 3 (when the ticks and length are equal)
-        if (Array.Length > currentTick) {
-            func(Array[currentTick]);
-        }
-
-    //if there are more projs than ticks
-    } else {
-
-        //iterate through every proj in that tick, already buffered to be startingIndex 0 (see above)
-        WaitlessForLoop(start, v => v < end, 1, i => {
-            func(Array[i]);
-        });
-    }
     MinWait();
     LoopIfConditionIsTrue();
 }

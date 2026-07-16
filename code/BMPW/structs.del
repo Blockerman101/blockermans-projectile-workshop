@@ -130,7 +130,21 @@ single struct ECOneTimeCheck
     public Color color;
     public Number TimeOfLastJITCheck;
     public Number MSTimeOfCall;
+
 }
+
+single struct OneTimeCheck
+{
+    public Number ChecksLeft;
+    public Number ID;
+    public Number _interval;
+    public Vector StartPosition;
+    public Color color;
+    public Number TimeOfLastJITCheck;
+    public Number MSTimeOfCall;
+}
+
+globalvar OneTimeCheck[] _OTCQueue = [];
 
 single struct TimeInInterval
 {
