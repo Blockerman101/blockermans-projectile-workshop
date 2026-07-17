@@ -137,14 +137,25 @@ single struct OneTimeCheck
 {
     public Number ChecksLeft;
     public Number ID;
-    public Number _interval;
-    public Vector StartPosition;
-    public Color color;
-    public Number TimeOfLastJITCheck;
-    public Number MSTimeOfCall;
+    public OneTimeData Data;
+    public OneTimeCheck Queue(in Number ID, in OneTimeData Data) {
+        return {
+            ChecksLeft: 3,
+            ID: ID,
+            Data: Data
+        };
+    }
 }
 
-globalvar OneTimeCheck[] _OTCQueue = [];
+single struct OneTimeData
+{
+    public Vector StartPosition; //needed prolly
+    public Number _interval; //could calculate? instead of store
+    public Number TimeOfLastJITCheck; //store in envColl?
+    public Number MSTimeOfCall; //debugging, wont be present in the final thing
+    public Color color; //visual, wont be present in the final thing
+}
+
 
 single struct TimeInInterval
 {
