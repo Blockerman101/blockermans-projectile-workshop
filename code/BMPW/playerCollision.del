@@ -10,7 +10,7 @@ if (_complexProjs.Length)
     SpreadOverTicks(_complexProjs, ticks, i => {
         checkPCollision(i, ticks);
         //if (projData[i].Position == Vector.Zero) {LogToInspector($"\n\n\n!-- REGISTERED ZERO (PC) --!\n\n\n");}
-    }, UTILS_tte);
+    });
 }
 
 globalvar PCData _playerCollisionData = EmptyArray();

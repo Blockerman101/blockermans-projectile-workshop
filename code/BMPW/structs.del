@@ -123,6 +123,7 @@ single struct RaycastPositions
     public static RaycastPositions Construct(): {StartPosition: Vector.Zero, EndPosition: Vector.Zero, RaycastPosition: Vector.Zero, Interval: null};
 }
 
+
 single struct ECOneTimeCheck
 {
     public Number _interval;
@@ -133,21 +134,22 @@ single struct ECOneTimeCheck
 
 }
 
+globalvar OneTimeCheck[] _OTCQueue = [];
 single struct OneTimeCheck
 {
     public Number ChecksLeft;
     public Number ID;
-    public OneTimeData Data;
-    public OneTimeCheck Queue(in Number ID, in OneTimeData Data) {
-        return {
+    public OneTimeData2 Data;
+    public static void Queue(in Number ID, in OneTimeData2 Data) {
+        _OTCQueue.ModAppend({
             ChecksLeft: 3,
             ID: ID,
             Data: Data
-        };
+        });
     }
 }
 
-single struct OneTimeData
+single struct OneTimeData2
 {
     public Vector StartPosition; //needed prolly
     public Number _interval; //could calculate? instead of store

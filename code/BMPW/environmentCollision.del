@@ -19,11 +19,12 @@ if (!currentTick)
     LogToInspector($"Lap ended. (Index returned to 0) (TTE: {time})");
 }
 
-Boolean diff(): (_envCollisionList[_envCollisionIndex].TimeOrData == currentTick || CountOf(_envCollisionList.Last.TimeOrData));
+
 rule: '[BMPW] Check EC'
 //This might fix a (potential?) bug
 if (_envCollisionIndex < _envCollisionList.Length)
-if (diff())
+if (_envCollisionList[_envCollisionIndex].TimeOrData == currentTick || _OTCQueue.Any(v => v.ChecksLeft))
+
 {
     //If the proj radius is below this, skip extra EC
     Number thresholdForExtraEC: 0.7;
@@ -211,15 +212,7 @@ if (diff())
 }
 
 
-rule: '[BMPW] Update State'
-if (_envCollisionList.Length)
-{
-    SpreadOverTicks(_envCollisionList, 15, i => {
-        //i is the index of the array entered
-        StateCheck(i.ID, projData[i.ID].Position());
-        //LogToInspector($"Checked state of proj {i} (TTE: {time})");
-    }, UTILS_tte);
-}
+
 
 
 
@@ -231,37 +224,3 @@ Number interval: ((rawInterval / 0.016).Ceil() * 0.016); //Rounded up to the nea
 //Cant use tte because of the bug with chased vars in conditions
 Number time: TotalTimeElapsed();
 Number currentTick: ((time%interval) / 0.016).Floor();
-
-
-
-
-
-
-
-Number speed(in Number ID): projData[ID].ReadOnly.Velocity.Magnitude;
-
-//The interval for the checks, in seconds (15 ticks / 62.5tps = 0.24s)
-Number inter: 0.24;
-
-//projRad + baseRad + scalar * speed * intervalOfSC
-Number rad(in Number ID): projData[ID].ReadOnly.Radius + 10 + 1.0 * speed(ID) * inter;
-
-//The faster a proj is going, the more you can assume ahead of it to be the checked position
-Vector pos(in Number ID): projData[ID].PositionAtTime(inter * Min(1, Min(85, speed(ID)) / 85));
-private void StateCheck(in Number ID, in Vector position)
-{
-    //Criteria for complex state
-    if (projData[ID].ReadOnly.Targets.Any(v => v.DistanceTo(pos(ID)) <= rad(ID)))
-    {
-        if (_complexProjs.All(v => v != ID))
-        {
-            _complexProjs.ModAppend(ID);
-            //This should be the same as ticks in PC
-            checkPCollision(ID, 5);
-        }
-    }
-    else
-    {
-        _complexProjs.ModRemoveByValue(ID);
-    }
-}

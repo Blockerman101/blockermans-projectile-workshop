@@ -131,16 +131,13 @@ if (_projConstructorQueue.Length > 0)
         //ECollision(ID, (!ModdedTimeToMaxHeight ? interval : ModdedTimeToMaxHeight) + deltaT + 0.032, i => {return Args.StartPosition;}, Color.SkyBlue); //First EC. If there is no TTMH (the proj is created past its apex), run a full interval EC check
         LogToInspector($"OTQ here! (MTTMH: {ModdedTimeToMaxHeight})");
         
-        TimeInInterval.OneTimeQueue(ID, <ECOneTimeCheck>{
+        OneTimeCheck.Queue(ID, <OneTimeData2>{
             _interval: (ModdedTimeToMaxHeight <= 0 ? interval : ModdedTimeToMaxHeight) + deltaT + 0.032,
             StartPosition: Args.StartPosition,
             color: Color.SkyBlue,
-            MSTimeOfCall: TotalTimeElapsed() * 1000,
+            MSTimeOfCall: TotalTimeElapsed() * 1000
         });
 
-
-        //First StateCheck. If the proj spawns close to a player, it should be in the complex state
-        StateCheck(ID, Args.StartPosition);
 
         //Number maxWait_1: 0.016*4;
         //Number maxWait_2: 0.016*5;
