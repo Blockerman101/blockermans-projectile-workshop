@@ -23,37 +23,30 @@ if (!currentTick)
 rule: '[BMPW] Check EC'
 //This might fix a (potential?) bug
 if (_envCollisionIndex < _envCollisionList.Length)
-if (_envCollisionList[_envCollisionIndex].TimeOrData == currentTick || _OTCQueue.Any(v => v.ChecksLeft))
+if (_envCollisionList[_envCollisionIndex].Time == currentTick)
 
 {
     //If the proj radius is below this, skip extra EC
     Number thresholdForExtraEC: 0.7;
 
-    Boolean IsOneTimeCheck: (CountOf(_envCollisionList.Last.TimeOrData));
-    TimeInInterval OneTimeData: _envCollisionList.Last;
-
-    if (IsOneTimeCheck) {
-        LogToInspector($"Doing OTC for Proj {OneTimeData.ID}\ntimePassed (ms): {TotalTimeElapsed() * 1000 - OneTimeData.TimeOrData.MSTimeOfCall}");
-        //SmallMessage(HostPlayer(), $"Doing OTC for Proj {OneTimeData.ID}");
-    }
 
     //Adding a bit to interval so the checks slightly overlap, prevents edgecase bugs
     //ECollision(_envCollisionList[_envCollisionIndex].ID, (interval + 0.032), ID => {return projData[ID].Position();}, Color.White); //Check this projectile
 
     //called 4 times without debug stuff
-    Number ID:                      IsOneTimeCheck ? OneTimeData.ID                                       : _envCollisionList[_envCollisionIndex].ID;
+    Number ID:                  _envCollisionList[_envCollisionIndex].ID;
 
     //called once (stored in _TEMP_tempPositions.Temp / scopedInterval)
-    Number _interval:               IsOneTimeCheck ? OneTimeData.TimeOrData._interval                     : (interval + 0.032);
+    Number _interval:           (interval + 0.032);
 
     //called once (stored in _TEMP_tempPositions.StartPosition)
-    Vector StartPosition:           IsOneTimeCheck ? OneTimeData.TimeOrData.StartPosition                 : projData[ID].Position();
+    Vector StartPosition:       projData[ID].Position();
 
     //called twice, but its cosmetic
-    Color color:                    IsOneTimeCheck ? OneTimeData.TimeOrData.color                         : Color.White;
+    Color color:                Color.White;
 
     //called once
-    Number TimeOfLastJITCheck:      IsOneTimeCheck ? OneTimeData.TimeOrData.TimeOfLastJITCheck            : null;
+    Number TimeOfLastJITCheck:  null;
 
 
 
@@ -186,19 +179,11 @@ if (_envCollisionList[_envCollisionIndex].TimeOrData == currentTick || _OTCQueue
 
 
     //EC ends
+    
+
+    _envCollisionIndex++; //Traverse to the next projectile
 
 
-
-
-
-
-    if (IsOneTimeCheck) {
-        LogToInspector("entered IsOTC");
-        _envCollisionList.ModRemoveByIndex(_envCollisionList.Length - 1);
-    }
-    else {
-        _envCollisionIndex++; //Traverse to the next projectile
-    }
     //WaitUntil((diff()) && _envCollisionIndex < _envCollisionList.Length, interval - (time%interval)); //Wait until the next proj is ready to be checked, and if either if the loop ends, or until there is a value at _envCollisionList[_envCollisionIndex].Time
 
     //Heres the reason why '&& _envCollisionIndex < _envCollisionList.Lengh' is needed: First off, this code makes sure that your not reading an out-of-scope index.

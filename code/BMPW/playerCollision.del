@@ -30,6 +30,8 @@ private void checkPCollision(in Number ID, in Number ticks) {
     //Shift
     _playerCollisionData.ShiftForRaycastPositions = Clamp(_playerCollisionData.ShiftForRaycastPositions.Magnitude, 0, proj.ReadOnly.Radius) * _playerCollisionData.ShiftForRaycastPositions.Normalize();
     
+    CreateBeamEffect(LocalPlayer(), BeamType.GoodBeam, EvaluateOnce(_playerCollisionData.Position + _playerCollisionData.ShiftForRaycastPositions), EvaluateOnce(proj.PositionAtTime(0.016*ticks) + _playerCollisionData.ShiftForRaycastPositions), null, EffectRev.VisibleToPositionAndRadius);
+
     projData[ID].HitPlayer = RayCastHitPlayer(
         _playerCollisionData.Position + _playerCollisionData.ShiftForRaycastPositions,
         proj.PositionAtTime(0.016*ticks) + _playerCollisionData.ShiftForRaycastPositions,

@@ -128,15 +128,13 @@ if (_projConstructorQueue.Length > 0)
         //Number ModdedTimeToMaxHeight: ((ticksToMaxHeight - currentTick < 0) ? (ticksToMaxHeight - currentTick + (interval/0.016)) : (ticksToMaxHeight - currentTick))*0.016;
         
         
-        //ECollision(ID, (!ModdedTimeToMaxHeight ? interval : ModdedTimeToMaxHeight) + deltaT + 0.032, i => {return Args.StartPosition;}, Color.SkyBlue); //First EC. If there is no TTMH (the proj is created past its apex), run a full interval EC check
-        LogToInspector($"OTQ here! (MTTMH: {ModdedTimeToMaxHeight})");
-        
-        OneTimeCheck.Queue(ID, <OneTimeData2>{
-            _interval: (ModdedTimeToMaxHeight <= 0 ? interval : ModdedTimeToMaxHeight) + deltaT + 0.032,
-            StartPosition: Args.StartPosition,
-            color: Color.SkyBlue,
-            MSTimeOfCall: TotalTimeElapsed() * 1000
-        });
+        //asdfasdf
+        //OneTimeCheck.Queue(ID, <OneTimeData2>{
+        //    _interval: (ModdedTimeToMaxHeight <= 0 ? interval : ModdedTimeToMaxHeight) + deltaT + 0.032,
+        //    StartPosition: Args.StartPosition,
+        //    color: Color.SkyBlue,
+        //    MSTimeOfCall: TotalTimeElapsed() * 1000
+        //});
 
 
         //Number maxWait_1: 0.016*4;

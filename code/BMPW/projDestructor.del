@@ -10,7 +10,8 @@ if (_projDestructorQueue.First.time <= TotalTimeElapsed())
     ProjDestructor current: _projDestructorQueue.First;
 
     //JIT checks will be limited to this much (at least) time between them
-    Number JITTimeout: 0.5;
+    //Number JITTimeout: 0.5;
+    Number JITTimeout: 0;
 
     //JIT check for EC
     if (current.TypeOfDestruction == TypeOfDestruction.Environment && (TotalTimeElapsed() - current.TimeOfLastJITCheck > JITTimeout))
@@ -46,13 +47,9 @@ if (_projDestructorQueue.First.time <= TotalTimeElapsed())
             //ECollision(ID, _projDestructorQueue.First.TimeLeft, i => {return projData[i].PositionAtTime(-0.032);}, Color.LimeGreen);
             SmallMessage(HostPlayer(), "queued OTC from destructor");
             LogToInspector("queued OTC from destructor");
-            TimeInInterval.OneTimeQueue(ID, <ECOneTimeCheck>{
-                _interval: _projDestructorQueue.First.TimeLeft,
-                StartPosition: projData[ID].PositionAtTime(-0.032),
-                color: Color.LimeGreen,
-                MSTimeOfCall: TotalTimeElapsed() * 1000,
-                TimeOfLastJITCheck: TotalTimeElapsed()
-            });
+
+            //OTC here
+
             _projDestructorQueue.ModRemoveByIndex(0);
             MinWait();
             LoopIfConditionIsTrue();
@@ -100,7 +97,7 @@ if (_projDestructorQueue.First.time <= TotalTimeElapsed())
     //For decrementing the _envCollisionIndex of _envCollisionList
     Boolean[] reqsForDec: [
         //_envCollisionList.Length > 1,
-        currentTick >= _envCollisionList[_envCollisionList.Map(v => v.ID).IndexOf(ID)].TimeOrData,
+        currentTick >= _envCollisionList[_envCollisionList.Map(v => v.ID).IndexOf(ID)].Time,
         _envCollisionIndex //make sure it isnt 0, because if it was it would go to index -1
     ];
     if (IsTrueForAll(reqsForDec, ArrayElement())) {

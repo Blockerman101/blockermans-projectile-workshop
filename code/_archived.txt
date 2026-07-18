@@ -1007,3 +1007,32 @@ public void SpreadOverTicks<T>(in T[] Array, in Number NumberOfTicks, in Number 
     MinWait();
     LoopIfConditionIsTrue();
 }
+
+
+single struct ECOneTimeCheck
+{
+    public Number _interval;
+    public Vector StartPosition;
+    public Color color;
+    public Number TimeOfLastJITCheck;
+    public Number MSTimeOfCall;
+
+}
+
+public static void OneTimeQueue(in Number ID, in ECOneTimeCheck data) {_envCollisionList.ModAppend({ID: ID, Time: data});}
+
+
+    //called 4 times without debug stuff
+    Number ID:                      IsOneTimeCheck ? OneTimeData.ID                                 : _envCollisionList[_envCollisionIndex].ID;
+
+    //called once (stored in _TEMP_tempPositions.Temp / scopedInterval)
+    Number _interval:               IsOneTimeCheck ? OneTimeData.Time._interval                     : (interval + 0.032);
+
+    //called once (stored in _TEMP_tempPositions.StartPosition)
+    Vector StartPosition:           IsOneTimeCheck ? OneTimeData.Time.StartPosition                 : projData[ID].Position();
+
+    //called twice, but its cosmetic
+    Color color:                    IsOneTimeCheck ? OneTimeData.Time.color                         : Color.White;
+
+    //called once
+    Number TimeOfLastJITCheck:      IsOneTimeCheck ? OneTimeData.Time.TimeOfLastJITCheck            : null;

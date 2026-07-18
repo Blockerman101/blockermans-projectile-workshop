@@ -124,15 +124,7 @@ single struct RaycastPositions
 }
 
 
-single struct ECOneTimeCheck
-{
-    public Number _interval;
-    public Vector StartPosition;
-    public Color color;
-    public Number TimeOfLastJITCheck;
-    public Number MSTimeOfCall;
 
-}
 
 globalvar OneTimeCheck[] _OTCQueue = [];
 single struct OneTimeCheck
@@ -163,18 +155,17 @@ single struct TimeInInterval
 {
     public Number ID;
     //also serves as the data for a one time check
-    public Number|ECOneTimeCheck TimeOrData;
-    public static TimeInInterval Construct(): {ID: null, TimeOrData: null};
+    public Number Time;
+    public static TimeInInterval Construct(): {ID: null, Time: null};
 
     //Sink One-Time Queues to the end of the array
     public static void Queue(in Number ID, in Number Time) {
         _envCollisionList = _envCollisionList
-            .Append({ID: ID, TimeOrData: Time})
-            .Sort(v => v.TimeOrData)
-            .Sort((v, idx) => idx + CountOf(v.TimeOrData) * 1000)
+            .Append({ID: ID, Time: Time})
+            .Sort(v => v.Time)
+            .Sort((v, idx) => idx + CountOf(v.Time) * 1000)
             ;
     }
-    public static void OneTimeQueue(in Number ID, in ECOneTimeCheck data) {_envCollisionList.ModAppend({ID: ID, TimeOrData: data});}
     public static void ClearFromQueue(in Number ID) {_envCollisionList = _envCollisionList.Filter(v => v.ID != ID);}
 }
 
