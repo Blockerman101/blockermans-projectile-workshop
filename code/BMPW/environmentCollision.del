@@ -27,7 +27,7 @@ if (_envCollisionList[_envCollisionIndex].Time == currentTick)
 
 {
     //If the proj radius is below this, skip extra EC
-    Number thresholdForExtraEC: 0.7;
+    Number thresholdForExtraEC: 1.0;
 
 
     //Adding a bit to interval so the checks slightly overlap, prevents edgecase bugs

@@ -131,24 +131,31 @@ single struct OneTimeCheck
 {
     public Number ChecksLeft;
     public Number ID;
-    public OneTimeData2 Data;
-    public static void Queue(in Number ID, in OneTimeData2 Data) {
+//    public OneTimeData2 Data;
+//    public static void Queue(in Number ID, in OneTimeData2 Data) {
+//        _OTCQueue.ModAppend({
+//            ChecksLeft: 3,
+//            ID: ID,
+//            Data: Data
+//        });
+//    }
+
+    public static void Queue(in Number ID) {
         _OTCQueue.ModAppend({
             ChecksLeft: 3,
-            ID: ID,
-            Data: Data
+            ID: ID
         });
     }
 }
 
-single struct OneTimeData2
-{
-    public Vector StartPosition; //needed prolly
-    public Number _interval; //could calculate? instead of store
-    public Number TimeOfLastJITCheck; //store in envColl?
-    public Number MSTimeOfCall; //debugging, wont be present in the final thing
-    public Color color; //visual, wont be present in the final thing
-}
+//single struct OneTimeData2
+//{
+//    public Vector StartPosition; //needed prolly
+//    public Number _interval; //could calculate? instead of store
+//    public Number TimeOfLastJITCheck; //store in envColl?
+//    public Number MSTimeOfCall; //debugging, wont be present in the final thing
+//    public Color color; //visual, wont be present in the final thing
+//}
 
 
 single struct TimeInInterval
@@ -179,7 +186,6 @@ single struct TimeInInterval
 //}
 
 
-Number projDataInitLifetime: 3;
 
 
 //A good design philosophy is to reference specific states, rather "Not" states
@@ -246,7 +252,7 @@ single struct ProjectileArgs
         Radius: 0,
         VisualRadius: 0.5,
         Speed: 20, 
-        Lifetime: projDataInitLifetime, 
+        Lifetime: 3, 
         Gravity: Down() * 5, 
         _ProjID: null, 
         _TimeOfCall: null
@@ -370,4 +376,4 @@ public void EffectiveSizeToOversize(ref ProjectileArgs projArgs) {
 }
 
 
-enum RicochetTarget {Players, World, PlayersAndWorld}
+//enum RicochetTarget {Players, World, PlayersAndWorld}
