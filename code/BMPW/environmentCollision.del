@@ -24,8 +24,7 @@ if (!currentTick)
 rule: '[BMPW] Check EC'
 //This might fix a (potential?) bug
 if (_envCollisionIndex < _envCollisionList.Length)
-if (_envCollisionList[_envCollisionIndex].Time == currentTick)
-if (_OTCQueue.Any(v => v.ChecksLeft.First))
+if (_envCollisionList[_envCollisionIndex].Time == currentTick || _OTCQueue.Any(v => v.ChecksLeft.First))
 {
     //If the proj radius is below this, skip extra EC
     Number thresholdForExtraEC: 1.0;
@@ -37,9 +36,9 @@ if (_OTCQueue.Any(v => v.ChecksLeft.First))
     _TEMP_tempPositions.ID = (IsOTC ? OTCData.ID : _envCollisionList[_envCollisionIndex].ID);
     Number ID: _TEMP_tempPositions.ID;
 
+    Number _interval: (interval + 0.032);
     //can use this field (RaycastPositions.Interval) temporarily, to save eles
-    _TEMP_tempPositions.Interval = (interval + 0.032);
-    Number _interval: _TEMP_tempPositions.Interval;
+    _TEMP_tempPositions.Interval = _interval;
 
     _TEMP_tempPositions.StartPosition = (IsOTC ? OTCData.StartPosition : projData[ID].Position());
     Vector StartPosition:_TEMP_tempPositions.StartPosition;
@@ -59,7 +58,7 @@ if (_OTCQueue.Any(v => v.ChecksLeft.First))
     //EC starts
     Number lapCount: 4;
 
-    WaitlessForLoop(0, i => i <= lapCount - 1, 1, currentLap => {
+    WaitlessForLoop(0, i => i < lapCount, 1, currentLap => {
         LogToInspector($"On lap {currentLap}");
 
         
@@ -78,7 +77,7 @@ if (_OTCQueue.Any(v => v.ChecksLeft.First))
 
         Number rotationAmountsForCurrentlap: [null, 0, 2*Pi()/3, 4*Pi()/3][currentLap];
 
-        //Shift start/end pos of laps 1-3 by rotating them
+        //Shift start/end pos of laps 1 through 3 by rotating them
         Vector startRotation: current.ReadOnly.Radius * Normalize(RotateVector(relativeRight, currentDirection, rotationAmountsForCurrentlap)) * 2 / SquareRoot(3);
 
         Vector endRotation: current.ReadOnly.Radius * Normalize(RotateVector(relativeRight, currentDirection, rotationAmountsForCurrentlap + Pi()/3)) * 2 / SquareRoot(3);
@@ -100,11 +99,9 @@ if (_OTCQueue.Any(v => v.ChecksLeft.First))
         
         //action for nonzero EC (not needed if interval isnt reset to smth else)
         _TEMP_tempPositions.Interval = _interval;
-        Number scopedInterval: _TEMP_tempPositions.Interval;
 
-        //LogToInspector($"coll checked! (ID: {ID}, Check: {projData[ID].DEBUG_ECCheck + 1}, CurrentTII: {currentTick}, interval: {scopedInterval}, TTE: {time})");
-        LogToInspector($"coll checked! (ID: {ID}, CurrentTII: {currentTick}, interval: {scopedInterval}, TTE: {time})");
-        LogToInspector($"\ninterval: {scopedInterval}\n");
+        //LogToInspector($"coll checked! (ID: {ID}, Check: {projData[ID].DEBUG_ECCheck + 1}, CurrentTII: {currentTick}, interval: {_TEMP_tempPositions.Interval}, TTE: {time})");
+        LogToInspector($"coll checked! (ID: {ID}, CurrentTII: {currentTick}, interval: {_TEMP_tempPositions.Interval}, TTE: {time})");
         
         
 
@@ -117,9 +114,6 @@ if (_OTCQueue.Any(v => v.ChecksLeft.First))
 
 
             CreateBeamEffect(HostPlayer(), BeamType.GrappleBeam, _TEMP_tempPositions.StartPosition, _TEMP_tempPositions.RaycastPosition, Color.Red, EffectRev.None);
-            //CreateEffect(HostPlayer(), Effect.Sphere, color, _TEMP_tempPositions.RaycastPosition, 0.25, EffectRev.None);
-            //CreateEffect(HostPlayer(), Effect.Sphere, color, _TEMP_tempPositions.EndPosition, 0.24, EffectRev.None);
-            //CreateEffect(HostPlayer(), Effect.Sphere, color, _TEMP_tempPositions.StartPosition, 0.23, EffectRev.None);
 
 
             //projData[ID].DEBUG_ECCheck++;
@@ -143,9 +137,9 @@ if (_OTCQueue.Any(v => v.ChecksLeft.First))
             //By making the queue time {offset} shorter, you avoid false positives with PC (take the case of a projectile hitting reins shield)
             //^ not needed if you just include objs in PD
             //Number offset: 0.016*0;
-            //Number timeToDestroy: scopedInterval * Min(1, Max(0, LinearInterpolate(0, 1, (_TEMP_tempPositions.StartPosition.DistanceTo(_TEMP_tempPositions.RaycastPosition) / _TEMP_tempPositions.StartPosition.DistanceTo(_TEMP_tempPositions.EndPosition))))) - offset;
-            Number timeToDestroy: scopedInterval * Min(1, Max(0, LinearInterpolate(0, 1, (_TEMP_tempPositions.StartPosition.DistanceTo(_TEMP_tempPositions.RaycastPosition) / _TEMP_tempPositions.StartPosition.DistanceTo(_TEMP_tempPositions.EndPosition)))));
-            ProjDestructor.Queue(ID, timeToDestroy, TypeOfDestruction.Environment, scopedInterval - timeToDestroy, TimeOfLastJITCheck); //Cant add an offset for visuals because it would mess up ricochets
+            //Number timeToDestroy: _TEMP_tempPositions.Interval * Min(1, Max(0, LinearInterpolate(0, 1, (_TEMP_tempPositions.StartPosition.DistanceTo(_TEMP_tempPositions.RaycastPosition) / _TEMP_tempPositions.StartPosition.DistanceTo(_TEMP_tempPositions.EndPosition))))) - offset;
+            Number timeToDestroy: _TEMP_tempPositions.Interval * Min(1, Max(0, LinearInterpolate(0, 1, (_TEMP_tempPositions.StartPosition.DistanceTo(_TEMP_tempPositions.RaycastPosition) / _TEMP_tempPositions.StartPosition.DistanceTo(_TEMP_tempPositions.EndPosition)))));
+            ProjDestructor.Queue(ID, timeToDestroy, TypeOfDestruction.Environment, _TEMP_tempPositions.Interval - timeToDestroy, TimeOfLastJITCheck); //Cant add an offset for visuals because it would mess up ricochets
             LogToInspector($"Collided! (Proj {ID} queued with {timeToDestroy} seconds\n(Current Tick {(TotalTimeElapsed() / 0.016).Floor()} with {((timeToDestroy) / 0.016).Floor()} ticks to destruction\nExpected to be destroyed at tick {((time + timeToDestroy) / 0.016).Floor()}))");
             //break;
 
@@ -172,8 +166,14 @@ if (_OTCQueue.Any(v => v.ChecksLeft.First))
 
     //EC ends
     
-
-    _envCollisionIndex++; //Traverse to the next projectile
+    if (IsOTC) {
+        //set current OTC EC ChecksLeft (idx 0) to false
+        LogToInspector("IsOTC");
+        _OTCQueue[_OTCQueue.Map(v => v.ChecksLeft.First ? CurrentArrayIndex() : -1).Filter(v => v != -1).First].ChecksLeft[0] = false;
+    }
+    else {
+        _envCollisionIndex++; //Traverse to the next projectile
+    }
 
 
     //WaitUntil((diff()) && _envCollisionIndex < _envCollisionList.Length, interval - (time%interval)); //Wait until the next proj is ready to be checked, and if either if the loop ends, or until there is a value at _envCollisionList[_envCollisionIndex].Time

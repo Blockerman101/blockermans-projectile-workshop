@@ -136,13 +136,13 @@ single struct OneTimeCheck
     public Vector StartPosition;
     public static void Queue(in Number ID, in Vector StartPosition) {
         _OTCQueue.ModAppend({
-            ChecksLeft: [1, 1, 1],
+            ChecksLeft: [true, true, true],
             ID: ID,
             StartPosition: StartPosition
         });
     }
 
-    public static void SpecialQueue(in Boolean ChecksLeft, in Number ID, in Vector StartPosition) {
+    public static void SpecialQueue(in Boolean[] ChecksLeft, in Number ID, in Vector StartPosition) {
         _OTCQueue.ModAppend({
             ChecksLeft: ChecksLeft,
             ID: ID,
