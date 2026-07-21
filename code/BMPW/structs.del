@@ -116,11 +116,12 @@ single struct ReadOnlyProjData
 
 single struct RaycastPositions
 {
+    public Number ID;
     public Vector StartPosition;
     public Vector EndPosition;
     public Vector RaycastPosition;
     public Number Interval;
-    public static RaycastPositions Construct(): {StartPosition: Vector.Zero, EndPosition: Vector.Zero, RaycastPosition: Vector.Zero, Interval: null};
+    public static RaycastPositions Construct(): {ID: null, StartPosition: Vector.Zero, EndPosition: Vector.Zero, RaycastPosition: Vector.Zero, Interval: null};
 }
 
 
@@ -129,12 +130,23 @@ single struct RaycastPositions
 globalvar OneTimeCheck[] _OTCQueue = [];
 single struct OneTimeCheck
 {
-    public Number ChecksLeft;
+    //[0] is EC, [1] is SC, [2] is PC
+    public Boolean[] ChecksLeft;
     public Number ID;
-    public static void Queue(in Number ID) {
+    public Vector StartPosition;
+    public static void Queue(in Number ID, in Vector StartPosition) {
         _OTCQueue.ModAppend({
-            ChecksLeft: 3,
-            ID: ID
+            ChecksLeft: [1, 1, 1],
+            ID: ID,
+            StartPosition: StartPosition
+        });
+    }
+
+    public static void SpecialQueue(in Boolean ChecksLeft, in Number ID, in Vector StartPosition) {
+        _OTCQueue.ModAppend({
+            ChecksLeft: ChecksLeft,
+            ID: ID,
+            StartPosition: StartPosition
         });
     }
 }
@@ -149,12 +161,12 @@ single struct OneTimeCheck
 //}
 
 
-single struct TimeInInterval
+single struct EnvironmentCollision
 {
     public Number ID;
     //also serves as the data for a one time check
     public Number Time;
-    public static TimeInInterval Construct(): {ID: null, Time: null};
+    public static EnvironmentCollision Construct(): {ID: null, Time: null};
 
     //Sink One-Time Queues to the end of the array
     public static void Queue(in Number ID, in Number Time) {

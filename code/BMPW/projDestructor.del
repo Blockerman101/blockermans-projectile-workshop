@@ -106,7 +106,7 @@ if (_projDestructorQueue.First.time <= TotalTimeElapsed())
         }
 
     //This doesnt need to maintain indices like projData, so when a projectile is made Inactive, its simply removed from this array
-    TimeInInterval.ClearFromQueue(ID);
+    EnvironmentCollision.ClearFromQueue(ID);
 
     LogToInspector($"Destroyed Proj {ID} (Tick {(time/0.016).Floor()})");
 

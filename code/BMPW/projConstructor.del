@@ -115,7 +115,7 @@ if (_projConstructorQueue.Length > 0)
         //Number ticksToMaxHeight: ((currentTick - ticksFromCurrentTick)%(interval/0.016)) < 0 ? ((currentTick - ticksFromCurrentTick)%(interval/0.016)) + interval/0.016 : ((currentTick - ticksFromCurrentTick)%(interval/0.016));
         //Number ticksToMaxHeight: 13;
 
-        TimeInInterval.Queue(ID, ticksToMaxHeight);
+        EnvironmentCollision.Queue(ID, ticksToMaxHeight);
         LogToInspector($"\nAdded to TII (ID: {ID})\nCurrentTick: {currentTick}, ProjTick: {ticksToMaxHeight}\nCurrentIndex: {_envCollisionIndex}, ProjIndex: {_envCollisionList.Map(v => v.ID).IndexOf(ID)}]\n");
         if (_envCollisionList.Length > 1 && currentTick >= ticksToMaxHeight) {
             //LogToInspector($"Inc'd Index. (Index {_envCollisionList.Map(v => v.ID).IndexOf(ID)} with ID {ID}, Index: {_envCollisionIndex} -> {_envCollisionIndex + 1})"); 
@@ -135,7 +135,7 @@ if (_projConstructorQueue.Length > 0)
         //    color: Color.SkyBlue,
         //    MSTimeOfCall: TotalTimeElapsed() * 1000
         //});
-        OneTimeCheck.Queue(ID);
+        OneTimeCheck.Queue(ID, Args.StartPosition);
 
 
         //Number maxWait_1: 0.016*4;
