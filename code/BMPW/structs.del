@@ -131,15 +131,6 @@ single struct OneTimeCheck
 {
     public Number ChecksLeft;
     public Number ID;
-//    public OneTimeData2 Data;
-//    public static void Queue(in Number ID, in OneTimeData2 Data) {
-//        _OTCQueue.ModAppend({
-//            ChecksLeft: 3,
-//            ID: ID,
-//            Data: Data
-//        });
-//    }
-
     public static void Queue(in Number ID) {
         _OTCQueue.ModAppend({
             ChecksLeft: 3,
