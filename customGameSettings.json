@@ -5,7 +5,7 @@
         {
             "Max Team 1 Players": 1,
             "Max Team 2 Players": 7,
-            "Minimum Latency milliseconds": "150000000"
+            "Minimum Latency milliseconds": "15000000"
         },
 
         "Modes":
