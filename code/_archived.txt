@@ -1036,3 +1036,57 @@ public static void OneTimeQueue(in Number ID, in ECOneTimeCheck data) {_envColli
 
     //called once
     Number TimeOfLastJITCheck:      IsOneTimeCheck ? OneTimeData.Time.TimeOfLastJITCheck            : null;
+
+
+public void SpreadOverTicks<T>(in T[] Array, in Number NumberOfTicks, const T => void func, in Number TotalTimeElapsed=TotalTimeElapsed()) {
+    
+    //Ticks start at 0 (end at NumberOfTicks - 1), so they easily convert to indices
+
+    //CAN be a macro, but higher element count (and harder to read in inspector for debugging)
+    //Put it in extendedCollection to make every instance part of an array rather their own variable
+    Number currentTick: (TotalTimeElapsed/0.016).Floor()%NumberOfTicks;
+
+
+    WaitlessForLoop(0, i => (currentTick + i * NumberOfTicks <= Array.Length - 1), 1, i => {
+        T currentVal! = Array[currentTick + NumberOfTicks * i];
+        //modular system which uses multiples of NumberOfTicks
+        //Number currentIndex: currentTick + NumberOfTicks * i; //Cant use macro bcs this is a custom lambda
+        func.Invoke(currentVal);
+
+    });
+
+    MinWait();
+    LoopIfConditionIsTrue();
+}
+
+private void checkPCollision(in Number ID, in Number tickCount) {
+    //calculations: https://www.desmos.com/3d/c7ypcrhnqw
+    ProjData proj: projData[ID];
+    _playerCollisionData.Position = proj.Position();
+    _playerCollisionData.Target = proj.ReadOnly.Targets.Sort(v => v.DistanceTo(_playerCollisionData.Position)).First;
+    Vector feetToEyes: (_playerCollisionData.Target.Position().Towards(_playerCollisionData.Target.EyePosition()));
+    //The projectile pos, projected onto a line from the feet of the target to the eyes of the target
+    Vector projectedPos: _playerCollisionData.Target.Position() + feetToEyes * Clamp(DotProduct(feetToEyes, _playerCollisionData.Position - _playerCollisionData.Target.Position())/DotProduct(feetToEyes, feetToEyes), 0, 1);
+    
+    //Vector from projPos towards projectedPos
+    _playerCollisionData.ShiftForRaycastPositions = _playerCollisionData.Position.Towards(projectedPos);
+    
+    //Shift
+    _playerCollisionData.ShiftForRaycastPositions = Clamp(_playerCollisionData.ShiftForRaycastPositions.Magnitude, 0, proj.ReadOnly.Radius) * _playerCollisionData.ShiftForRaycastPositions.Normalize();
+    
+    CreateBeamEffect(LocalPlayer(), BeamType.GoodBeam, EvaluateOnce(_playerCollisionData.Position + _playerCollisionData.ShiftForRaycastPositions), EvaluateOnce(proj.PositionAtTime(0.016*tickCount) + _playerCollisionData.ShiftForRaycastPositions), null, EffectRev.VisibleToPositionAndRadius);
+
+    projData[ID].HitPlayer = RayCastHitPlayer(
+        _playerCollisionData.Position + _playerCollisionData.ShiftForRaycastPositions,
+        proj.PositionAtTime(0.016*tickCount) + _playerCollisionData.ShiftForRaycastPositions,
+        proj.ReadOnly.Targets,
+        null,
+        true);
+    //PlayEffect(HostPlayer(), PlayEffect.GoodExplosion, Color.White, proj.Position(), 0.5);
+    //PlayEffect(HostPlayer(), PlayEffect.GoodExplosion, Color.White, proj.PositionAtTime(0.016*tickCount), 0.5);
+    if (proj.HitPlayer)
+    {
+        ProjDestructor.Destroy(ID);
+        LogToInspector($"Proj {ID} hit {proj.HitPlayer}!");
+    }
+}
