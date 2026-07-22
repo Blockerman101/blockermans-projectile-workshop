@@ -98,7 +98,7 @@ if (_projDestructorQueue.First.time <= TotalTimeElapsed())
     //For decrementing the _envCollisionIndex of _envCollisionList
     Boolean[] reqsForDec: [
         //_envCollisionList.Length > 1,
-        currentTick >= _envCollisionList[_envCollisionList.Map(v => v.ID).IndexOf(ID)].Time,
+        ECCurrentTick >= _envCollisionList[_envCollisionList.Map(v => v.ID).IndexOf(ID)].Time,
         _envCollisionIndex //make sure it isnt 0, because if it was it would go to index -1
     ];
     if (IsTrueForAll(reqsForDec, ArrayElement())) {

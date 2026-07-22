@@ -65,9 +65,9 @@ rule: '[DEV] Show stuff'
 }
 
 disabled rule: '[DEV] Show ticks'
-if (currentTick != EvaluateOnce(currentTick))
+if (ECCurrentTick != EvaluateOnce(ECCurrentTick))
 {
-    LogToInspector($"Current Tick: {currentTick}");
+    LogToInspector($"Current Tick: {ECCurrentTick}");
     Wait(0.016, WaitBehavior.RestartWhenTrue);
     LoopIfConditionIsTrue();
 }

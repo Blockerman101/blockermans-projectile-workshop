@@ -15,24 +15,31 @@ rule: '[BMPW] Update State'
 if (_envCollisionList.Length)
 //if (_OTCQueue.Any(v => v.SCheck))
 {
+    Number tickCount: 15;
+    Number currentTick: (TotalTimeElapsed()/0.016).Floor()%tickCount;
 
-    SpreadOverTicks(_envCollisionList, 15, i => {
-        //i is the index of the array entered
-        //StateCheck(i.ID, projData[i.ID].Position());
-            //Criteria for complex state
-        if (projData[i.ID].ReadOnly.Targets.Any(v => v.DistanceTo(pos(i.ID)) <= rad(i.ID)))
+    Boolean IsOTC: _OTCQueue.Filter(v => v.SCheck).Length;
+    OneTimeCheck OTCData: _OTCQueue.Filter(v => v.SCheck).First;
+
+    WaitlessForLoop(0, i => (currentTick + tickCount * i < _envCollisionList.Length), 1, i => {
+
+        Number ID! = _envCollisionList[currentTick + tickCount * i].ID;
+        
+        if (projData[ID].ReadOnly.Targets.Any(v => v.DistanceTo(pos(ID)) <= rad(ID)))
         {
-            if (_complexProjs.All(v => v != i.ID))
+            if (_complexProjs.All(v => v != ID))
             {
-                _complexProjs.ModAppend(i.ID);
+                _complexProjs.ModAppend(ID);
                 //This should be the same as ticks in PC
                 //checkPCollision(ID, 5);
             }
         }
         else
         {
-            _complexProjs.ModRemoveByValue(i.ID);
+            _complexProjs.ModRemoveByValue(ID);
         }
         //LogToInspector($"Checked state of proj {i} (TTE: {time})");
     });
+    MinWait();
+    LoopIfConditionIsTrue();
 }

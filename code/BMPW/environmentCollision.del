@@ -13,8 +13,8 @@ public Vector RotateVector(in Vector vector, in Vector axis, in Number radians) 
 
 rule: '[BMPW] Reset _envCollisionIndex on lap end'
 if (_envCollisionList.Length)
-//if (currentTick == 0 || currentTick == 1)
-if (!currentTick)
+//if (ECCurrentTick == 0 || ECCurrentTick == 1)
+if (!ECCurrentTick)
 {
     _envCollisionIndex = 0;
     LogToInspector($"Lap ended. (Index returned to 0) (TTE: {time})");
@@ -24,7 +24,7 @@ if (!currentTick)
 rule: '[BMPW] Check EC'
 //This might fix a (potential?) bug
 if (_envCollisionIndex < _envCollisionList.Length)
-if (_envCollisionList[_envCollisionIndex].Time == currentTick || _OTCQueue.Any(v => v.ECCheck))
+if (_envCollisionList[_envCollisionIndex].Time == ECCurrentTick || _OTCQueue.Any(v => v.ECCheck))
 {
     //If the proj radius is below this, skip extra EC
     Number thresholdForExtraEC: 1.0;
@@ -107,8 +107,8 @@ if (_envCollisionList[_envCollisionIndex].Time == currentTick || _OTCQueue.Any(v
         //action for nonzero EC (not needed if interval isnt reset to smth else)
         _TEMP_tempPositions.Interval = (interval + 0.016 * extraTicks);
 
-        //LogToInspector($"coll checked! (ID: {ID}, Check: {projData[ID].DEBUG_ECCheck + 1}, CurrentTII: {currentTick}, interval: {_TEMP_tempPositions.Interval}, TTE: {time})");
-        LogToInspector($"coll checked! (ID: {ID}, CurrentTII: {currentTick}, interval: {_TEMP_tempPositions.Interval}, TTE: {time})");
+        //LogToInspector($"coll checked! (ID: {ID}, Check: {projData[ID].DEBUG_ECCheck + 1}, CurrentTII: {ECCurrentTick}, interval: {_TEMP_tempPositions.Interval}, TTE: {time})");
+        LogToInspector($"coll checked! (ID: {ID}, CurrentTII: {ECCurrentTick}, interval: {_TEMP_tempPositions.Interval}, TTE: {time})");
         
         
 
@@ -207,4 +207,4 @@ Number interval: ((rawInterval / 0.016).Ceil() * 0.016); //Rounded up to the nea
 
 //Cant use tte because of the bug with chased vars in conditions
 Number time: TotalTimeElapsed();
-Number currentTick: ((time%interval) / 0.016).Floor();
+Number ECCurrentTick: ((time%interval) / 0.016).Floor();
