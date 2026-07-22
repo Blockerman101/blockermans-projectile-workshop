@@ -16,6 +16,7 @@ if (_projDestructorQueue.First.time <= TotalTimeElapsed())
     //JIT check for EC
     if (current.TypeOfDestruction == TypeOfDestruction.Environment && (TotalTimeElapsed() - current.TimeOfLastJITCheck > JITTimeout))
     {
+        SmallMessage(HostPlayer(), "Doing JIT in Destructor!!");
 
         //An alternative solution is checking earlier temporally rather than retrospectively back-checking (with timeBackwards & timeForwards)
             //This has the benefit of higher accuracy in situations where pets (shields, turrets, etc) are moving towards the projectile

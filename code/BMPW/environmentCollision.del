@@ -29,6 +29,9 @@ if (_envCollisionList[_envCollisionIndex].Time == currentTick || _OTCQueue.Any(v
     //If the proj radius is below this, skip extra EC
     Number thresholdForExtraEC: 1.0;
 
+    //extra ticks for the end pos
+    Number extraTicks: 2;
+
     Boolean IsOTC: _OTCQueue.Filter(v => v.ChecksLeft.First).Length;
     OneTimeCheck OTCData: _OTCQueue.Filter(v => v.ChecksLeft.First).First;
 
@@ -36,12 +39,10 @@ if (_envCollisionList[_envCollisionIndex].Time == currentTick || _OTCQueue.Any(v
     _TEMP_tempPositions.ID = (IsOTC ? OTCData.ID : _envCollisionList[_envCollisionIndex].ID);
     Number ID: _TEMP_tempPositions.ID;
 
-    Number _interval: (interval + 0.032);
     //can use this field (RaycastPositions.Interval) temporarily, to save eles
-    _TEMP_tempPositions.Interval = _interval;
+    _TEMP_tempPositions.Interval = (interval + 0.016 * extraTicks);
 
-    _TEMP_tempPositions.StartPosition = (IsOTC ? OTCData.StartPosition : projData[ID].Position());
-    Vector StartPosition:_TEMP_tempPositions.StartPosition;
+    Vector StartPosition: _TEMP_tempPositions.StartPosition;
 
     //called twice, but its cosmetic
     Color color:                Color.White;
@@ -63,17 +64,18 @@ if (_envCollisionList[_envCollisionIndex].Time == currentTick || _OTCQueue.Any(v
 
         
 
-        //base positions set above, before shifting
+        //base positions set here, before shifting, each lap
+        _TEMP_tempPositions.StartPosition = (IsOTC ? OTCData.StartPosition : projData[ID].Position());
         
         _TEMP_tempPositions.EndPosition = projData[ID].PositionAtTime(_TEMP_tempPositions.Interval);
 
-        Vector currentDirection: (_TEMP_tempPositions.EndPosition - _TEMP_tempPositions.StartPosition).Normalize();
+        _TEMP_tempPositions.Interval = (_TEMP_tempPositions.EndPosition - _TEMP_tempPositions.StartPosition + Forward() * 0.0000000001).Normalize();
+        Vector currentDirection: <Vector>_TEMP_tempPositions.Interval;
         
 
         //This evaluates to the projectiles relative right
         //action for nonzero EC
-        _TEMP_tempPositions.Interval = CrossProduct(Down(), currentDirection);
-        Vector relativeRight: <Vector>_TEMP_tempPositions.Interval;
+        Vector relativeRight: CrossProduct(Down(), currentDirection);
 
         Number rotationAmountsForCurrentlap: [null, 0, 2*Pi()/3, 4*Pi()/3][currentLap];
 
@@ -83,22 +85,27 @@ if (_envCollisionList[_envCollisionIndex].Time == currentTick || _OTCQueue.Any(v
         Vector endRotation: current.ReadOnly.Radius * Normalize(RotateVector(relativeRight, currentDirection, rotationAmountsForCurrentlap + Pi()/3)) * 2 / SquareRoot(3);
         
         //Shift start/end pos along the direction of the check
-        Vector verticalOffset: (currentDirection * current.ReadOnly.Radius / SquareRoot(6));
+        //Vector verticalOffset: (currentDirection * current.ReadOnly.Radius / SquareRoot(6));
 
         //A vertical shift to make the start and end points be at the end of the capsule
-        Vector firstLapShift: currentDirection * current.ReadOnly.Radius;
+        //Vector firstLapShift: currentDirection * current.ReadOnly.Radius;
+
+        ////action for nonzero EC
+        //_TEMP_tempPositions.StartPosition += !currentLap ? -1*firstLapShift : (startRotation - verticalOffset);
+        ////action for nonzero EC
+        //_TEMP_tempPositions.EndPosition += !currentLap ? firstLapShift : (endRotation + verticalOffset);
 
         //action for nonzero EC
-        _TEMP_tempPositions.StartPosition += !currentLap ? -1*firstLapShift : (startRotation - verticalOffset);
+        _TEMP_tempPositions.StartPosition += Min(1, currentLap) * startRotation;
         //action for nonzero EC
-        _TEMP_tempPositions.EndPosition += !currentLap ? firstLapShift : (endRotation + verticalOffset);
+        _TEMP_tempPositions.EndPosition += Min(1, currentLap) * endRotation;
 
 
         //This will need to include targets in order for their objects to be tracked
         _TEMP_tempPositions.RaycastPosition = RayCastHitPosition(_TEMP_tempPositions.StartPosition, _TEMP_tempPositions.EndPosition, projData[ID].ReadOnly.Targets, null, true);
         
         //action for nonzero EC (not needed if interval isnt reset to smth else)
-        _TEMP_tempPositions.Interval = _interval;
+        _TEMP_tempPositions.Interval = (interval + 0.016 * extraTicks);
 
         //LogToInspector($"coll checked! (ID: {ID}, Check: {projData[ID].DEBUG_ECCheck + 1}, CurrentTII: {currentTick}, interval: {_TEMP_tempPositions.Interval}, TTE: {time})");
         LogToInspector($"coll checked! (ID: {ID}, CurrentTII: {currentTick}, interval: {_TEMP_tempPositions.Interval}, TTE: {time})");

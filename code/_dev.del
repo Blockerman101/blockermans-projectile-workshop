@@ -46,6 +46,7 @@ rule: '[DEV] Text'
     _CreateDevText($"Entity Count: {EntityCount()}");
     _CreateDevText($"Target: {projData[1].ReadOnly.Targets.Sort(v => v.DistanceTo(projData[1].Position())).First}");
     //_CreateDevText($"deltaTicks: {ticksFromCurrentTick}");
+    _CreateDevText(<String>HostPlayer().FacingDirection());
 }
 
 
