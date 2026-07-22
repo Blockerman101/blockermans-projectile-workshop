@@ -13,7 +13,7 @@ Vector pos(in Number ID): projData[ID].PositionAtTime(inter * Min(1, Min(85, spe
 
 rule: '[BMPW] Update State'
 if (_envCollisionList.Length)
-//if (_OTCQueue.First.ChecksLeft)
+//if (_OTCQueue.Any(v => v.SCheck))
 {
 
     SpreadOverTicks(_envCollisionList, 15, i => {

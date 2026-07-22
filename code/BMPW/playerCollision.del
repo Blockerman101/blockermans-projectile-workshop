@@ -54,16 +54,17 @@ public void SpreadOverTicks<T>(in T[] Array, in Number NumberOfTicks, const T =>
 
     //CAN be a macro, but higher element count (and harder to read in inspector for debugging)
     //Put it in extendedCollection to make every instance part of an array rather their own variable
-    Number currentTick! = (TotalTimeElapsed/0.016).Floor()%NumberOfTicks;
+    Number currentTick: (TotalTimeElapsed/0.016).Floor()%NumberOfTicks;
 
 
     WaitlessForLoop(0, i => (currentTick + i * NumberOfTicks <= Array.Length - 1), 1, i => {
+        T currentVal! = Array[currentTick + NumberOfTicks * i];
         //modular system which uses multiples of NumberOfTicks
         //Number currentIndex: currentTick + NumberOfTicks * i; //Cant use macro bcs this is a custom lambda
-        func.Invoke(Array[currentTick + NumberOfTicks * i]);
+        func.Invoke(currentVal);
 
     });
-    
+
     MinWait();
     LoopIfConditionIsTrue();
 }

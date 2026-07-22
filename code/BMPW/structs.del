@@ -130,11 +130,13 @@ single struct RaycastPositions
 globalvar OneTimeCheck[] _OTCQueue = [];
 single struct OneTimeCheck
 {
-    //[0] is EC, [1] is SC, [2] is PC
     public Number ID;
     public Vector StartPosition;
+    //Environment Collision Check
     public Boolean ECCheck;
-    public Boolean SCCheck;
+    //State Check
+    public Boolean SCheck;
+    //Player Collision Check
     public Boolean PCCheck;
     //optional arg accessed through OneTimeCheck[5]
     //public Number TimeOfLastJITCheck;
@@ -144,7 +146,7 @@ single struct OneTimeCheck
             ID: ID,
             StartPosition: StartPosition,
             ECCheck: true,
-            SCCheck: true,
+            SCheck: true,
             PCCheck: true
         });
     }
@@ -154,7 +156,7 @@ single struct OneTimeCheck
     }
 
     public static void Truncate() {
-        _OTCQueue = _OTCQueue.Filter(v => !v.ECCheck && !v.SCCheck && !v.PCCheck);
+        _OTCQueue = _OTCQueue.Filter(v => !v.ECCheck && !v.SCheck && !v.PCCheck);
         //_OTCQueue = _OTCQueue.Filter(v => ArraySlice(v, 2, 3) != [null, null, null]);
     }
 }
