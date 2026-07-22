@@ -24,7 +24,7 @@ if (!currentTick)
 rule: '[BMPW] Check EC'
 //This might fix a (potential?) bug
 if (_envCollisionIndex < _envCollisionList.Length)
-if (_envCollisionList[_envCollisionIndex].Time == currentTick || _OTCQueue.Any(v => v.ChecksLeft.First))
+if (_envCollisionList[_envCollisionIndex].Time == currentTick || _OTCQueue.Any(v => v.ECCheck))
 {
     //If the proj radius is below this, skip extra EC
     Number thresholdForExtraEC: 1.0;
@@ -32,8 +32,8 @@ if (_envCollisionList[_envCollisionIndex].Time == currentTick || _OTCQueue.Any(v
     //extra ticks for the end pos
     Number extraTicks: 2;
 
-    Boolean IsOTC: _OTCQueue.Filter(v => v.ChecksLeft.First).Length;
-    OneTimeCheck OTCData: _OTCQueue.Filter(v => v.ChecksLeft.First).First;
+    Boolean IsOTC: _OTCQueue.Filter(v => v.ECCheck).Length;
+    OneTimeCheck OTCData: _OTCQueue.Filter(v => v.ECCheck).First;
 
 
     _TEMP_tempPositions.ID = (IsOTC ? OTCData.ID : _envCollisionList[_envCollisionIndex].ID);
@@ -176,7 +176,7 @@ if (_envCollisionList[_envCollisionIndex].Time == currentTick || _OTCQueue.Any(v
     if (IsOTC) {
         //set current OTC EC ChecksLeft (idx 0) to false
         LogToInspector("IsOTC");
-        _OTCQueue[_OTCQueue.Map(v => v.ChecksLeft.First ? CurrentArrayIndex() : -1).Filter(v => v != -1).First].ChecksLeft[0] = false;
+        _OTCQueue[_OTCQueue.Map(v => v.ECCheck ? CurrentArrayIndex() : -1).Filter(v => v != -1).First].ECCheck = false;
     }
     else {
         _envCollisionIndex++; //Traverse to the next projectile

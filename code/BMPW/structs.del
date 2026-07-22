@@ -131,23 +131,31 @@ globalvar OneTimeCheck[] _OTCQueue = [];
 single struct OneTimeCheck
 {
     //[0] is EC, [1] is SC, [2] is PC
-    public Boolean[] ChecksLeft;
     public Number ID;
     public Vector StartPosition;
+    public Boolean ECCheck;
+    public Boolean SCCheck;
+    public Boolean PCCheck;
+    //optional arg accessed through OneTimeCheck[5]
+    //public Number TimeOfLastJITCheck;
+
     public static void Queue(in Number ID, in Vector StartPosition) {
         _OTCQueue.ModAppend({
-            ChecksLeft: [true, true, true],
             ID: ID,
-            StartPosition: StartPosition
+            StartPosition: StartPosition,
+            ECCheck: true,
+            SCCheck: true,
+            PCCheck: true
         });
     }
 
-    public static void SpecialQueue(in Boolean[] ChecksLeft, in Number ID, in Vector StartPosition) {
-        _OTCQueue.ModAppend({
-            ChecksLeft: ChecksLeft,
-            ID: ID,
-            StartPosition: StartPosition
-        });
+    public static void SpecialQueue(in OneTimeCheck data) {
+        _OTCQueue.ModAppend(data);
+    }
+
+    public static void Truncate() {
+        _OTCQueue = _OTCQueue.Filter(v => !v.ECCheck && !v.SCCheck && !v.PCCheck);
+        //_OTCQueue = _OTCQueue.Filter(v => ArraySlice(v, 2, 3) != [null, null, null]);
     }
 }
 
@@ -224,6 +232,7 @@ single struct ProjectileArgs
     public Number Speed;
     public Number Lifetime;
     //public Number Knockback;
+    //projectiles with 0 gravity must use Vector.Zero, otherwise type-errors will break the proj
     public Vector Gravity;
     //private Number ProjID;
     private Number _TimeOfCall;
