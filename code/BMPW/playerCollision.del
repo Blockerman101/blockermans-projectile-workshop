@@ -5,18 +5,23 @@ globalvar Number[] _complexProjs = EmptyArray();
 
 rule: '[BMPW] Player Collision'
 if (_complexProjs.Length)
+if (_OTCQueue.Any(v => v.PCCheck))
 {
     Number tickCount: 5;
     Number currentTick: (TotalTimeElapsed()/0.016).Floor()%tickCount;
+    
+    Boolean IsOTC: _OTCQueue.Filter(v => v.PCCheck).Length;
+    OneTimeCheck OTCData: _OTCQueue.Filter(v => v.PCCheck).First;
 
+    WaitlessForLoop(0, i => (currentTick + i * tickCount < _complexProjs.Length) || IsOTC, 1, i => {
 
-    WaitlessForLoop(0, i => (currentTick + i * tickCount < _complexProjs.Length), 1, i => {
-
-        Number ID! = _complexProjs[currentTick + tickCount * i];
+        Number ID! = IsOTC ? OTCData.ID : _complexProjs[currentTick + tickCount * i];
 
         //calculations: https://www.desmos.com/3d/c7ypcrhnqw
         ProjData proj: projData[ID];
-        _playerCollisionData.Position = proj.Position();
+
+        _playerCollisionData.Position = IsOTC ? OTCData.StartPosition : proj.Position();
+        
         _playerCollisionData.Target = proj.ReadOnly.Targets.Sort(v => v.DistanceTo(_playerCollisionData.Position)).First;
         Vector feetToEyes: (_playerCollisionData.Target.Position().Towards(_playerCollisionData.Target.EyePosition()));
         //The projectile pos, projected onto a line from the feet of the target to the eyes of the target
@@ -43,6 +48,11 @@ if (_complexProjs.Length)
             ProjDestructor.Destroy(ID);
             LogToInspector($"Proj {ID} hit {proj.HitPlayer}!");
         }
+        _OTCQueue[_OTCQueue.Map(v => v.PCCheck ? CurrentArrayIndex() : -1).Filter(v => v != -1).First].PCCheck = false;
+        LogToInspector($"set PC of proj {ID} to false");
+        OneTimeCheck.Truncate();
+        LogToInspector("truncated OTC");
+
     });
 
     MinWait();

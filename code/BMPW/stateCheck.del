@@ -13,7 +13,7 @@ Vector pos(in Number ID): projData[ID].PositionAtTime(inter * Min(1, Min(85, spe
 
 rule: '[BMPW] Update State'
 if (_envCollisionList.Length)
-//if (_OTCQueue.Any(v => v.SCheck))
+if (_OTCQueue.Any(v => v.SCheck))
 {
     Number tickCount: 15;
     Number currentTick: (TotalTimeElapsed()/0.016).Floor()%tickCount;
@@ -21,9 +21,9 @@ if (_envCollisionList.Length)
     Boolean IsOTC: _OTCQueue.Filter(v => v.SCheck).Length;
     OneTimeCheck OTCData: _OTCQueue.Filter(v => v.SCheck).First;
 
-    WaitlessForLoop(0, i => (currentTick + tickCount * i < _envCollisionList.Length), 1, i => {
+    WaitlessForLoop(0, i => (currentTick + tickCount * i < _envCollisionList.Length) || IsOTC, 1, i => {
 
-        Number ID! = _envCollisionList[currentTick + tickCount * i].ID;
+        Number ID! = IsOTC ? OTCData.ID : _envCollisionList[currentTick + tickCount * i].ID;
         
         if (projData[ID].ReadOnly.Targets.Any(v => v.DistanceTo(pos(ID)) <= rad(ID)))
         {
@@ -32,11 +32,17 @@ if (_envCollisionList.Length)
                 _complexProjs.ModAppend(ID);
                 //This should be the same as ticks in PC
                 //checkPCollision(ID, 5);
+                _OTCQueue[_OTCQueue.Map(v => v.SCheck ? CurrentArrayIndex() : -1).Filter(v => v != -1).First].SCheck = false;
+                LogToInspector($"set SC of proj {ID} to false");
+
             }
         }
         else
         {
             _complexProjs.ModRemoveByValue(ID);
+            //skip PC if proj is simple
+            OneTimeCheck.TruncateByID(ID);
+            LogToInspector($"SC removed proj {ID}");
         }
         //LogToInspector($"Checked state of proj {i} (TTE: {time})");
     });

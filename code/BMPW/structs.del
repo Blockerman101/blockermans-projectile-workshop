@@ -156,8 +156,14 @@ single struct OneTimeCheck
     }
 
     public static void Truncate() {
-        _OTCQueue = _OTCQueue.Filter(v => !v.ECCheck && !v.SCheck && !v.PCCheck);
+        //_OTCQueue = _OTCQueue.Filter(v => !v.ECCheck && !v.SCheck && !v.PCCheck);
+        _OTCQueue = _OTCQueue.Filter(v => v.ECCheck || v.SCheck || v.PCCheck);
+        //_OTCQueue = _OTCQueue.Filter(v => v != <OneTimeCheck>{ECCheck: false, SCheck: false, PCCheck: false, ..v});
         //_OTCQueue = _OTCQueue.Filter(v => ArraySlice(v, 2, 3) != [null, null, null]);
+    }
+
+    public static void TruncateByID(in Number ID) {
+        _OTCQueue = _OTCQueue.Filter(v => v.ID != ID);
     }
 }
 

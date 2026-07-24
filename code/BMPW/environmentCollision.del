@@ -177,6 +177,8 @@ if (_envCollisionList[_envCollisionIndex].Time == ECCurrentTick || _OTCQueue.Any
         //set current OTC EC ChecksLeft (idx 0) to false
         LogToInspector("IsOTC");
         _OTCQueue[_OTCQueue.Map(v => v.ECCheck ? CurrentArrayIndex() : -1).Filter(v => v != -1).First].ECCheck = false;
+        LogToInspector($"set EC of proj {ID} to false");
+
     }
     else {
         _envCollisionIndex++; //Traverse to the next projectile

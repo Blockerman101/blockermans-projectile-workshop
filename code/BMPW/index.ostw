@@ -1,7 +1,7 @@
 import "structs.del";
 import "projConstructor.del";
-import "environmentCollision.del";
 import "stateCheck.del";
 import "playerCollision.del";
 import "projDestructor.del";
+import "environmentCollision.del";
 
