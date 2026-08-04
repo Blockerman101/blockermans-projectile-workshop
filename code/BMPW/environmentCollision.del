@@ -24,7 +24,7 @@ if (!ECCurrentTick)
 rule: '[BMPW] Check EC'
 //This might fix a (potential?) bug
 if (_envCollisionIndex < _envCollisionList.Length)
-if (_envCollisionList[_envCollisionIndex].Time == ECCurrentTick || _OTCQueue.Any(v => v.ECCheck))
+if (_envCollisionList[_envCollisionIndex].Time == ECCurrentTick || _OTCQueue.Any(v => v.IsEC))
 {
     //If the proj radius is below this, skip extra EC
     Number thresholdForExtraEC: 1.0;
@@ -32,8 +32,8 @@ if (_envCollisionList[_envCollisionIndex].Time == ECCurrentTick || _OTCQueue.Any
     //extra ticks for the end pos
     Number extraTicks: 2;
 
-    Boolean IsOTC: _OTCQueue.Filter(v => v.ECCheck).Length;
-    OneTimeCheck OTCData: _OTCQueue.Filter(v => v.ECCheck).First;
+    Boolean IsOTC: _OTCQueue.Filter(v => v.IsEC).Length;
+    OneTimeCheck OTCData: _OTCQueue.Filter(v => v.IsEC).First;
 
 
     _TEMP_tempPositions.ID = (IsOTC ? OTCData.ID : _envCollisionList[_envCollisionIndex].ID);
@@ -176,8 +176,8 @@ if (_envCollisionList[_envCollisionIndex].Time == ECCurrentTick || _OTCQueue.Any
     if (IsOTC) {
         //set current OTC EC ChecksLeft (idx 0) to false
         LogToInspector("IsOTC");
-        _OTCQueue[_OTCQueue.Map(v => v.ECCheck ? CurrentArrayIndex() : -1).Filter(v => v != -1).First].ECCheck = false;
-        LogToInspector($"set EC of proj {ID} to false");
+        OneTimeCheck.TruncateByID(ID);
+        LogToInspector($"EC removed proj {ID} from OTC");
 
     }
     else {

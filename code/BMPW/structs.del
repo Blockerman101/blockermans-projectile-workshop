@@ -132,22 +132,21 @@ single struct OneTimeCheck
 {
     public Number ID;
     public Vector StartPosition;
-    //Environment Collision Check
-    public Boolean ECCheck;
-    //State Check
-    public Boolean SCheck;
-    //Player Collision Check
-    public Boolean PCCheck;
-    //optional arg accessed through OneTimeCheck[5]
-    //public Number TimeOfLastJITCheck;
+    public Number ChecksLeft;
+    public Number Index;
+    //Is State Check
+    public Boolean IsSC: this.ChecksLeft == 3;
+    //Is Player Collision
+    public Boolean IsPC: this.ChecksLeft == 2;
+    //Is Environment Collision
+    public Boolean IsEC: this.ChecksLeft == 1;
 
     public static void Queue(in Number ID, in Vector StartPosition) {
         _OTCQueue.ModAppend({
             ID: ID,
             StartPosition: StartPosition,
-            ECCheck: true,
-            SCheck: true,
-            PCCheck: true
+            ChecksLeft: 3,
+            Index: _OTCQueue.Length
         });
     }
 
@@ -156,10 +155,7 @@ single struct OneTimeCheck
     }
 
     public static void Truncate() {
-        //_OTCQueue = _OTCQueue.Filter(v => !v.ECCheck && !v.SCheck && !v.PCCheck);
-        _OTCQueue = _OTCQueue.Filter(v => v.ECCheck || v.SCheck || v.PCCheck);
-        //_OTCQueue = _OTCQueue.Filter(v => v != <OneTimeCheck>{ECCheck: false, SCheck: false, PCCheck: false, ..v});
-        //_OTCQueue = _OTCQueue.Filter(v => ArraySlice(v, 2, 3) != [null, null, null]);
+        _OTCQueue = _OTCQueue.Filter(v => !v.ChecksLeft);
     }
 
     public static void TruncateByID(in Number ID) {

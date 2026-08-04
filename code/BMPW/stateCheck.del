@@ -11,15 +11,14 @@ Number rad(in Number ID): projData[ID].ReadOnly.Radius + 10 + 1.0 * speed(ID) * 
 Vector pos(in Number ID): projData[ID].PositionAtTime(inter * Min(1, Min(85, speed(ID)) / 85));
 
 
-rule: '[BMPW] Update State'
-if (_envCollisionList.Length)
-if (_OTCQueue.Any(v => v.SCheck))
+rule: '[BMPW] State Check'
+if (((TotalTimeElapsed()/0.016).Floor()%15 < _envCollisionList.Length) || _OTCQueue.Any(v => v.IsSC))
 {
     Number tickCount: 15;
     Number currentTick: (TotalTimeElapsed()/0.016).Floor()%tickCount;
 
-    Boolean IsOTC: _OTCQueue.Filter(v => v.SCheck).Length;
-    OneTimeCheck OTCData: _OTCQueue.Filter(v => v.SCheck).First;
+    Boolean IsOTC: _OTCQueue.Filter(v => v.IsSC).Length;
+    OneTimeCheck OTCData: _OTCQueue.Filter(v => v.IsSC).First;
 
     WaitlessForLoop(0, i => (currentTick + tickCount * i < _envCollisionList.Length) || IsOTC, 1, i => {
 
@@ -32,18 +31,23 @@ if (_OTCQueue.Any(v => v.SCheck))
                 _complexProjs.ModAppend(ID);
                 //This should be the same as ticks in PC
                 //checkPCollision(ID, 5);
-                _OTCQueue[_OTCQueue.Map(v => v.SCheck ? CurrentArrayIndex() : -1).Filter(v => v != -1).First].SCheck = false;
-                LogToInspector($"set SC of proj {ID} to false");
-
+                //_OTCQueue[_OTCQueue.Map(v => v.SCheck ? CurrentArrayIndex() : -1).Filter(v => v != -1).First].SCheck = false;
+            }
+            if (IsOTC)
+            {
+                _OTCQueue[OTCData.Index].ChecksLeft = 2;
             }
         }
         else
         {
             _complexProjs.ModRemoveByValue(ID);
             //skip PC if proj is simple
-            OneTimeCheck.TruncateByID(ID);
-            LogToInspector($"SC removed proj {ID}");
+            if (IsOTC)
+            {
+                _OTCQueue[OTCData.Index].ChecksLeft = 1;
+            }
         }
+        LogToInspector($"proj {ID} checksleft is {OTCData.ChecksLeft}");
         //LogToInspector($"Checked state of proj {i} (TTE: {time})");
     });
     MinWait();

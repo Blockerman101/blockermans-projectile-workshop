@@ -4,14 +4,13 @@ import "index.ostw";
 globalvar Number[] _complexProjs = EmptyArray();
 
 rule: '[BMPW] Player Collision'
-if (_complexProjs.Length)
-if (_OTCQueue.Any(v => v.PCCheck))
+if (((TotalTimeElapsed()/0.016).Floor()%5 < _complexProjs.Length) || _OTCQueue.Any(v => v.IsPC))
 {
     Number tickCount: 5;
     Number currentTick: (TotalTimeElapsed()/0.016).Floor()%tickCount;
     
-    Boolean IsOTC: _OTCQueue.Filter(v => v.PCCheck).Length;
-    OneTimeCheck OTCData: _OTCQueue.Filter(v => v.PCCheck).First;
+    Boolean IsOTC: _OTCQueue.Filter(v => v.IsPC).Length;
+    OneTimeCheck OTCData: _OTCQueue.Filter(v => v.IsPC).First;
 
     WaitlessForLoop(0, i => (currentTick + i * tickCount < _complexProjs.Length) || IsOTC, 1, i => {
 
@@ -47,11 +46,15 @@ if (_OTCQueue.Any(v => v.PCCheck))
         {
             ProjDestructor.Destroy(ID);
             LogToInspector($"Proj {ID} hit {proj.HitPlayer}!");
+            OneTimeCheck.TruncateByID(ID);
+            LogToInspector($"PC removed proj {ID} from OTC");
         }
-        _OTCQueue[_OTCQueue.Map(v => v.PCCheck ? CurrentArrayIndex() : -1).Filter(v => v != -1).First].PCCheck = false;
-        LogToInspector($"set PC of proj {ID} to false");
-        OneTimeCheck.Truncate();
-        LogToInspector("truncated OTC");
+        else if (IsOTC)
+        {
+            _OTCQueue[OTCData.Index].ChecksLeft = 1;
+            LogToInspector($"proj {ID} checksleft is {OTCData.ChecksLeft}");
+        }
+
 
     });
 

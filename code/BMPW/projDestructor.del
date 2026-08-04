@@ -17,7 +17,7 @@ if (_projDestructorQueue.First.time <= TotalTimeElapsed())
     if (current.TypeOfDestruction == TypeOfDestruction.Environment && (TotalTimeElapsed() - current.TimeOfLastJITCheck > JITTimeout))
     {
         SmallMessage(HostPlayer(), "Doing JIT in Destructor!!");
-
+        LogToInspector($"\n\nENTERED OTC\n\n");
         //An alternative solution is checking earlier temporally rather than retrospectively back-checking (with timeBackwards & timeForwards)
             //This has the benefit of higher accuracy in situations where pets (shields, turrets, etc) are moving towards the projectile
             //However, we're considering this an edge-case and currently not worth the extra load
@@ -29,7 +29,7 @@ if (_projDestructorQueue.First.time <= TotalTimeElapsed())
         //This will need to include targets in order for their objects to be tracked
         _TEMP_tempPositions.RaycastPosition = RayCastHitPosition(_TEMP_tempPositions.StartPosition, _TEMP_tempPositions.EndPosition, projData[ID].ReadOnly.Targets, null, true);
 
-        //CreateBeamEffect(HostPlayer(), BeamType.BrigitteFlailChainBeam, _TEMP_tempPositions.StartPosition, _TEMP_tempPositions.EndPosition, Color.Red, EffectRev.None);
+        CreateBeamEffect(HostPlayer(), BeamType.BrigitteFlailChainBeam, _TEMP_tempPositions.StartPosition, _TEMP_tempPositions.RaycastPosition, Color.Red, EffectRev.None);
         //    projData[ID].ReadOnly.VFX.ModAppend(LastCreatedEntity());
         //CreateEffect(HostPlayer(), Effect.Sphere, Color.Purple, _TEMP_tempPositions.RaycastPosition, 0.25, EffectRev.None);
         //    projData[ID].ReadOnly.VFX.ModAppend(LastCreatedEntity());
