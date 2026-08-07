@@ -327,7 +327,8 @@ enum ProjFX
     Cloud,
     Sparkles,
     GoodAura,
-    BadAura
+    BadAura,
+    None
 }
 
 void CastPFX(in ProjFX pfx, const ProjectileType => void castProjFX, const Effect => void castFX)
@@ -363,6 +364,8 @@ void CastPFX(in ProjFX pfx, const ProjectileType => void castProjFX, const Effec
         case ProjFX.Sparkles:                       castFX(Effect.Sparkles);                                  break;
         case ProjFX.GoodAura:                       castFX(Effect.GoodAura);                                  break;
         case ProjFX.BadAura:                        castFX(Effect.BadAura);                                   break;
+        //No effect
+        case ProjFX.None:                                                                                     break;
     }
 }
 
