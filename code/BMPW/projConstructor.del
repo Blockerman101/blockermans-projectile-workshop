@@ -118,13 +118,6 @@ if (_projConstructorQueue.Length > 0)
         //Number ModdedTimeToMaxHeight: ((ticksToMaxHeight - ECCurrentTick < 0) ? (ticksToMaxHeight - ECCurrentTick + (interval/0.016)) : (ticksToMaxHeight - ECCurrentTick))*0.016;
         
         
-        //asdfasdf
-        //OneTimeCheck.Queue(ID, <OneTimeData2>{
-        //    _interval: (ModdedTimeToMaxHeight <= 0 ? interval : ModdedTimeToMaxHeight) + deltaT + 0.032,
-        //    StartPosition: Args.StartPosition,
-        //    color: Color.SkyBlue,
-        //    MSTimeOfCall: TotalTimeElapsed() * 1000
-        //});
         OneTimeCheck.Queue(ID, Args.StartPosition);
 
 
@@ -167,9 +160,7 @@ if (_projConstructorQueue.Length > 0)
                 }
             );
 
-            //asdfasdf
-            //projData[ID]ReadOnly.VFX = LastCreatedEntity();
-            //projData[ID]ReadOnly.VFX.ModAppend(LastCreatedEntity());
+            projData[ID].ReadOnly.VFX.ModAppend(LastCreatedEntity());
 
             ProjDestructor.Queue(ID, Args.Lifetime - deltaT, TypeOfDestruction.Timeout);
 
