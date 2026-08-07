@@ -10,8 +10,7 @@ if (_projDestructorQueue.First.time <= TotalTimeElapsed())
     ProjDestructor current: _projDestructorQueue.First;
 
     //JIT checks will be limited to this much (at least) time between them
-    //Number JITTimeout: 0.5;
-    Number JITTimeout: 0;
+    Number JITTimeout: 0.5;
 
     //JIT check for EC
     if (current.TypeOfDestruction == TypeOfDestruction.Environment && (TotalTimeElapsed() - current.TimeOfLastJITCheck > JITTimeout))
@@ -45,17 +44,11 @@ if (_projDestructorQueue.First.time <= TotalTimeElapsed())
         if (_TEMP_tempPositions.RaycastPosition == _TEMP_tempPositions.EndPosition)
         {
             LogToInspector($"prevented destruction of proj {ID}");
-            //ECollision(ID, _projDestructorQueue.First.TimeLeft, i => {return projData[i].PositionAtTime(-0.032);}, Color.LimeGreen);
-            SmallMessage(HostPlayer(), "queued OTC from destructor");
-            LogToInspector("queued OTC from destructor");
 
             //OTC here
-            OneTimeCheck.SpecialQueue(<OneTimeCheck>{
-                ID: ID,
-                StartPosition: projData[ID].Position(),
-                ChecksLeft: 1,
-                Index: _OTCQueue.Length
-            });
+            OneTimeCheck.ECQueue(ID, _TEMP_tempPositions.StartPosition);
+            SmallMessage(HostPlayer(), "queued OTC from destructor");
+            LogToInspector("queued OTC from destructor");
 
             _projDestructorQueue.ModRemoveByIndex(0);
             MinWait();

@@ -22,9 +22,8 @@ if (!ECCurrentTick)
 
 
 rule: '[BMPW] Check EC'
-//This might fix a (potential?) bug
-if (_envCollisionIndex < _envCollisionList.Length)
-if (_envCollisionList[_envCollisionIndex].Time == ECCurrentTick || _OTCQueue.Any(v => v.IsEC))
+//first cond might fix a (potential?) bug
+if ((_envCollisionIndex < _envCollisionList.Length && _envCollisionList[_envCollisionIndex].Time == ECCurrentTick) || _OTCQueue.Any(v => v.IsEC))
 {
     //If the proj radius is below this, skip extra EC
     Number thresholdForExtraEC: 1.0;
@@ -39,133 +38,141 @@ if (_envCollisionList[_envCollisionIndex].Time == ECCurrentTick || _OTCQueue.Any
     _TEMP_tempPositions.ID = (IsOTC ? OTCData.ID : _envCollisionList[_envCollisionIndex].ID);
     Number ID: _TEMP_tempPositions.ID;
 
-    //can use this field (RaycastPositions.Interval) temporarily, to save eles
-    _TEMP_tempPositions.Interval = (interval + 0.016 * extraTicks);
-
-    Vector StartPosition: _TEMP_tempPositions.StartPosition;
-
-    //called twice, but its cosmetic
-    Color color:                Color.White;
-
-    //called once
-    Number TimeOfLastJITCheck:  null;
+    //if the destructor already has a queue for this projectile, abort the check
+    //prevalent in OTC and first standard EC, otherwise can occur in the overlap between standard EC checks
+    if (!_projDestructorQueue.Filter(v => v.ID == ID && v.TypeOfDestruction == TypeOfDestruction.Environment).Length) {
 
 
-
-    ProjData current: projData[ID];
-
-
-
-    //EC starts
-    Number lapCount: 4;
-
-    WaitlessForLoop(0, i => i < lapCount, 1, currentLap => {
-        LogToInspector($"On lap {currentLap}");
-
-        
-
-        //base positions set here, before shifting, each lap
-        _TEMP_tempPositions.StartPosition = (IsOTC ? OTCData.StartPosition : projData[ID].Position());
-        
-        _TEMP_tempPositions.EndPosition = projData[ID].PositionAtTime(_TEMP_tempPositions.Interval);
-
-        _TEMP_tempPositions.Interval = (_TEMP_tempPositions.EndPosition - _TEMP_tempPositions.StartPosition + Forward() * 0.0000000001).Normalize();
-        Vector currentDirection: <Vector>_TEMP_tempPositions.Interval;
-        
-
-        //This evaluates to the projectiles relative right
-        //action for nonzero EC
-        Vector relativeRight: CrossProduct(Down(), currentDirection);
-
-        Number rotationAmountsForCurrentlap: [null, 0, 2*Pi()/3, 4*Pi()/3][currentLap];
-
-        //Shift start/end pos of laps 1 through 3 by rotating them
-        Vector startRotation: current.ReadOnly.Radius * Normalize(RotateVector(relativeRight, currentDirection, rotationAmountsForCurrentlap)) * 2 / SquareRoot(3);
-
-        Vector endRotation: current.ReadOnly.Radius * Normalize(RotateVector(relativeRight, currentDirection, rotationAmountsForCurrentlap + Pi()/3)) * 2 / SquareRoot(3);
-        
-        //Shift start/end pos along the direction of the check
-        //Vector verticalOffset: (currentDirection * current.ReadOnly.Radius / SquareRoot(6));
-
-        //A vertical shift to make the start and end points be at the end of the capsule
-        //Vector firstLapShift: currentDirection * current.ReadOnly.Radius;
-
-        ////action for nonzero EC
-        //_TEMP_tempPositions.StartPosition += !currentLap ? -1*firstLapShift : (startRotation - verticalOffset);
-        ////action for nonzero EC
-        //_TEMP_tempPositions.EndPosition += !currentLap ? firstLapShift : (endRotation + verticalOffset);
-
-        //action for nonzero EC
-        _TEMP_tempPositions.StartPosition += Min(1, currentLap) * startRotation;
-        //action for nonzero EC
-        _TEMP_tempPositions.EndPosition += Min(1, currentLap) * endRotation;
-
-
-        //This will need to include targets in order for their objects to be tracked
-        _TEMP_tempPositions.RaycastPosition = RayCastHitPosition(_TEMP_tempPositions.StartPosition, _TEMP_tempPositions.EndPosition, projData[ID].ReadOnly.Targets, null, true);
-        
-        //action for nonzero EC (not needed if interval isnt reset to smth else)
+        //can use this field (RaycastPositions.Interval) temporarily, to save eles
         _TEMP_tempPositions.Interval = (interval + 0.016 * extraTicks);
 
-        //LogToInspector($"coll checked! (ID: {ID}, Check: {projData[ID].DEBUG_ECCheck + 1}, CurrentTII: {ECCurrentTick}, interval: {_TEMP_tempPositions.Interval}, TTE: {TotalTimeElapsed()})");
-        LogToInspector($"coll checked! (ID: {ID}, CurrentTII: {ECCurrentTick}, interval: {_TEMP_tempPositions.Interval}, TTE: {TotalTimeElapsed()})");
-        
-        
+        Vector StartPosition: _TEMP_tempPositions.StartPosition;
+
+        //called twice, but its cosmetic
+        Color color:                Color.White;
+
+        //called once
+        Number TimeOfLastJITCheck:  (IsOTC ? OTCData.TimeOfLastJITCheck : null);
 
 
 
-        //Structuring the state check like this allows us to reuse the projs _TEMP_tempPositions.StartPosition instead of recalculating it
-        //StateCheck(ID, _TEMP_tempPositions.StartPosition);
-
-            //if (IsTrueForAny([_TEMP_tempPositions.StartPosition, _TEMP_tempPositions.EndPosition, _TEMP_tempPositions.RaycastPosition], ArrayElement() == Vector.Zero)) {LogToInspector("!--POSITIONS REGISTERED ZERO--!");}
+        ProjData current: projData[ID];
 
 
-            CreateBeamEffect(HostPlayer(), BeamType.GrappleBeam, _TEMP_tempPositions.StartPosition, _TEMP_tempPositions.RaycastPosition, Color.Red, EffectRev.None);
 
+        //EC starts
+        Number lapCount: 4;
 
-            //projData[ID].DEBUG_ECCheck++;
-            //CreateInWorldText(HostPlayer(), $"Proj {ID} EC {projData[ID].DEBUG_ECCheck}" + (IsOneTimeCheck ? " (OTC!)" : ""), _TEMP_tempPositions.StartPosition + Up() * 0.2 * projData.Length, 1, Clipping.DoNotClip, InworldTextRev.None, Color.White, Spectators.DefaultVisibility);
-            //projData[ID].ReadOnly.VFX.ModAppend(LastCreatedEntity());
-            //CreateEffect(HostPlayer(), Effect.Sphere, color, _TEMP_tempPositions.StartPosition, 0.25, EffectRev.None);
-            //projData[ID].ReadOnly.VFX.ModAppend(LastCreatedEntity());
+        WaitlessForLoop(0, i => i < lapCount, 1, currentLap => {
+            LogToInspector($"On lap {currentLap}");
+
             
 
-    //        if ([_TEMP_tempPositions.StartPosition, _TEMP_tempPositions.EndPosition, _TEMP_tempPositions.RaycastPosition].IsTrueForAny(v => v == Vector.Zero)) {LogToInspector($"POSITIONS REGISTERED ZERO");}
-        if (_TEMP_tempPositions.RaycastPosition != _TEMP_tempPositions.EndPosition) 
-        {
-//            projData[ID].HitPlayer = RayCastHitPlayer(_TEMP_tempPositions.StartPosition, _TEMP_tempPositions.EndPosition, projData[ID].ReadOnly.Targets, null, true);
-//            //Perform a player-collision check
-//            if (projData[ID].HitPlayer)
-//            {
-//                //do player destruction
-//            }
+            //base positions set here, before shifting, each lap
+            _TEMP_tempPositions.StartPosition = (IsOTC ? OTCData.StartPosition : projData[ID].Position());
+            
+            _TEMP_tempPositions.EndPosition = projData[ID].PositionAtTime(_TEMP_tempPositions.Interval);
+
+            _TEMP_tempPositions.Interval = (_TEMP_tempPositions.EndPosition - _TEMP_tempPositions.StartPosition + Forward() * 0.0000000001).Normalize();
+            Vector currentDirection: <Vector>_TEMP_tempPositions.Interval;
+            
+
+            //This evaluates to the projectiles relative right
+            //action for nonzero EC
+            Vector relativeRight: CrossProduct(Down(), currentDirection);
+
+            Number rotationAmountsForCurrentlap: [null, 0, 2*Pi()/3, 4*Pi()/3][currentLap];
+
+            //Shift start/end pos of laps 1 through 3 by rotating them
+            Vector startRotation: current.ReadOnly.Radius * Normalize(RotateVector(relativeRight, currentDirection, rotationAmountsForCurrentlap)) * 2 / SquareRoot(3);
+
+            Vector endRotation: current.ReadOnly.Radius * Normalize(RotateVector(relativeRight, currentDirection, rotationAmountsForCurrentlap + Pi()/3)) * 2 / SquareRoot(3);
+            
+            //Shift start/end pos along the direction of the check
+            //Vector verticalOffset: (currentDirection * current.ReadOnly.Radius / SquareRoot(6));
+
+            //A vertical shift to make the start and end points be at the end of the capsule
+            //Vector firstLapShift: currentDirection * current.ReadOnly.Radius;
+
+            ////action for nonzero EC
+            //_TEMP_tempPositions.StartPosition += !currentLap ? -1*firstLapShift : (startRotation - verticalOffset);
+            ////action for nonzero EC
+            //_TEMP_tempPositions.EndPosition += !currentLap ? firstLapShift : (endRotation + verticalOffset);
+
+            //action for nonzero EC
+            _TEMP_tempPositions.StartPosition += Min(1, currentLap) * startRotation;
+            //action for nonzero EC
+            _TEMP_tempPositions.EndPosition += Min(1, currentLap) * endRotation;
 
 
-            //By making the queue time {offset} shorter, you avoid false positives with PC (take the case of a projectile hitting reins shield)
-            //^ not needed if you just include objs in PD
-            //Number offset: 0.016*0;
-            //Number timeToDestroy: _TEMP_tempPositions.Interval * Min(1, Max(0, LinearInterpolate(0, 1, (_TEMP_tempPositions.StartPosition.DistanceTo(_TEMP_tempPositions.RaycastPosition) / _TEMP_tempPositions.StartPosition.DistanceTo(_TEMP_tempPositions.EndPosition))))) - offset;
-            Number timeToDestroy: _TEMP_tempPositions.Interval * Min(1, Max(0, LinearInterpolate(0, 1, (_TEMP_tempPositions.StartPosition.DistanceTo(_TEMP_tempPositions.RaycastPosition) / _TEMP_tempPositions.StartPosition.DistanceTo(_TEMP_tempPositions.EndPosition)))));
-            ProjDestructor.Queue(ID, timeToDestroy, TypeOfDestruction.Environment, _TEMP_tempPositions.Interval - timeToDestroy, TimeOfLastJITCheck); //Cant add an offset for visuals because it would mess up ricochets
-            LogToInspector($"Collided! (Proj {ID} queued with {timeToDestroy} seconds\n(Current Tick {(TotalTimeElapsed() / 0.016).Floor()} with {((timeToDestroy) / 0.016).Floor()} ticks to destruction\nExpected to be destroyed at tick {((TotalTimeElapsed() + timeToDestroy) / 0.016).Floor()}))");
-            //break;
+            //This will need to include targets in order for their objects to be tracked
+            _TEMP_tempPositions.RaycastPosition = RayCastHitPosition(_TEMP_tempPositions.StartPosition, _TEMP_tempPositions.EndPosition, projData[ID].ReadOnly.Targets, null, true);
+            
+            //action for nonzero EC (not needed if interval isnt reset to smth else)
+            _TEMP_tempPositions.Interval = (interval + 0.016 * extraTicks);
+
+            //LogToInspector($"coll checked! (ID: {ID}, Check: {projData[ID].DEBUG_ECCheck + 1}, CurrentTII: {ECCurrentTick}, interval: {_TEMP_tempPositions.Interval}, TTE: {TotalTimeElapsed()})");
+            LogToInspector($"coll checked! (ID: {ID}, CurrentTII: {ECCurrentTick}, interval: {_TEMP_tempPositions.Interval}, TTE: {TotalTimeElapsed()})");
+            
+            
 
 
-            //stop laps on collision (UTILS_waitlessIterator is currentLap)
+
+            //Structuring the state check like this allows us to reuse the projs _TEMP_tempPositions.StartPosition instead of recalculating it
+            //StateCheck(ID, _TEMP_tempPositions.StartPosition);
+
+                //if (IsTrueForAny([_TEMP_tempPositions.StartPosition, _TEMP_tempPositions.EndPosition, _TEMP_tempPositions.RaycastPosition], ArrayElement() == Vector.Zero)) {LogToInspector("!--POSITIONS REGISTERED ZERO--!");}
+
+
+                CreateBeamEffect(HostPlayer(), BeamType.GrappleBeam, _TEMP_tempPositions.StartPosition, _TEMP_tempPositions.RaycastPosition, Color.Red, EffectRev.None);
+
+
+                //projData[ID].DEBUG_ECCheck++;
+                //CreateInWorldText(HostPlayer(), $"Proj {ID} EC {projData[ID].DEBUG_ECCheck}" + (IsOneTimeCheck ? " (OTC!)" : ""), _TEMP_tempPositions.StartPosition + Up() * 0.2 * projData.Length, 1, Clipping.DoNotClip, InworldTextRev.None, Color.White, Spectators.DefaultVisibility);
+                //projData[ID].ReadOnly.VFX.ModAppend(LastCreatedEntity());
+                //CreateEffect(HostPlayer(), Effect.Sphere, color, _TEMP_tempPositions.StartPosition, 0.25, EffectRev.None);
+                //projData[ID].ReadOnly.VFX.ModAppend(LastCreatedEntity());
+                
+
+        //        if ([_TEMP_tempPositions.StartPosition, _TEMP_tempPositions.EndPosition, _TEMP_tempPositions.RaycastPosition].IsTrueForAny(v => v == Vector.Zero)) {LogToInspector($"POSITIONS REGISTERED ZERO");}
+            if (_TEMP_tempPositions.RaycastPosition != _TEMP_tempPositions.EndPosition) 
+            {
+    //            projData[ID].HitPlayer = RayCastHitPlayer(_TEMP_tempPositions.StartPosition, _TEMP_tempPositions.EndPosition, projData[ID].ReadOnly.Targets, null, true);
+    //            //Perform a player-collision check
+    //            if (projData[ID].HitPlayer)
+    //            {
+    //                //do player destruction
+    //            }
+
+
+                //By making the queue time {offset} shorter, you avoid false positives with PC (take the case of a projectile hitting reins shield)
+                //^ not needed if you just include objs in PD
+                //Number offset: 0.016*0;
+                //Number timeToDestroy: _TEMP_tempPositions.Interval * Min(1, Max(0, LinearInterpolate(0, 1, (_TEMP_tempPositions.StartPosition.DistanceTo(_TEMP_tempPositions.RaycastPosition) / _TEMP_tempPositions.StartPosition.DistanceTo(_TEMP_tempPositions.EndPosition))))) - offset;
+                Number timeToDestroy: _TEMP_tempPositions.Interval * Min(1, Max(0, LinearInterpolate(0, 1, (_TEMP_tempPositions.StartPosition.DistanceTo(_TEMP_tempPositions.RaycastPosition) / _TEMP_tempPositions.StartPosition.DistanceTo(_TEMP_tempPositions.EndPosition)))));
+                ProjDestructor.Queue(ID, timeToDestroy, TypeOfDestruction.Environment, _TEMP_tempPositions.Interval - timeToDestroy, TimeOfLastJITCheck); //Cant add an offset for visuals because it would mess up ricochets
+                LogToInspector($"Collided! (Proj {ID} queued with {timeToDestroy} seconds\n(Current Tick {(TotalTimeElapsed() / 0.016).Floor()} with {((timeToDestroy) / 0.016).Floor()} ticks to destruction\nExpected to be destroyed at tick {((TotalTimeElapsed() + timeToDestroy) / 0.016).Floor()}))");
+                //break;
+
+
+                //stop laps on collision (UTILS_waitlessIterator is currentLap)
+                UTILS_waitlessIterator = lapCount;
+            }
+
+
+        //Break loop, to prevent outer raycasts, if proj radius is below a certain threshold (UTILS_waitlessIterator is currentLap)
+
+        if (current.ReadOnly.Radius < thresholdForExtraEC) {
             UTILS_waitlessIterator = lapCount;
         }
 
 
-    //Break loop, to prevent outer raycasts, if proj radius is below a certain threshold (UTILS_waitlessIterator is currentLap)
-
-    if (current.ReadOnly.Radius < thresholdForExtraEC) {
-        UTILS_waitlessIterator = lapCount;
+        });
+        LogToInspector($"LOOP EXITED");
     }
-
-
-    });
-    LogToInspector($"LOOP EXITED");
-
+    else {
+        LogToInspector("\n\n\nIF TRIGGERED!!!!!!!!!1111111111\n\n\n");
+    }
 
 
 

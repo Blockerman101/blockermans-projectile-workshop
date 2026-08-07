@@ -127,12 +127,16 @@ single struct OneTimeCheck
     public Vector StartPosition;
     public Number ChecksLeft;
     public Number Index;
+    //this lets us have an optional last field
+    public Number TimeOfLastJITCheck: this[4];
     //Is State Check
     public Boolean IsSC: this.ChecksLeft == 3;
     //Is Player Collision
     public Boolean IsPC: this.ChecksLeft == 2;
     //Is Environment Collision
     public Boolean IsEC: this.ChecksLeft == 1;
+
+
 
     public static void Queue(in Number ID, in Vector StartPosition) {
         _OTCQueue.ModAppend(<OneTimeCheck>{
@@ -146,7 +150,15 @@ single struct OneTimeCheck
     public static void SpecialQueue(in OneTimeCheck data) {
         _OTCQueue.ModAppend(data);
     }
-
+    public static void ECQueue(in Number ID, in Vector StartPosition) {
+        _OTCQueue.ModAppend(<OneTimeCheck>[
+            ID,
+            StartPosition,
+            1,
+            _OTCQueue.Length,
+            TotalTimeElapsed()
+        ]);
+    }
     public static void Truncate() {
         _OTCQueue = _OTCQueue.Filter(v => !v.ChecksLeft);
     }
