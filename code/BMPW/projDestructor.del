@@ -27,16 +27,16 @@ if (_projDestructorQueue.First.time <= TotalTimeElapsed())
         _TEMP_tempPositions.StartPosition = projData[ID].PositionAtTime(timeBackwards);
         _TEMP_tempPositions.EndPosition = projData[ID].PositionAtTime(timeForwards);
         //This will need to include targets in order for their objects to be tracked
-        _TEMP_tempPositions.RaycastPosition = RayCastHitPosition(_TEMP_tempPositions.StartPosition, _TEMP_tempPositions.EndPosition, projData[ID].ReadOnly.Targets, null, true);
+        _TEMP_tempPositions.RaycastPosition = RayCastHitPosition(_TEMP_tempPositions.StartPosition, _TEMP_tempPositions.EndPosition, projData[ID].GetReadOnly().Targets, null, true);
 
         CreateBeamEffect(HostPlayer(), BeamType.BrigitteFlailChainBeam, _TEMP_tempPositions.StartPosition, _TEMP_tempPositions.RaycastPosition, Color.Red, EffectRev.None);
-        //    projData[ID].ReadOnly.VFX.ModAppend(LastCreatedEntity());
+        //    projData[ID].GetReadOnly().VFX.ModAppend(LastCreatedEntity());
         //CreateEffect(HostPlayer(), Effect.Sphere, Color.Purple, _TEMP_tempPositions.RaycastPosition, 0.25, EffectRev.None);
-        //    projData[ID].ReadOnly.VFX.ModAppend(LastCreatedEntity());
+        //    projData[ID].GetReadOnly().VFX.ModAppend(LastCreatedEntity());
         //CreateBeamEffect(HostPlayer(), BeamType.GoodBeam, (_TEMP_tempPositions.StartPosition + _TEMP_tempPositions.EndPosition) / 2, _TEMP_tempPositions.EndPosition, Color.Black, EffectRev.None);
-        //    projData[ID].ReadOnly.VFX.ModAppend(LastCreatedEntity());
+        //    projData[ID].GetReadOnly().VFX.ModAppend(LastCreatedEntity());
         //CreateEffect(HostPlayer(), Effect.Sphere, Color.Orange, (_TEMP_tempPositions.StartPosition + _TEMP_tempPositions.EndPosition) / 2, 0.15, EffectRev.None);
-        //    projData[ID].ReadOnly.VFX.ModAppend(LastCreatedEntity());
+        //    projData[ID].GetReadOnly().VFX.ModAppend(LastCreatedEntity());
 
         Number timeToDestroy: (timeBackwards + (timeBackwards.Abs() + timeForwards) * Min(1, Max(0, LinearInterpolate(0, 1, (_TEMP_tempPositions.StartPosition.DistanceTo(_TEMP_tempPositions.RaycastPosition) / _TEMP_tempPositions.StartPosition.DistanceTo(_TEMP_tempPositions.EndPosition))))));
         //LogToInspector($"proj {ID}\nold: {_projDestructorQueue.First.extra}\nnew: {_TEMP_tempPositions.RaycastPosition}");
@@ -94,10 +94,10 @@ if (_projDestructorQueue.First.time <= TotalTimeElapsed())
 
 
 
-    DestroyEffect(projData[ID].ReadOnly.VFX);
+    DestroyEffect(projData[ID].GetReadOnly().VFX);
 
 
-    //LogToInspector($"Destroyed fx {projData[ID].ReadOnly.VFX} from proj {ID}");
+    //LogToInspector($"Destroyed fx {projData[ID].GetReadOnly().VFX} from proj {ID}");
     projData[ID].ProjState = ProjState.Inactive;
     _complexProjs.ModRemoveByValue(ID);
 
@@ -155,7 +155,7 @@ if (!_projConstructorQueue.Length)
 if (projData.All(v => v.ProjState == ProjState.Inactive || !CurrentArrayIndex())) //If all real projectiles are inactive
 {
     Wait(0.25, WaitBehavior.AbortWhenFalse);
-    DestroyEffect(projData.Map(v => v.ReadOnly.VFX));
+    DestroyEffect(projData.Map(v => v.GetReadOnly().VFX));
     WipeData();
 
     MinWait();

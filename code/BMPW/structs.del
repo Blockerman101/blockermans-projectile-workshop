@@ -61,22 +61,15 @@ single struct ProjDestructor
 
 struct ProjData
 {
-    public Number time: (UTILS_tte - this.TimeOfCreation);
     public ProjState ProjState;
-
-    //public PositionsForProjData ControlPoints;
-    //public RarelyChangeProjData RarelyChange;
-    public ReadOnlyProjData ReadOnly;
-    public Number TimeOfCreation;
-
-    public Player HitPlayer; //this is for testing, not intended for user
-    //public Vector Position: (
-    //    ((this.ReadOnly.Lifetime - (UTILS_tte - this.TimeOfCreation))/this.ReadOnly.Lifetime)*(((this.ReadOnly.Lifetime - (UTILS_tte - this.TimeOfCreation))/this.ReadOnly.Lifetime)*(this.RarelyChange.Bezierp0) + ((UTILS_tte - this.TimeOfCreation)/this.ReadOnly.Lifetime)*this.RarelyChange.Bezierp1) + ((UTILS_tte - this.TimeOfCreation)/this.ReadOnly.Lifetime)*(((this.ReadOnly.Lifetime - (UTILS_tte - this.TimeOfCreation))/this.ReadOnly.Lifetime)*this.RarelyChange.Bezierp1 + ((UTILS_tte - this.TimeOfCreation)/this.ReadOnly.Lifetime)*this.RarelyChange.Bezierp2)
-    //);
-    //public Vector Position: b0;
-
-    //A macro for caculating the projectiles position
-    //public Number DEBUG_ECCheck;
+    public Player HitPlayer;
+    //declared at creation, immutable
+    private ReadOnlyProjData ReadOnly;
+    public ReadOnlyProjData GetReadOnly() {return ReadOnly;}
+    public ref void AddVFX(in Number vfx) {ReadOnly.VFX.ModAppend(vfx);}
+    public Number time: (UTILS_tte - ReadOnly.TimeOfCreation);
+    //p0 + t(v(gt/2)) or
+    //p0 + tv * (gt^2 / 2)
     public Vector Position(in ReadOnlyProjData overrideReadOnlyVar=ReadOnly): (overrideReadOnlyVar.InitPos + time * (overrideReadOnlyVar.Velocity + overrideReadOnlyVar.Gravity * time / 2));
 
     //A variable for the projectiles position, updated every [interval] in the EC
@@ -87,31 +80,29 @@ struct ProjData
 
    
     //public static ProjData Construct(): {ProjState: ProjState.NULL, ReadOnly: ReadOnlyProjData.Construct(), TimeOfCreation: 0, HitPlayer: null, DEBUG_ECCheck: null};  
-    public static ProjData Construct(): {ProjState: ProjState.NULL, ReadOnly: ReadOnlyProjData.Construct(), TimeOfCreation: 0, HitPlayer: null};  
+    public static ProjData Construct(): {ProjState: ProjState.NULL, ReadOnly: ReadOnlyProjData.Construct(), HitPlayer: null};  
     //public static void AddArgs(in ProjectileArgs args) {projData.Map(v => projData[CurrentArrayIndex()].ProjArgs).ModAppend(args);}
 }
-//single
-//single struct RarelyChangeProjData
-//{
-//    public Vector Bezierp0;
-//    public Vector Bezierp1;
-//    public Vector Bezierp2;
-//
-//    public static RarelyChangeProjData Construct(): {Bezierp0: Vector.Zero, Bezierp1: Vector.Zero, Bezierp2: Vector.Zero};
-//}
 
-//single
 single struct ReadOnlyProjData
 {
-    //public Number Lifetime;
     public Vector InitPos;
+    public Number TimeOfCreation;
     public Number Radius;
     public Player[] Targets;
     public Vector Velocity;
-    public (Number|Number[]) VFX;
+    //the vfx associated with the projectile, usually only the projfx but ive used it for stuff like beam effects for trajectories
+    public Number[] VFX;
     public Vector Gravity;
-    //public static ReadOnlyProjData Construct(): {Lifetime: projDataInitLifetime, Targets: null, ProjSteepness: 0, Velocity: Vector.Zero, Gravity: Vector.Zero};
-    public static ReadOnlyProjData Construct(): {InitPos: Vector.Zero, Radius: 0, Targets: null, Velocity: Vector.Zero, VFX: EmptyArray(), Gravity: Vector.Zero};
+    public static ReadOnlyProjData Construct(): {
+        InitPos: Vector.Zero,
+        TimeOfCreation: null,
+        Radius: 0,
+        Targets: [],
+        Velocity: Vector.Zero,
+        VFX: EmptyArray(),
+        Gravity: Vector.Zero
+        };
 }
 
 single struct RaycastPositions

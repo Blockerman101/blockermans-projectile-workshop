@@ -75,23 +75,13 @@ if (_projConstructorQueue.Length > 0)
 
         //Number buffer: (deltaT + 0.016*2 + (ServerLoadPeak() >= 200 ? 0.032 : 0.016));
         projData[ID] = <ProjData> {
-            //This is used as the reference for other time-based values, so by modifying this, you modify everything else
-            //The lower this value is, the greater the time/position is
-            //the 0.016*18 buffer is because of a weird bug involving TTE with createFX/createProjFX. Since TTE is referenced twice in the position macro, the TimeOfCreation needs to be buffered by 9 ticks, twice (0.288 = 0.016*9*2)
-            
-            //TimeOfCreation:  Args._GetTOC() - buffer - (ServerLoadAverage() >= 200 ? 0.032 : 0.016),
-            TimeOfCreation: Args._GetTOC() - deltaT,
-            
-            //RarelyChange: {
-            //    Bezierp0: (Args.StartPosition), 
-            //    Bezierp1: (Args.StartPosition) + (Args.Lifetime)*(Args.Speed * Args.Direction) * 0.5, 
-            //    Bezierp2: (Args.StartPosition) + (Args.Lifetime)*(Args.Speed * Args.Direction) + (Args.Lifetime)^2 * (Args.Gravity / 2),
-            //    }, 
-
             ProjState: ProjState.Active, 
 
             ReadOnly: {
                 InitPos: Args.StartPosition,
+                    //This is used as the reference for other time-based values, so by modifying this, you modify everything else
+                    //The lower this value is, the 'later' the time/position is
+                TimeOfCreation: Args._GetTOC() - deltaT,
                 Radius: Args.Radius,
                 Targets: Args.Targets,
                 Velocity: Args.Speed * Args.Direction,
@@ -101,7 +91,7 @@ if (_projConstructorQueue.Length > 0)
             HitPlayer: null
         };
 
-        ReadOnlyProjData _TEMP_argsForConstructor2 = projData[ID].ReadOnly;
+        ReadOnlyProjData _TEMP_argsForConstructor2 = projData[ID].GetReadOnly();
 
 
 
@@ -177,7 +167,7 @@ if (_projConstructorQueue.Length > 0)
                 }
             );
             //projData[ID].ReadOnly.VFX = LastCreatedEntity();
-            projData[ID].ReadOnly.VFX.ModAppend(LastCreatedEntity());
+            projData[ID].AddVFX(LastCreatedEntity());
 
             ProjDestructor.Queue(ID, Args.Lifetime - deltaT, TypeOfDestruction.Timeout);
 

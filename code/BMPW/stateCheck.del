@@ -1,11 +1,11 @@
 import "index.ostw";
-Number speed(in Number ID): projData[ID].ReadOnly.Velocity.Magnitude;
+Number speed(in Number ID): projData[ID].GetReadOnly().Velocity.Magnitude;
 
 //The interval for the checks, in seconds (15 ticks / 62.5tps = 0.24s)
 Number inter: 0.24;
 
 //projRad + baseRad + scalar * speed * intervalOfSC
-Number rad(in Number ID): projData[ID].ReadOnly.Radius + 10 + 1.0 * speed(ID) * inter;
+Number rad(in Number ID): projData[ID].GetReadOnly().Radius + 10 + 1.0 * speed(ID) * inter;
 
 //The faster a proj is going, the more you can assume ahead of it to be the checked position
 Vector pos(in Number ID): projData[ID].PositionAtTime(inter * Min(1, Min(85, speed(ID)) / 85));
@@ -24,7 +24,7 @@ if (((TotalTimeElapsed()/0.016).Floor()%15 < _envCollisionList.Length) || _OTCQu
 
         Number ID! = IsOTC ? OTCData.ID : _envCollisionList[currentTick + tickCount * i].ID;
         
-        if (projData[ID].ReadOnly.Targets.Any(v => v.DistanceTo(pos(ID)) <= rad(ID)))
+        if (projData[ID].GetReadOnly().Targets.Any(v => v.DistanceTo(pos(ID)) <= rad(ID)))
         {
             if (_complexProjs.All(v => v != ID))
             {
