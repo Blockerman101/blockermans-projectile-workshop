@@ -80,15 +80,15 @@ if (_envCollisionList[_envCollisionIndex].Time == ECCurrentTick || _OTCQueue.Any
         Number rotationAmountsForCurrentlap: [null, 0, 2*Pi()/3, 4*Pi()/3][currentLap];
 
         //Shift start/end pos of laps 1 through 3 by rotating them
-        Vector startRotation: current.GetReadOnly().Radius * Normalize(RotateVector(relativeRight, currentDirection, rotationAmountsForCurrentlap)) * 2 / SquareRoot(3);
+        Vector startRotation: current.ReadOnly.Radius * Normalize(RotateVector(relativeRight, currentDirection, rotationAmountsForCurrentlap)) * 2 / SquareRoot(3);
 
-        Vector endRotation: current.GetReadOnly().Radius * Normalize(RotateVector(relativeRight, currentDirection, rotationAmountsForCurrentlap + Pi()/3)) * 2 / SquareRoot(3);
+        Vector endRotation: current.ReadOnly.Radius * Normalize(RotateVector(relativeRight, currentDirection, rotationAmountsForCurrentlap + Pi()/3)) * 2 / SquareRoot(3);
         
         //Shift start/end pos along the direction of the check
-        //Vector verticalOffset: (currentDirection * current.GetReadOnly().Radius / SquareRoot(6));
+        //Vector verticalOffset: (currentDirection * current.ReadOnly.Radius / SquareRoot(6));
 
         //A vertical shift to make the start and end points be at the end of the capsule
-        //Vector firstLapShift: currentDirection * current.GetReadOnly().Radius;
+        //Vector firstLapShift: currentDirection * current.ReadOnly.Radius;
 
         ////action for nonzero EC
         //_TEMP_tempPositions.StartPosition += !currentLap ? -1*firstLapShift : (startRotation - verticalOffset);
@@ -102,7 +102,7 @@ if (_envCollisionList[_envCollisionIndex].Time == ECCurrentTick || _OTCQueue.Any
 
 
         //This will need to include targets in order for their objects to be tracked
-        _TEMP_tempPositions.RaycastPosition = RayCastHitPosition(_TEMP_tempPositions.StartPosition, _TEMP_tempPositions.EndPosition, projData[ID].GetReadOnly().Targets, null, true);
+        _TEMP_tempPositions.RaycastPosition = RayCastHitPosition(_TEMP_tempPositions.StartPosition, _TEMP_tempPositions.EndPosition, projData[ID].ReadOnly.Targets, null, true);
         
         //action for nonzero EC (not needed if interval isnt reset to smth else)
         _TEMP_tempPositions.Interval = (interval + 0.016 * extraTicks);
@@ -125,15 +125,15 @@ if (_envCollisionList[_envCollisionIndex].Time == ECCurrentTick || _OTCQueue.Any
 
             //projData[ID].DEBUG_ECCheck++;
             //CreateInWorldText(HostPlayer(), $"Proj {ID} EC {projData[ID].DEBUG_ECCheck}" + (IsOneTimeCheck ? " (OTC!)" : ""), _TEMP_tempPositions.StartPosition + Up() * 0.2 * projData.Length, 1, Clipping.DoNotClip, InworldTextRev.None, Color.White, Spectators.DefaultVisibility);
-            //projData[ID].GetReadOnly().VFX.ModAppend(LastCreatedEntity());
+            //projData[ID].ReadOnly.VFX.ModAppend(LastCreatedEntity());
             //CreateEffect(HostPlayer(), Effect.Sphere, color, _TEMP_tempPositions.StartPosition, 0.25, EffectRev.None);
-            //projData[ID].GetReadOnly().VFX.ModAppend(LastCreatedEntity());
+            //projData[ID].ReadOnly.VFX.ModAppend(LastCreatedEntity());
             
 
     //        if ([_TEMP_tempPositions.StartPosition, _TEMP_tempPositions.EndPosition, _TEMP_tempPositions.RaycastPosition].IsTrueForAny(v => v == Vector.Zero)) {LogToInspector($"POSITIONS REGISTERED ZERO");}
         if (_TEMP_tempPositions.RaycastPosition != _TEMP_tempPositions.EndPosition) 
         {
-//            projData[ID].HitPlayer = RayCastHitPlayer(_TEMP_tempPositions.StartPosition, _TEMP_tempPositions.EndPosition, projData[ID].GetReadOnly().Targets, null, true);
+//            projData[ID].HitPlayer = RayCastHitPlayer(_TEMP_tempPositions.StartPosition, _TEMP_tempPositions.EndPosition, projData[ID].ReadOnly.Targets, null, true);
 //            //Perform a player-collision check
 //            if (projData[ID].HitPlayer)
 //            {
@@ -158,7 +158,7 @@ if (_envCollisionList[_envCollisionIndex].Time == ECCurrentTick || _OTCQueue.Any
 
     //Break loop, to prevent outer raycasts, if proj radius is below a certain threshold (UTILS_waitlessIterator is currentLap)
 
-    if (current.GetReadOnly().Radius < thresholdForExtraEC) {
+    if (current.ReadOnly.Radius < thresholdForExtraEC) {
         UTILS_waitlessIterator = lapCount;
     }
 

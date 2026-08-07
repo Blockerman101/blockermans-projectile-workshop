@@ -64,9 +64,9 @@ struct ProjData
     public ProjState ProjState;
     public Player HitPlayer;
     //declared at creation, immutable
-    private ReadOnlyProjData ReadOnly;
+    public ReadOnlyProjData ReadOnly;
     public ReadOnlyProjData GetReadOnly() {return ReadOnly;}
-    public ref void AddVFX(in Number vfx) {ReadOnly.VFX.ModAppend(vfx);}
+    public ref void AddVFX(in Number vfx) {this.ReadOnly.VFX.ModAppend(vfx);}
     public Number time: (UTILS_tte - ReadOnly.TimeOfCreation);
     //p0 + t(v(gt/2)) or
     //p0 + tv * (gt^2 / 2)
@@ -103,6 +103,8 @@ single struct ReadOnlyProjData
         VFX: EmptyArray(),
         Gravity: Vector.Zero
         };
+
+    public ref void AddVFX(in Number vfx) {this.VFX.ModAppend(vfx);}
 }
 
 single struct RaycastPositions

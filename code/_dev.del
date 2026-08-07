@@ -44,7 +44,7 @@ rule: '[DEV] Text'
     _CreateDevText("TII: " + UTILS_tte%interval);
     //_CreateDevText("[1] Time: " + _envCollisionList.First.Time);
     _CreateDevText($"Entity Count: {EntityCount()}");
-    _CreateDevText($"Target: {projData[1].GetReadOnly().Targets.Sort(v => v.DistanceTo(projData[1].Position())).First}");
+    _CreateDevText($"Target: {projData[1].ReadOnly.Targets.Sort(v => v.DistanceTo(projData[1].Position())).First}");
     //_CreateDevText($"deltaTicks: {ticksFromCurrentTick}");
 }
 
@@ -155,13 +155,13 @@ if ([Button.Crouch, Button.SecondaryFire].All(v => hp.IsButtonHeld(v)))
 rule: '[DEV] track >0 rad'
 {
     ProjData proj: projData[1];
-    Player target: proj.GetReadOnly().Targets.Sort(v => v.DistanceTo(proj.Position())).First;
+    Player target: proj.ReadOnly.Targets.Sort(v => v.DistanceTo(proj.Position())).First;
     Vector feetToEyes: (target.Position().Towards(target.EyePosition()));
     //The projectile pos, projected onto a line from the feet of the target to the eyes of the target
     Vector projectedPos: target.Position() + feetToEyes * Clamp(DotProduct(feetToEyes, proj.Position() - target.Position())/DotProduct(feetToEyes, feetToEyes), 0, 1);
     Vector projPosToProjectedPos: proj.Position().Towards(projectedPos);
     
-    Vector newStartPos: proj.Position() + Clamp(projPosToProjectedPos.Magnitude, 0, proj.GetReadOnly().Radius) * projPosToProjectedPos.Normalize(); 
+    Vector newStartPos: proj.Position() + Clamp(projPosToProjectedPos.Magnitude, 0, proj.ReadOnly.Radius) * projPosToProjectedPos.Normalize(); 
 
     CreateEffect(HostPlayer(), Effect.Sphere, Color.White, newStartPos, 0.3, EffectRev.VisibleToPositionAndRadius);
 

@@ -21,7 +21,7 @@ if (((TotalTimeElapsed()/0.016).Floor()%5 < _complexProjs.Length) || _OTCQueue.A
 
         _playerCollisionData.Position = IsOTC ? OTCData.StartPosition : proj.Position();
         
-        _playerCollisionData.Target = proj.GetReadOnly().Targets.Sort(v => v.DistanceTo(_playerCollisionData.Position)).First;
+        _playerCollisionData.Target = proj.ReadOnly.Targets.Sort(v => v.DistanceTo(_playerCollisionData.Position)).First;
         Vector feetToEyes: (_playerCollisionData.Target.Position().Towards(_playerCollisionData.Target.EyePosition()));
         //The projectile pos, projected onto a line from the feet of the target to the eyes of the target
         Vector projectedPos: _playerCollisionData.Target.Position() + feetToEyes * Clamp(DotProduct(feetToEyes, _playerCollisionData.Position - _playerCollisionData.Target.Position())/DotProduct(feetToEyes, feetToEyes), 0, 1);
@@ -30,14 +30,14 @@ if (((TotalTimeElapsed()/0.016).Floor()%5 < _complexProjs.Length) || _OTCQueue.A
         _playerCollisionData.ShiftForRaycastPositions = _playerCollisionData.Position.Towards(projectedPos);
         
         //Shift
-        _playerCollisionData.ShiftForRaycastPositions = Clamp(_playerCollisionData.ShiftForRaycastPositions.Magnitude, 0, proj.GetReadOnly().Radius) * _playerCollisionData.ShiftForRaycastPositions.Normalize();
+        _playerCollisionData.ShiftForRaycastPositions = Clamp(_playerCollisionData.ShiftForRaycastPositions.Magnitude, 0, proj.ReadOnly.Radius) * _playerCollisionData.ShiftForRaycastPositions.Normalize();
         
         CreateBeamEffect(LocalPlayer(), BeamType.GoodBeam, EvaluateOnce(_playerCollisionData.Position + _playerCollisionData.ShiftForRaycastPositions), EvaluateOnce(proj.PositionAtTime(0.016*tickCount) + _playerCollisionData.ShiftForRaycastPositions), null, EffectRev.VisibleToPositionAndRadius);
 
         projData[ID].HitPlayer = RayCastHitPlayer(
             _playerCollisionData.Position + _playerCollisionData.ShiftForRaycastPositions,
             proj.PositionAtTime(0.016*tickCount) + _playerCollisionData.ShiftForRaycastPositions,
-            proj.GetReadOnly().Targets,
+            proj.ReadOnly.Targets,
             null,
             true);
         //PlayEffect(HostPlayer(), PlayEffect.GoodExplosion, Color.White, proj.Position(), 0.5);

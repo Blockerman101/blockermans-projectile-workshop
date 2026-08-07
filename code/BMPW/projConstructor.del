@@ -91,7 +91,7 @@ if (_projConstructorQueue.Length > 0)
             HitPlayer: null
         };
 
-        ReadOnlyProjData _TEMP_argsForConstructor2 = projData[ID].GetReadOnly();
+        ReadOnlyProjData _TEMP_argsForConstructor2 = projData[ID].ReadOnly;
 
 
 
@@ -167,7 +167,7 @@ if (_projConstructorQueue.Length > 0)
                 }
             );
             //projData[ID].ReadOnly.VFX = LastCreatedEntity();
-            projData[ID].AddVFX(LastCreatedEntity());
+            projData[ID].ReadOnly.VFX.ModAppend(LastCreatedEntity());
 
             ProjDestructor.Queue(ID, Args.Lifetime - deltaT, TypeOfDestruction.Timeout);
 
