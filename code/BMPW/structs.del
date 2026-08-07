@@ -67,13 +67,13 @@ struct ProjData
     public ReadOnlyProjData ReadOnly;
     public ReadOnlyProjData GetReadOnly() {return ReadOnly;}
     public ref void AddVFX(in Number vfx) {this.ReadOnly.VFX.ModAppend(vfx);}
-    public Number time: (UTILS_tte - ReadOnly.TimeOfCreation);
+    public Number Time(in ReadOnlyProjData overrideReadOnlyVar=ReadOnly): (UTILS_tte - overrideReadOnlyVar.TimeOfCreation);
     //p0 + t(v(gt/2)) or
     //p0 + tv * (gt^2 / 2)
-    public Vector Position(in ReadOnlyProjData overrideReadOnlyVar=ReadOnly): (overrideReadOnlyVar.InitPos + time * (overrideReadOnlyVar.Velocity + overrideReadOnlyVar.Gravity * time / 2));
+    public Vector Position(in ReadOnlyProjData overrideReadOnlyVar=ReadOnly): (overrideReadOnlyVar.InitPos + Time(overrideReadOnlyVar) * (overrideReadOnlyVar.Velocity + overrideReadOnlyVar.Gravity * Time(overrideReadOnlyVar) / 2));
 
     //A variable for the projectiles position, updated every [interval] in the EC
-    public Vector PositionAtTime(in Number extraTime): this.ReadOnly.InitPos + (time + extraTime) * (this.ReadOnly.Velocity + this.ReadOnly.Gravity * (time + extraTime) / 2);
+    public Vector PositionAtTime(in Number extraTime): this.ReadOnly.InitPos + (Time() + extraTime) * (this.ReadOnly.Velocity + this.ReadOnly.Gravity * (Time() + extraTime) / 2);
     //public Vector PositionAtTime(in Number time): b0Time(time); //The above macro, "Position", assumes that "time" is 0. Inputting 0.5 for this will get you the position of the projectile 0.5s in the future
 
     public Vector PositionAtRawTime(in Number time): this.ReadOnly.InitPos + time * (this.ReadOnly.Velocity + this.ReadOnly.Gravity * time / 2);
@@ -86,8 +86,9 @@ struct ProjData
 
 single struct ReadOnlyProjData
 {
-    public Vector InitPos;
+    //first because its used in ProjData.Time(), which is called a ton
     public Number TimeOfCreation;
+    public Vector InitPos;
     public Number Radius;
     public Player[] Targets;
     public Vector Velocity;
@@ -95,8 +96,8 @@ single struct ReadOnlyProjData
     public Number[] VFX;
     public Vector Gravity;
     public static ReadOnlyProjData Construct(): {
-        InitPos: Vector.Zero,
         TimeOfCreation: null,
+        InitPos: Vector.Zero,
         Radius: 0,
         Targets: [],
         Velocity: Vector.Zero,

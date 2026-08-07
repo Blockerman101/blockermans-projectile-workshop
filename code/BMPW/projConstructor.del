@@ -160,7 +160,7 @@ if (_projConstructorQueue.Length > 0)
                 fx => {
                     //Position (without beziers) is p_0 + t * (v_0 + g * t * 1/2)
                     //Direction is v_0 + g * t
-                    CreateProjectileEffect(AllPlayers(), fx, AllPlayers(), UpdateEveryFrame(projData[EvaluateOnce(ID)].Position(EvaluateOnce(_TEMP_argsForConstructor2))), EvaluateOnce(_TEMP_argsForConstructor2).Velocity + EvaluateOnce(_TEMP_argsForConstructor2).Gravity * projData[EvaluateOnce(ID)].time, EvaluateOnce(Args.VisualRadius), ProjectileEffectReeval.PositionDirectionAndSize);
+                    CreateProjectileEffect(AllPlayers(), fx, AllPlayers(), UpdateEveryFrame(projData[EvaluateOnce(ID)].Position(EvaluateOnce(_TEMP_argsForConstructor2))), EvaluateOnce(_TEMP_argsForConstructor2).Velocity + EvaluateOnce(_TEMP_argsForConstructor2).Gravity * projData[EvaluateOnce(ID)].Time(_TEMP_argsForConstructor2), EvaluateOnce(Args.VisualRadius), ProjectileEffectReeval.PositionDirectionAndSize);
                     },
                 fx => {
                     CreateEffect(AllPlayers(), fx, Args.ColorForFX, UpdateEveryFrame(projData[EvaluateOnce(ID)].Position(EvaluateOnce(_TEMP_argsForConstructor2))), EvaluateOnce(Args.VisualRadius), EffectRev.PositionAndRadius);

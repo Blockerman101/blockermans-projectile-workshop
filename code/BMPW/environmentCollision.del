@@ -17,7 +17,7 @@ if (_envCollisionList.Length)
 if (!ECCurrentTick)
 {
     _envCollisionIndex = 0;
-    LogToInspector($"Lap ended. (Index returned to 0) (TTE: {time})");
+    LogToInspector($"Lap ended. (Index returned to 0) (TTE: {TotalTimeElapsed()})");
 }
 
 
@@ -107,8 +107,8 @@ if (_envCollisionList[_envCollisionIndex].Time == ECCurrentTick || _OTCQueue.Any
         //action for nonzero EC (not needed if interval isnt reset to smth else)
         _TEMP_tempPositions.Interval = (interval + 0.016 * extraTicks);
 
-        //LogToInspector($"coll checked! (ID: {ID}, Check: {projData[ID].DEBUG_ECCheck + 1}, CurrentTII: {ECCurrentTick}, interval: {_TEMP_tempPositions.Interval}, TTE: {time})");
-        LogToInspector($"coll checked! (ID: {ID}, CurrentTII: {ECCurrentTick}, interval: {_TEMP_tempPositions.Interval}, TTE: {time})");
+        //LogToInspector($"coll checked! (ID: {ID}, Check: {projData[ID].DEBUG_ECCheck + 1}, CurrentTII: {ECCurrentTick}, interval: {_TEMP_tempPositions.Interval}, TTE: {TotalTimeElapsed()})");
+        LogToInspector($"coll checked! (ID: {ID}, CurrentTII: {ECCurrentTick}, interval: {_TEMP_tempPositions.Interval}, TTE: {TotalTimeElapsed()})");
         
         
 
@@ -147,7 +147,7 @@ if (_envCollisionList[_envCollisionIndex].Time == ECCurrentTick || _OTCQueue.Any
             //Number timeToDestroy: _TEMP_tempPositions.Interval * Min(1, Max(0, LinearInterpolate(0, 1, (_TEMP_tempPositions.StartPosition.DistanceTo(_TEMP_tempPositions.RaycastPosition) / _TEMP_tempPositions.StartPosition.DistanceTo(_TEMP_tempPositions.EndPosition))))) - offset;
             Number timeToDestroy: _TEMP_tempPositions.Interval * Min(1, Max(0, LinearInterpolate(0, 1, (_TEMP_tempPositions.StartPosition.DistanceTo(_TEMP_tempPositions.RaycastPosition) / _TEMP_tempPositions.StartPosition.DistanceTo(_TEMP_tempPositions.EndPosition)))));
             ProjDestructor.Queue(ID, timeToDestroy, TypeOfDestruction.Environment, _TEMP_tempPositions.Interval - timeToDestroy, TimeOfLastJITCheck); //Cant add an offset for visuals because it would mess up ricochets
-            LogToInspector($"Collided! (Proj {ID} queued with {timeToDestroy} seconds\n(Current Tick {(TotalTimeElapsed() / 0.016).Floor()} with {((timeToDestroy) / 0.016).Floor()} ticks to destruction\nExpected to be destroyed at tick {((time + timeToDestroy) / 0.016).Floor()}))");
+            LogToInspector($"Collided! (Proj {ID} queued with {timeToDestroy} seconds\n(Current Tick {(TotalTimeElapsed() / 0.016).Floor()} with {((timeToDestroy) / 0.016).Floor()} ticks to destruction\nExpected to be destroyed at tick {((TotalTimeElapsed() + timeToDestroy) / 0.016).Floor()}))");
             //break;
 
 
@@ -185,7 +185,7 @@ if (_envCollisionList[_envCollisionIndex].Time == ECCurrentTick || _OTCQueue.Any
     }
 
 
-    //WaitUntil((diff()) && _envCollisionIndex < _envCollisionList.Length, interval - (time%interval)); //Wait until the next proj is ready to be checked, and if either if the loop ends, or until there is a value at _envCollisionList[_envCollisionIndex].Time
+    //WaitUntil((diff()) && _envCollisionIndex < _envCollisionList.Length, interval - (TotalTimeElapsed()%interval)); //Wait until the next proj is ready to be checked, and if either if the loop ends, or until there is a value at _envCollisionList[_envCollisionIndex].Time
 
     //Heres the reason why '&& _envCollisionIndex < _envCollisionList.Lengh' is needed: First off, this code makes sure that your not reading an out-of-scope index.
     //Take the case where there is 1 projectile, with a ProjTick of 0. When the Current Tick is 0, it will check Proj 1, then traverse to Proj 2.
@@ -208,5 +208,4 @@ Number rawInterval: 0.5; //How often to check for collision
 Number interval: ((rawInterval / 0.016).Ceil() * 0.016); //Rounded up to the nearest multiple of 0.016 (Rounded up to the nearest tick)
 
 //Cant use tte because of the bug with chased vars in conditions
-Number time: TotalTimeElapsed();
-Number ECCurrentTick: ((time%interval) / 0.016).Floor();
+Number ECCurrentTick: ((TotalTimeElapsed()%interval) / 0.016).Floor();
