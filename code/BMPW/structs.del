@@ -65,7 +65,6 @@ struct ProjData
     public Player HitPlayer;
     //declared at creation, immutable
     public ReadOnlyProjData ReadOnly;
-    public ReadOnlyProjData GetReadOnly() {return ReadOnly;}
     public ref void AddVFX(in Number vfx) {this.ReadOnly.VFX.ModAppend(vfx);}
     public Number Time(in ReadOnlyProjData overrideReadOnlyVar=ReadOnly): (UTILS_tte - overrideReadOnlyVar.TimeOfCreation);
     //p0 + t(v(gt/2)) or

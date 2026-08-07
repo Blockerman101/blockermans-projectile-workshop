@@ -166,8 +166,10 @@ if (_projConstructorQueue.Length > 0)
                     CreateEffect(AllPlayers(), fx, Args.ColorForFX, UpdateEveryFrame(projData[EvaluateOnce(ID)].Position(EvaluateOnce(_TEMP_argsForConstructor2))), EvaluateOnce(Args.VisualRadius), EffectRev.PositionAndRadius);
                 }
             );
-            //projData[ID].ReadOnly.VFX = LastCreatedEntity();
-            projData[ID].ReadOnly.VFX.ModAppend(LastCreatedEntity());
+
+            //asdfasdf
+            //projData[ID]ReadOnly.VFX = LastCreatedEntity();
+            //projData[ID]ReadOnly.VFX.ModAppend(LastCreatedEntity());
 
             ProjDestructor.Queue(ID, Args.Lifetime - deltaT, TypeOfDestruction.Timeout);
 
