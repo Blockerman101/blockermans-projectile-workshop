@@ -50,12 +50,12 @@ single struct ProjDestructor
     //Queue proj to be destroyed, the proj will be destroyed `time` seconds from when the method is called
 
     //public static void Queue(in Number ID, in Number time) {_projDestructorQueue = _projDestructorQueue.Append({ID: ID, time: UTILS_tte + time}).Sort(v => v.time);} //TTE() is automatically included, so the extra time is relative
-    public static void Queue(in Number ID, in Number time, in TypeOfDestruction typeOfDestruction, in Number TimeLeft=null, in Number TimeOfLastJITCheck=null) {_projDestructorQueue = _projDestructorQueue.Append({ID: ID, time: UTILS_tte + time, TypeOfDestruction: typeOfDestruction, TimeLeft: TimeLeft, TimeOfLastJITCheck: TimeOfLastJITCheck}).Sort(v => v.time);}
-    public static void QueueRaw(in Number ID, in Number time, in TypeOfDestruction typeOfDestruction, in Number TimeLeft=null, in Number TimeOfLastJITCheck=null) {_projDestructorQueue = _projDestructorQueue.Append({ID: ID, time: time, TypeOfDestruction: typeOfDestruction, TimeLeft: TimeLeft, TimeOfLastJITCheck: TimeOfLastJITCheck}).Sort(v => v.time);} //Queue without the automated TTE, letting you have full control over when, specifically, the proj is deleted
+    public static void Queue(in Number ID, in Number time, in TypeOfDestruction typeOfDestruction, in Number TimeLeft=null, in Number TimeOfLastJITCheck=null) {_projDestructorQueue = _projDestructorQueue.Append(<ProjDestructor>{ID: ID, time: UTILS_tte + time, TypeOfDestruction: typeOfDestruction, TimeLeft: TimeLeft, TimeOfLastJITCheck: TimeOfLastJITCheck}).Sort(v => v.time);}
+    public static void QueueRaw(in Number ID, in Number time, in TypeOfDestruction typeOfDestruction, in Number TimeLeft=null, in Number TimeOfLastJITCheck=null) {_projDestructorQueue = _projDestructorQueue.Append(<ProjDestructor>{ID: ID, time: time, TypeOfDestruction: typeOfDestruction, TimeLeft: TimeLeft, TimeOfLastJITCheck: TimeOfLastJITCheck}).Sort(v => v.time);} //Queue without the automated TTE, letting you have full control over when, specifically, the proj is deleted
     public static void SortQueue() {_projDestructorQueue = _projDestructorQueue.Sort(v => v.time);}
     
     //Destroy proj ASAP
-    public static void Destroy(in Number ID) {_projDestructorQueue = _projDestructorQueue.Append({ID: ID, time: null, TypeOfDestruction: null, TimeLeft: null, TimeOfLastJITCheck: null}).Sort(v => v.time);}
+    public static void Destroy(in Number ID) {_projDestructorQueue = _projDestructorQueue.Append(<ProjDestructor>{ID: ID, time: null, TypeOfDestruction: null, TimeLeft: null, TimeOfLastJITCheck: null}).Sort(v => v.time);}
     public static void ClearFromQueue(in Number ID) {_projDestructorQueue = _projDestructorQueue.Filter(v => v.ID != ID);}
 }
 
@@ -142,7 +142,7 @@ single struct OneTimeCheck
     public Boolean IsEC: this.ChecksLeft == 1;
 
     public static void Queue(in Number ID, in Vector StartPosition) {
-        _OTCQueue.ModAppend({
+        _OTCQueue.ModAppend(<OneTimeCheck>{
             ID: ID,
             StartPosition: StartPosition,
             ChecksLeft: 3,
@@ -183,7 +183,7 @@ single struct EnvironmentCollision
     //Sink One-Time Queues to the end of the array
     public static void Queue(in Number ID, in Number Time) {
         _envCollisionList = _envCollisionList
-            .Append({ID: ID, Time: Time})
+            .Append(<EnvironmentCollision>{ID: ID, Time: Time})
             .Sort(v => v.Time)
             .Sort((v, idx) => idx + CountOf(v.Time) * 1000)
             ;

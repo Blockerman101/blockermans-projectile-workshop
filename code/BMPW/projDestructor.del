@@ -50,6 +50,12 @@ if (_projDestructorQueue.First.time <= TotalTimeElapsed())
             LogToInspector("queued OTC from destructor");
 
             //OTC here
+            OneTimeCheck.SpecialQueue(<OneTimeCheck>{
+                ID: ID,
+                StartPosition: projData[ID].Position(),
+                ChecksLeft: 1,
+                Index: _OTCQueue.Length
+            });
 
             _projDestructorQueue.ModRemoveByIndex(0);
             MinWait();
