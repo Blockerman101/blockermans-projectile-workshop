@@ -50,6 +50,8 @@
             "Projectiles": true,
             "Spawn More Dummy Bots": true,
             "Play More Effects": true,
-            "Beam Effects": true
+            "Beam Effects": true,
+            "Energy Explosion Effects": true,
+            "Kinetic Explosion Effects": true
         }
     }

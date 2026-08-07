@@ -65,7 +65,7 @@ struct ProjData
     public Player HitPlayer;
     //declared at creation, immutable
     public ReadOnlyProjData ReadOnly;
-    public ref void AddVFX(in Number vfx) {this.ReadOnly.VFX.ModAppend(vfx);}
+    public ref void AddVFX(in Number vfx) {ReadOnly.VFX.ModAppend(vfx);}
     public Number Time(in ReadOnlyProjData overrideReadOnlyVar=ReadOnly): (UTILS_tte - overrideReadOnlyVar.TimeOfCreation);
     //p0 + t(v(gt/2)) or
     //p0 + tv * (gt^2 / 2)
@@ -104,7 +104,7 @@ single struct ReadOnlyProjData
         Gravity: Vector.Zero
         };
 
-    public ref void AddVFX(in Number vfx) {this.VFX.ModAppend(vfx);}
+    public ref void AddVFX(in Number vfx) {VFX.ModAppend(vfx);}
 }
 
 single struct RaycastPositions
@@ -331,44 +331,6 @@ enum ProjFX
     None
 }
 
-void CastPFX(in ProjFX pfx, const ProjectileType => void castProjFX, const Effect => void castFX)
-{
-    switch (pfx)
-    {
-        case ProjFX.BaptisteBioticLauncher:         castProjFX(ProjectileType.BaptisteBioticLauncher);        break;
-        case ProjFX.BastionA36TacticalGrenade:      castProjFX(ProjectileType.BastionA36TacticalGrenade);     break;
-        case ProjFX.EchoStickyBomb:                 castProjFX(ProjectileType.EchoStickyBomb);                break;
-        case ProjFX.GenjiShuriken:                  castProjFX(ProjectileType.GenjiShuriken);                 break;
-        case ProjFX.LucioSonicAmplifier:            castProjFX(ProjectileType.LucioSonicAmplifier);           break;
-        case ProjFX.MeiIcicle:                      castProjFX(ProjectileType.MeiIcicle);                     break;
-        case ProjFX.MercyCaduceusBlaster:           castProjFX(ProjectileType.MercyCaduceusBlaster);          break;
-        case ProjFX.MoiraDamageOrb:                 castProjFX(ProjectileType.MoiraDamageOrb);                break;
-        case ProjFX.MoiraHealOrb:                   castProjFX(ProjectileType.MoiraHealOrb);                  break;
-        case ProjFX.OrbProjectile:                  castProjFX(ProjectileType.OrbProjectile);                 break;
-        case ProjFX.OrisaFusionDriver:              castProjFX(ProjectileType.OrisaFusionDriver);             break;
-        case ProjFX.PharahRocket:                   castProjFX(ProjectileType.PharahRocket);                  break;
-        case ProjFX.RamattraRavenousVortexSphere:   castProjFX(ProjectileType.RamattraRavenousVortexSphere);  break;
-        case ProjFX.ReinhardtFireStrike:            castProjFX(ProjectileType.ReinhardtFireStrike);           break;
-        case ProjFX.RoadhogScrap:                   castProjFX(ProjectileType.RoadhogScrap);                  break;
-        case ProjFX.RoadhogScrapBall:               castProjFX(ProjectileType.RoadhogScrapBall);              break;
-        case ProjFX.SigmaHypersphere:               castProjFX(ProjectileType.SigmaHypersphere);              break;
-        case ProjFX.SymmetraPhotonProjector:        castProjFX(ProjectileType.SymmetraPhotonProjector);       break;
-        case ProjFX.ZaryaGraviton:                  castProjFX(ProjectileType.ZaryaGraviton);                 break;
-        case ProjFX.ZaryaParticleCannon:            castProjFX(ProjectileType.ZaryaParticleCannon);           break;
-        //Other effects
-        case ProjFX.Sphere:                         castFX(Effect.Sphere);                                    break;
-        case ProjFX.LightShaft:                     castFX(Effect.LightShaft);                                break;
-        case ProjFX.Orb:                            castFX(Effect.Orb);                                       break;
-        case ProjFX.Ring:                           castFX(Effect.Ring);                                      break;
-        case ProjFX.Cloud:                          castFX(Effect.Cloud);                                     break;
-        case ProjFX.Sparkles:                       castFX(Effect.Sparkles);                                  break;
-        case ProjFX.GoodAura:                       castFX(Effect.GoodAura);                                  break;
-        case ProjFX.BadAura:                        castFX(Effect.BadAura);                                   break;
-        //No effect
-        case ProjFX.None:                                                                                     break;
-    }
-}
-
 Number Clamp(in Number value, in Number min, in Number max): Min(Max(value, min), max);
 
 public void EffectiveSizeToOversize(ref ProjectileArgs projArgs) {
@@ -395,9 +357,10 @@ public void EffectiveSizeToOversize(ref ProjectileArgs projArgs) {
         /*ProjFX.SymmetraPhotonProjector        */ [00.150,    (05.400 - 00.150)],
         /*ProjFX.ZaryaGraviton                  */ [00.200,    (04.000 - 00.200)],
         /*ProjFX.ZaryaParticleCannon            */ [00.250,    (08.500 - 00.250)]
-    //if the projFX matches up with the index, set that ele to the corrected size, and all others to 99999. Then sort and take the first
+        //other FX are handled in the .Map
+    //if the projFX matches up with the index, set that ele to the corrected size. then, if the ProjFX is a non-proj FX (yeah yeah naming stuff is hard ok?) leave it unchanged, otherwise set it to 99999. Then sort (low to high) and take the first
     //correction is (startSize - minSize)/(maxSize - minSize)
-    ].Map((v, idx) => (projArgs.ProjFX == idx) ? ((projArgs.VisualRadius - v.First) / v[1]) : 99999).Sort(v => v).First;
+    ].Map((v, idx) => (projArgs.ProjFX == idx) ? ((projArgs.VisualRadius - v.First) / v[1]) : (projArgs.ProjFX < 20 ? 99999 : projArgs.VisualRadius)).Sort(v => v).First;
 }
 
 
