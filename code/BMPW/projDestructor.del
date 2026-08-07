@@ -6,7 +6,8 @@ Event.OngoingGlobal
 if (_projDestructorQueue.Length)
 if (_projDestructorQueue.First.time <= TotalTimeElapsed())
 {
-    Number ID: _projDestructorQueue.First.ID;
+    _TEMP_tempPositions.ID = _projDestructorQueue.First.ID;
+    Number ID: _TEMP_tempPositions.ID;
     ProjDestructor current: _projDestructorQueue.First;
 
     //JIT checks will be limited to this much (at least) time between them
