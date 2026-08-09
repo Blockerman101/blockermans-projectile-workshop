@@ -4,7 +4,7 @@ import "BMPW/index.ostw";
 import "_flight.del";
 import "_dev.del";
 //import "ui.del";
-//import "tx.del";
+import "tx.del";
 
 //rule: 'Make my projectile'
 //Event.OngoingPlayer
@@ -23,6 +23,25 @@ import "_dev.del";
 //}
 
 private playervar Number[] bigProjIDs = [];
+
+globalvar Number iter;
+String[] TX: [
+    "TX C000000000001EE",
+    "TX C0000000000023F",
+    "TX C00000000000242",
+    "TX C0000000000024F",
+    "TX C000000000002E6",
+    "TX C000000000004F3",
+    "TX C00000000000633",
+    "TX C00000000000EE9",
+    "TX C00000000001268",
+    "TX C00000000001291",
+    "TX C00000000001411",
+    "TX C0000000000173E",
+    "TX C00000000001878",
+    "TX C000000000020D0"
+];
+
 rule: 'Make big proj'
 Event.OngoingPlayer
 if (EventPlayer().IsButtonHeld(Button.PrimaryFire))
@@ -31,8 +50,8 @@ if (EventPlayer() == HostPlayer())
 {
     //ProjectileArgs bigProj: {ProjFX: ProjFX.BaptisteBioticLauncher, Radius: 0.3, VisualRadius: 1, Speed: 50, Lifetime: 2.5, ..ProjectileArgs.Default()};
     //CreateCustomProjectile(bigProj);
-    String mySillyTX: HeroIconString(Hero.Winston);
-    ProjectileArgs sphere: <ProjectileArgs>{ProjFX: ProjFX.String, SillyTX: mySillyTX, ColorForFX: Color.Red, Radius: 1.0, VisualRadius: 1.0, Lifetime: 7,  ..ProjectileArgs.Default()}.CommonPatches();
+
+    ProjectileArgs sphere: <ProjectileArgs>{ProjFX: ProjFX.String, SillyTX: makeTX(TX[iter]), ColorForFX: Color.White, Radius: 1.0, VisualRadius: 3.0, Lifetime: 7,  ..ProjectileArgs.Default()}.CommonPatches();
     ProjectileArgs sphereNoGrav: {Gravity: Vector.Zero, ..sphere}.CommonPatches();
     Vector startPos = Vector(5, 0.5, RandomReal(-10, 10));
     ProjectileArgs constArgs: <ProjectileArgs>{StartPosition: startPos, Direction: startPos.Towards(Vector(-20, 6, 0)), ..sphere};
@@ -43,7 +62,12 @@ if (EventPlayer() == HostPlayer())
     //LoopIfConditionIsTrue();
 }
 
-
+rule: 'iter the iter'
+if (hp.IsButtonHeld(Button.Interact))
+{
+    iter = (iter + 1)%(TX.Length - 1);
+    SmallMessage(hp, 'iterated the iterator...');
+}
 
 rule: 'Explode big projs!'
 Event.OngoingPlayer

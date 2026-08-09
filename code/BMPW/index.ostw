@@ -4,6 +4,7 @@ import "stateCheck.del";
 import "playerCollision.del";
 import "projDestructor.del";
 import "environmentCollision.del";
+import "../tx.del";
 
 
 // -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  

@@ -161,7 +161,7 @@ if (_projConstructorQueue.Length > 0)
                     CreateEffect(AllPlayers(), fx, Args.ColorForFX, UpdateEveryFrame(projData[EvaluateOnce(ID)].Position(EvaluateOnce(_TEMP_argsForConstructor2))), EvaluateOnce(Args.VisualRadius), EffectRev.PositionAndRadius);
                 },
                 () => {
-                    CreateInWorldText(AllPlayers(), Args.SillyTX, UpdateEveryFrame(projData[EvaluateOnce(ID)].Position(EvaluateOnce(_TEMP_argsForConstructor2))), Args.VisualRadius * 2, Clipping.ClipAgainstSurfaces, InworldTextRev.VisibleToAndPosition, Args.ColorForFX, Spectators.DefaultVisibility);
+                    CreateInWorldText(AllPlayers(), Args.SillyTX, UpdateEveryFrame(projData[EvaluateOnce(ID)].Position(EvaluateOnce(_TEMP_argsForConstructor2))), Args.VisualRadius, Clipping.ClipAgainstSurfaces, InworldTextRev.VisibleToAndPosition, Args.ColorForFX, Spectators.DefaultVisibility);
                 }
             );
 

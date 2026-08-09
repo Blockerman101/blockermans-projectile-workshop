@@ -29,11 +29,11 @@ if (_projDestructorQueue.First.time <= TotalTimeElapsed())
         //This will need to include targets in order for their objects to be tracked
         _TEMP_tempPositions.RaycastPosition = RayCastHitPosition(_TEMP_tempPositions.StartPosition, _TEMP_tempPositions.EndPosition, projData[ID].ReadOnly.Targets, null, true);
 
-        CreateBeamEffect(HostPlayer(), BeamType.BrigitteFlailChainBeam, _TEMP_tempPositions.StartPosition, _TEMP_tempPositions.RaycastPosition, Color.Red, EffectRev.None);
+        //CreateBeamEffect(HostPlayer(), BeamType.BrigitteFlailChainBeam, _TEMP_tempPositions.StartPosition, _TEMP_tempPositions.RaycastPosition, Color.Red, EffectRev.None);
         //    projData[ID].ReadOnly.VFX.ModAppend(LastCreatedEntity());
         //CreateEffect(HostPlayer(), Effect.Sphere, Color.Purple, _TEMP_tempPositions.RaycastPosition, 0.25, EffectRev.None);
         //    projData[ID].ReadOnly.VFX.ModAppend(LastCreatedEntity());
-        //CreateBeamEffect(HostPlayer(), BeamType.GoodBeam, (_TEMP_tempPositions.StartPosition + _TEMP_tempPositions.EndPosition) / 2, _TEMP_tempPositions.EndPosition, Color.Black, EffectRev.None);
+        ////CreateBeamEffect(HostPlayer(), BeamType.GoodBeam, (_TEMP_tempPositions.StartPosition + _TEMP_tempPositions.EndPosition) / 2, _TEMP_tempPositions.EndPosition, Color.Black, EffectRev.None);
         //    projData[ID].ReadOnly.VFX.ModAppend(LastCreatedEntity());
         //CreateEffect(HostPlayer(), Effect.Sphere, Color.Orange, (_TEMP_tempPositions.StartPosition + _TEMP_tempPositions.EndPosition) / 2, 0.15, EffectRev.None);
         //    projData[ID].ReadOnly.VFX.ModAppend(LastCreatedEntity());

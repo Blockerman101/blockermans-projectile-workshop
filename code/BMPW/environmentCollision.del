@@ -124,7 +124,7 @@ if ((_envCollisionIndex < _envCollisionList.Length && _envCollisionList[_envColl
                 //if (IsTrueForAny([_TEMP_tempPositions.StartPosition, _TEMP_tempPositions.EndPosition, _TEMP_tempPositions.RaycastPosition], ArrayElement() == Vector.Zero)) {ToggleableLogToInspector("!--POSITIONS REGISTERED ZERO--!");}
 
 
-                CreateBeamEffect(HostPlayer(), BeamType.GrappleBeam, _TEMP_tempPositions.StartPosition, _TEMP_tempPositions.RaycastPosition, Color.Red, EffectRev.None);
+                //CreateBeamEffect(HostPlayer(), BeamType.GrappleBeam, _TEMP_tempPositions.StartPosition, _TEMP_tempPositions.RaycastPosition, Color.Red, EffectRev.None);
 
 
                 //projData[ID].DEBUG_ECCheck++;
