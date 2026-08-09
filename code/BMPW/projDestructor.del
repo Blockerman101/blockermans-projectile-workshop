@@ -87,8 +87,8 @@ if (_projDestructorQueue.First.time <= TotalTimeElapsed())
     }
 
 
-
     DestroyEffect(projData[ID].ReadOnly.VFX);
+    DestroyInWorldText(projData[ID].ReadOnly.VFX);
 
 
     //ToggleableLogToInspector($"Destroyed fx {projData[ID].ReadOnly.VFX} from proj {ID}");

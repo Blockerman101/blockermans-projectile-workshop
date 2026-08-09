@@ -65,7 +65,6 @@ struct ProjData
     public Player HitPlayer;
     //declared at creation, immutable
     public ReadOnlyProjData ReadOnly;
-    public ref void AddVFX(in Number vfx) {ReadOnly.VFX.ModAppend(vfx);}
     public Number Time(in ReadOnlyProjData overrideReadOnlyVar=ReadOnly): (UTILS_tte - overrideReadOnlyVar.TimeOfCreation);
     //p0 + t(v(gt/2)) or
     //p0 + tv * (gt^2 / 2)
@@ -103,8 +102,6 @@ single struct ReadOnlyProjData
         VFX: EmptyArray(),
         Gravity: Vector.Zero
         };
-
-    public ref void AddVFX(in Number vfx) {VFX.ModAppend(vfx);}
 }
 
 single struct RaycastPositions
@@ -250,6 +247,7 @@ single struct ProjectileArgs
 
         //set Time of Call
         public ref void _SetTOC(in Number time) {_TimeOfCall = time;} 
+    public String SillyTX;
     public static ProjectileArgs Construct(): {
         ProjFX: ProjFX.None, 
         ColorForFX: null,
@@ -262,7 +260,8 @@ single struct ProjectileArgs
         Lifetime: 0, 
         Gravity: Vector.Zero, 
         _ProjID: 0, 
-        _TimeOfCall: 0
+        _TimeOfCall: 0,
+        SillyTX: null
         };
     public static ProjectileArgs Default(in Player player=EventPlayer()): {
         ProjFX: ProjFX.Sphere, 
@@ -276,7 +275,8 @@ single struct ProjectileArgs
         Lifetime: 3, 
         Gravity: Down() * 5, 
         _ProjID: null, 
-        _TimeOfCall: null
+        _TimeOfCall: null,
+        SillyTX: null
         };
 
     public ProjectileArgs CommonPatches(in Player player=EventPlayer()) {
@@ -329,6 +329,8 @@ enum ProjFX
     Sparkles,
     GoodAura,
     BadAura,
+//TX string
+    String,
 //No effect
     None
 }

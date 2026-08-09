@@ -9,7 +9,7 @@ import "environmentCollision.del";
 // -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  
 //Want more effects? simply uncomment the ones you want!
 // -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  
-public void CastPFX(in ProjFX pfx, const ProjectileType => void castProjFX, const Effect => void castFX)
+public void CastPFX(in ProjFX pfx, const ProjectileType => void castProjFX, const Effect => void castFX, const () => void castString)
 {
     switch (pfx)
     {
@@ -42,6 +42,8 @@ public void CastPFX(in ProjFX pfx, const ProjectileType => void castProjFX, cons
         //case ProjFX.Sparkles:                       castFX(Effect.Sparkles);                                  break;
         //case ProjFX.GoodAura:                       castFX(Effect.GoodAura);                                  break;
         //case ProjFX.BadAura:                        castFX(Effect.BadAura);                                   break;
+    //String
+        case ProjFX.String:                         castString();                                             break;
     //No effect
         case ProjFX.None:                                                                                     break;
 
