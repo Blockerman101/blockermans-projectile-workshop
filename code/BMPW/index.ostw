@@ -6,42 +6,45 @@ import "projDestructor.del";
 import "environmentCollision.del";
 
 
+// -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  
+//Want more effects? simply uncomment the ones you want!
+// -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  
 public void CastPFX(in ProjFX pfx, const ProjectileType => void castProjFX, const Effect => void castFX)
 {
     switch (pfx)
     {
     //Projectile effects
         case ProjFX.BaptisteBioticLauncher:         castProjFX(ProjectileType.BaptisteBioticLauncher);        break;
-        case ProjFX.BastionA36TacticalGrenade:      castProjFX(ProjectileType.BastionA36TacticalGrenade);     break;
-        case ProjFX.EchoStickyBomb:                 castProjFX(ProjectileType.EchoStickyBomb);                break;
-        case ProjFX.GenjiShuriken:                  castProjFX(ProjectileType.GenjiShuriken);                 break;
-        case ProjFX.LucioSonicAmplifier:            castProjFX(ProjectileType.LucioSonicAmplifier);           break;
-        case ProjFX.MeiIcicle:                      castProjFX(ProjectileType.MeiIcicle);                     break;
-        case ProjFX.MercyCaduceusBlaster:           castProjFX(ProjectileType.MercyCaduceusBlaster);          break;
-        case ProjFX.MoiraDamageOrb:                 castProjFX(ProjectileType.MoiraDamageOrb);                break;
-        case ProjFX.MoiraHealOrb:                   castProjFX(ProjectileType.MoiraHealOrb);                  break;
-        case ProjFX.OrbProjectile:                  castProjFX(ProjectileType.OrbProjectile);                 break;
-        case ProjFX.OrisaFusionDriver:              castProjFX(ProjectileType.OrisaFusionDriver);             break;
-        case ProjFX.PharahRocket:                   castProjFX(ProjectileType.PharahRocket);                  break;
-        case ProjFX.RamattraRavenousVortexSphere:   castProjFX(ProjectileType.RamattraRavenousVortexSphere);  break;
-        case ProjFX.ReinhardtFireStrike:            castProjFX(ProjectileType.ReinhardtFireStrike);           break;
-        case ProjFX.RoadhogScrap:                   castProjFX(ProjectileType.RoadhogScrap);                  break;
-        case ProjFX.RoadhogScrapBall:               castProjFX(ProjectileType.RoadhogScrapBall);              break;
-        case ProjFX.SigmaHypersphere:               castProjFX(ProjectileType.SigmaHypersphere);              break;
-        case ProjFX.SymmetraPhotonProjector:        castProjFX(ProjectileType.SymmetraPhotonProjector);       break;
-        case ProjFX.ZaryaGraviton:                  castProjFX(ProjectileType.ZaryaGraviton);                 break;
-        case ProjFX.ZaryaParticleCannon:            castProjFX(ProjectileType.ZaryaParticleCannon);           break;
+        //case ProjFX.BastionA36TacticalGrenade:      castProjFX(ProjectileType.BastionA36TacticalGrenade);     break;
+        //case ProjFX.EchoStickyBomb:                 castProjFX(ProjectileType.EchoStickyBomb);                break;
+        //case ProjFX.GenjiShuriken:                  castProjFX(ProjectileType.GenjiShuriken);                 break;
+        //case ProjFX.LucioSonicAmplifier:            castProjFX(ProjectileType.LucioSonicAmplifier);           break;
+        //case ProjFX.MeiIcicle:                      castProjFX(ProjectileType.MeiIcicle);                     break;
+        //case ProjFX.MercyCaduceusBlaster:           castProjFX(ProjectileType.MercyCaduceusBlaster);          break;
+        //case ProjFX.MoiraDamageOrb:                 castProjFX(ProjectileType.MoiraDamageOrb);                break;
+        //case ProjFX.MoiraHealOrb:                   castProjFX(ProjectileType.MoiraHealOrb);                  break;
+        //case ProjFX.OrisaFusionDriver:              castProjFX(ProjectileType.OrisaFusionDriver);             break;
+        //case ProjFX.PharahRocket:                   castProjFX(ProjectileType.PharahRocket);                  break;
+        //case ProjFX.RamattraRavenousVortexSphere:   castProjFX(ProjectileType.RamattraRavenousVortexSphere);  break;
+        //case ProjFX.ReinhardtFireStrike:            castProjFX(ProjectileType.ReinhardtFireStrike);           break;
+        //case ProjFX.RoadhogScrap:                   castProjFX(ProjectileType.RoadhogScrap);                  break;
+        //case ProjFX.RoadhogScrapBall:               castProjFX(ProjectileType.RoadhogScrapBall);              break;
+        //case ProjFX.SigmaHypersphere:               castProjFX(ProjectileType.SigmaHypersphere);              break;
+        //case ProjFX.SymmetraPhotonProjector:        castProjFX(ProjectileType.SymmetraPhotonProjector);       break;
+        //case ProjFX.ZaryaGraviton:                  castProjFX(ProjectileType.ZaryaGraviton);                 break;
+        //case ProjFX.ZaryaParticleCannon:            castProjFX(ProjectileType.ZaryaParticleCannon);           break;
     //Other effects
         case ProjFX.Sphere:                         castFX(Effect.Sphere);                                    break;
-        case ProjFX.LightShaft:                     castFX(Effect.LightShaft);                                break;
-        case ProjFX.Orb:                            castFX(Effect.Orb);                                       break;
-        case ProjFX.Ring:                           castFX(Effect.Ring);                                      break;
-        case ProjFX.Cloud:                          castFX(Effect.Cloud);                                     break;
-        case ProjFX.Sparkles:                       castFX(Effect.Sparkles);                                  break;
-        case ProjFX.GoodAura:                       castFX(Effect.GoodAura);                                  break;
-        case ProjFX.BadAura:                        castFX(Effect.BadAura);                                   break;
+        //case ProjFX.LightShaft:                     castFX(Effect.LightShaft);                                break;
+        //case ProjFX.Orb:                            castFX(Effect.Orb);                                       break;
+        //case ProjFX.Ring:                           castFX(Effect.Ring);                                      break;
+        //case ProjFX.Cloud:                          castFX(Effect.Cloud);                                     break;
+        //case ProjFX.Sparkles:                       castFX(Effect.Sparkles);                                  break;
+        //case ProjFX.GoodAura:                       castFX(Effect.GoodAura);                                  break;
+        //case ProjFX.BadAura:                        castFX(Effect.BadAura);                                   break;
     //No effect
         case ProjFX.None:                                                                                     break;
+
     }
 }
 

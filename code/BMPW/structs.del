@@ -251,7 +251,7 @@ single struct ProjectileArgs
         //set Time of Call
         public ref void _SetTOC(in Number time) {_TimeOfCall = time;} 
     public static ProjectileArgs Construct(): {
-        ProjFX: ProjFX.OrbProjectile, 
+        ProjFX: ProjFX.None, 
         ColorForFX: null,
         StartPosition: Vector.Zero, 
         Direction: Vector.Zero, 
@@ -265,7 +265,7 @@ single struct ProjectileArgs
         _TimeOfCall: 0
         };
     public static ProjectileArgs Default(in Player player=EventPlayer()): {
-        ProjFX: ProjFX.OrbProjectile, 
+        ProjFX: ProjFX.Sphere, 
         ColorForFX: null,
         StartPosition: EyePosition(player), 
         Direction: player.FacingDirection(), 
@@ -299,6 +299,7 @@ single struct PCData
 
 enum ProjFX
 {
+//Projectile effects
     BaptisteBioticLauncher,
     BastionA36TacticalGrenade,
     EchoStickyBomb,
@@ -308,7 +309,7 @@ enum ProjFX
     MercyCaduceusBlaster,
     MoiraDamageOrb,
     MoiraHealOrb,
-    OrbProjectile,
+    //OrbProjectile,
     OrisaFusionDriver,
     PharahRocket,
     RamattraRavenousVortexSphere,
@@ -319,7 +320,7 @@ enum ProjFX
     SymmetraPhotonProjector,
     ZaryaGraviton,
     ZaryaParticleCannon,
-    //Other effects
+//Other effects
     Sphere,
     LightShaft,
     Orb,
@@ -328,6 +329,7 @@ enum ProjFX
     Sparkles,
     GoodAura,
     BadAura,
+//No effect
     None
 }
 
