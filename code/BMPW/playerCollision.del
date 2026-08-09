@@ -45,14 +45,14 @@ if (((TotalTimeElapsed()/0.016).Floor()%5 < _complexProjs.Length) || _OTCQueue.A
         if (proj.HitPlayer)
         {
             ProjDestructor.Destroy(ID);
-            LogToInspector($"Proj {ID} hit {proj.HitPlayer}!");
+            ToggleableLogToInspector($"Proj {ID} hit {proj.HitPlayer}!");
             OneTimeCheck.TruncateByID(ID);
-            LogToInspector($"PC removed proj {ID} from OTC");
+            ToggleableLogToInspector($"PC removed proj {ID} from OTC");
         }
         else if (IsOTC)
         {
             _OTCQueue[OTCData.Index].ChecksLeft = 1;
-            LogToInspector($"proj {ID} checksleft is {OTCData.ChecksLeft}");
+            ToggleableLogToInspector($"proj {ID} checksleft is {OTCData.ChecksLeft}");
         }
 
 

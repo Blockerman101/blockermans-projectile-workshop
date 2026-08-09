@@ -30,7 +30,7 @@ void CreateCustomProjectile(ProjectileArgs projectileArgs) "[BMPW] CreateProj Su
     projData[lastProjectileID].ProjState = ProjState.NULL; //setting a projstate value so `lastProjectileID = projData.Length` increments correctly with >1 proj in a single tick
     
 
-    //LogToInspector($"Last ID: {lastProjectileID}");
+    //ToggleableLogToInspector($"Last ID: {lastProjectileID}");
     _projConstructorQueue.ModAppend(projectileArgs); //Add this proj call to the construction queue
 
     //DEV
@@ -42,7 +42,7 @@ Event.OngoingGlobal
 if (_projConstructorQueue.Length > 0)
 {
 
-    //LogToInspector("Constructor Fired!");
+    //ToggleableLogToInspector("Constructor Fired!");
 
     ProjectileArgs _TEMP_argsForConstructor = _projConstructorQueue.First;
     ProjectileArgs Args: _TEMP_argsForConstructor;
@@ -55,7 +55,7 @@ if (_projConstructorQueue.Length > 0)
     //This also kind of updates (because its a macro), so it doesnt need to be reevaled manually after waits
     Number deltaT: Min(deltaTMax, UTILS_tte - Args._GetTOC()); 
     //Number deltaT: 0.45;
-    //LogToInspector($"proj {ID} has {Args.Lifetime}s LT and {deltaT} deltaT");
+    //ToggleableLogToInspector($"proj {ID} has {Args.Lifetime}s LT and {deltaT} deltaT");
     
     //ensure projectile has info
     if (CountOf(Args)) 
@@ -106,10 +106,10 @@ if (_projConstructorQueue.Length > 0)
         //Number ticksToMaxHeight: 13;
 
         EnvironmentCollision.Queue(ID, ticksToMaxHeight);
-        LogToInspector($"\nAdded to TII (ID: {ID})\nCurrentTick: {ECCurrentTick}, ProjTick: {ticksToMaxHeight}\nCurrentIndex: {_envCollisionIndex}, ProjIndex: {_envCollisionList.Map(v => v.ID).IndexOf(ID)}]\n");
+        ToggleableLogToInspector($"\nAdded to TII (ID: {ID})\nCurrentTick: {ECCurrentTick}, ProjTick: {ticksToMaxHeight}\nCurrentIndex: {_envCollisionIndex}, ProjIndex: {_envCollisionList.Map(v => v.ID).IndexOf(ID)}]\n");
         //if (_envCollisionList.Length > 1 && ECCurrentTick >= ticksToMaxHeight) {
         if (ECCurrentTick >= ticksToMaxHeight) {
-            //LogToInspector($"Inc'd Index. (Index {_envCollisionList.Map(v => v.ID).IndexOf(ID)} with ID {ID}, Index: {_envCollisionIndex} -> {_envCollisionIndex + 1})"); 
+            //ToggleableLogToInspector($"Inc'd Index. (Index {_envCollisionList.Map(v => v.ID).IndexOf(ID)} with ID {ID}, Index: {_envCollisionIndex} -> {_envCollisionIndex + 1})"); 
             _envCollisionIndex++;
         }
 
@@ -141,23 +141,23 @@ if (_projConstructorQueue.Length > 0)
         }
 //        else {
             //MinWait();
-            //LogToInspector($"proj {ID} fired w/o waits");
+            //ToggleableLogToInspector($"proj {ID} fired w/o waits");
 //        }
 
         //The projectile can be destroyed very early, if it collides with smth before the first wait is over. If that happens, dont bother with creating it
         if (projData[ID].ProjState != ProjState.Inactive && projData[ID].ProjState != ProjState.NULL)
         {
             SyncTTE();
-            LogToInspector($"Kept Creation! (proj {ID}, tick {(UTILS_tte / 0.016).Floor()})");
+            ToggleableLogToInspector($"Kept Creation! (proj {ID}, tick {(UTILS_tte / 0.016).Floor()})");
             CastPFX(
                 pfx: Args.ProjFX,
                 fx => {
                     //Position (without beziers) is p_0 + t * (v_0 + g * t * 1/2)
                     //Direction is v_0 + g * t
-                    CreateProjectileEffect(AllPlayers(), fx, AllPlayers(), UpdateEveryFrame(projData[EvaluateOnce(ID)].Position(EvaluateOnce(_TEMP_argsForConstructor2))), EvaluateOnce(_TEMP_argsForConstructor2).Velocity + EvaluateOnce(_TEMP_argsForConstructor2).Gravity * projData[EvaluateOnce(ID)].Time(_TEMP_argsForConstructor2), EvaluateOnce(Args.VisualRadius), ProjectileEffectReeval.PositionDirectionAndSize);
+                    CreateProjectileEffect(LocalPlayer(), fx, AllPlayers(), UpdateEveryFrame(projData[EvaluateOnce(ID)].Position(EvaluateOnce(_TEMP_argsForConstructor2))), EvaluateOnce(_TEMP_argsForConstructor2).Velocity + EvaluateOnce(_TEMP_argsForConstructor2).Gravity * projData[EvaluateOnce(ID)].Time(_TEMP_argsForConstructor2), EvaluateOnce(Args.VisualRadius), ProjectileEffectReeval.PositionDirectionAndSize);
                     },
                 fx => {
-                    CreateEffect(AllPlayers(), fx, Args.ColorForFX, UpdateEveryFrame(projData[EvaluateOnce(ID)].Position(EvaluateOnce(_TEMP_argsForConstructor2))), EvaluateOnce(Args.VisualRadius), EffectRev.PositionAndRadius);
+                    CreateEffect(LocalPlayer(), fx, Args.ColorForFX, UpdateEveryFrame(projData[EvaluateOnce(ID)].Position(EvaluateOnce(_TEMP_argsForConstructor2))), EvaluateOnce(Args.VisualRadius), EffectRev.PositionAndRadius);
                 }
             );
 
@@ -174,7 +174,7 @@ if (_projConstructorQueue.Length > 0)
     //        else {
                 //MinWait();
     //        }
-        } else {LogToInspector($"Skipped creation! (proj {ID}, tick {(UTILS_tte / 0.016).Floor()})");}
+        } else {ToggleableLogToInspector($"Skipped creation! (proj {ID}, tick {(UTILS_tte / 0.016).Floor()})");}
     }
     else
     {
@@ -190,14 +190,14 @@ if (_projConstructorQueue.Length > 0)
             projData[ID].ProjState = ProjState.Inactive;
         }
 
-        //LogToInspector("\n\n!--ELSE FIRED--!\n\n");
+        //ToggleableLogToInspector("\n\n!--ELSE FIRED--!\n\n");
     }
 
     //All done with first in queue, get ready for next
     _projConstructorQueue.ModRemoveByIndex(0); 
 
     LoopIfConditionIsTrue();
-    //LogToInspector($"NO LOOP ({_projConstructorQueue.Length} Con Queues)");
+    //ToggleableLogToInspector($"NO LOOP ({_projConstructorQueue.Length} Con Queues)");
     MinWait();
     LoopIfConditionIsTrue();
 }

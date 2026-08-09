@@ -47,8 +47,8 @@ if (((TotalTimeElapsed()/0.016).Floor()%15 < _envCollisionList.Length) || _OTCQu
                 _OTCQueue[OTCData.Index].ChecksLeft = 1;
             }
         }
-        LogToInspector($"proj {ID} checksleft is {OTCData.ChecksLeft}");
-        //LogToInspector($"Checked state of proj {i} (TTE: {time})");
+        ToggleableLogToInspector($"proj {ID} checksleft is {OTCData.ChecksLeft}");
+        //ToggleableLogToInspector($"Checked state of proj {i} (TTE: {time})");
     });
     MinWait();
     LoopIfConditionIsTrue();

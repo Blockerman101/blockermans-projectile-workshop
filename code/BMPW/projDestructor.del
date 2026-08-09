@@ -17,7 +17,7 @@ if (_projDestructorQueue.First.time <= TotalTimeElapsed())
     if (current.TypeOfDestruction == TypeOfDestruction.Environment && (TotalTimeElapsed() - current.TimeOfLastJITCheck > JITTimeout))
     {
         SmallMessage(HostPlayer(), "Doing JIT in Destructor!!");
-        LogToInspector($"\n\nENTERED OTC\n\n");
+        ToggleableLogToInspector($"\n\nENTERED OTC\n\n");
         //An alternative solution is checking earlier temporally rather than retrospectively back-checking (with timeBackwards & timeForwards)
             //This has the benefit of higher accuracy in situations where pets (shields, turrets, etc) are moving towards the projectile
             //However, we're considering this an edge-case and currently not worth the extra load
@@ -39,17 +39,17 @@ if (_projDestructorQueue.First.time <= TotalTimeElapsed())
         //    projData[ID].ReadOnly.VFX.ModAppend(LastCreatedEntity());
 
         Number timeToDestroy: (timeBackwards + (timeBackwards.Abs() + timeForwards) * Min(1, Max(0, LinearInterpolate(0, 1, (_TEMP_tempPositions.StartPosition.DistanceTo(_TEMP_tempPositions.RaycastPosition) / _TEMP_tempPositions.StartPosition.DistanceTo(_TEMP_tempPositions.EndPosition))))));
-        //LogToInspector($"proj {ID}\nold: {_projDestructorQueue.First.extra}\nnew: {_TEMP_tempPositions.RaycastPosition}");
+        //ToggleableLogToInspector($"proj {ID}\nold: {_projDestructorQueue.First.extra}\nnew: {_TEMP_tempPositions.RaycastPosition}");
 
         //If we didn't collide with something, prevent destruction & check the remainder of the projs EC interval
         if (_TEMP_tempPositions.RaycastPosition == _TEMP_tempPositions.EndPosition)
         {
-            LogToInspector($"prevented destruction of proj {ID}");
+            ToggleableLogToInspector($"prevented destruction of proj {ID}");
 
             //OTC here
             OneTimeCheck.ECQueue(ID, _TEMP_tempPositions.StartPosition);
             SmallMessage(HostPlayer(), "queued OTC from destructor");
-            LogToInspector("queued OTC from destructor");
+            ToggleableLogToInspector("queued OTC from destructor");
 
             _projDestructorQueue.ModRemoveByIndex(0);
             MinWait();
@@ -61,7 +61,7 @@ if (_projDestructorQueue.First.time <= TotalTimeElapsed())
         //Fine tunes the destruction time
         else if (timeToDestroy > 0.016)
         {
-            LogToInspector($"recalculated des of proj {ID}\nTo be destroyed in {timeToDestroy}s");
+            ToggleableLogToInspector($"recalculated des of proj {ID}\nTo be destroyed in {timeToDestroy}s");
 
             //Update current, doing time last just to be safe
 
@@ -91,7 +91,7 @@ if (_projDestructorQueue.First.time <= TotalTimeElapsed())
     DestroyEffect(projData[ID].ReadOnly.VFX);
 
 
-    //LogToInspector($"Destroyed fx {projData[ID].ReadOnly.VFX} from proj {ID}");
+    //ToggleableLogToInspector($"Destroyed fx {projData[ID].ReadOnly.VFX} from proj {ID}");
     projData[ID].ProjState = ProjState.Inactive;
     _complexProjs.ModRemoveByValue(ID);
 
@@ -102,14 +102,14 @@ if (_projDestructorQueue.First.time <= TotalTimeElapsed())
         _envCollisionIndex //make sure it isnt 0, because if it was it would go to index -1
     ];
     if (IsTrueForAll(reqsForDec, ArrayElement())) {
-        //LogToInspector($"Dec'd Index. (Index {_envCollisionList.Map(v => v.ID).IndexOf(ID)} with ID {ID}, Index: {_envCollisionIndex} -> {_envCollisionIndex + 1})");
+        //ToggleableLogToInspector($"Dec'd Index. (Index {_envCollisionList.Map(v => v.ID).IndexOf(ID)} with ID {ID}, Index: {_envCollisionIndex} -> {_envCollisionIndex + 1})");
         _envCollisionIndex--;
         }
 
     //This doesnt need to maintain indices like projData, so when a projectile is made Inactive, its simply removed from this array
     EnvironmentCollision.ClearFromQueue(ID);
 
-    LogToInspector($"Destroyed Proj {ID} (Tick {(TotalTimeElapsed()/0.016).Floor()})");
+    ToggleableLogToInspector($"Destroyed Proj {ID} (Tick {(TotalTimeElapsed()/0.016).Floor()})");
 
     //Do this last, ID is tied to ProjDestructor
     _projDestructorQueue = _projDestructorQueue.Filter(v => v.ID != ID);
@@ -128,7 +128,7 @@ if (_projDestructorQueue.First.time <= TotalTimeElapsed())
     //Half the size of the database, if possible
     if (projData.All(v => v.ProjState == ProjState.Inactive || CurrentArrayIndex() <= floorPowerOfTwo) && floorPowerOfTwo)
     {
-        //LogToInspector($"size: {projData.Length}, FPOT: {floorPowerOfTwo}");
+        //ToggleableLogToInspector($"size: {projData.Length}, FPOT: {floorPowerOfTwo}");
 
         //want the indices from 0 through floorPowerOfTwo
         UTILS_waitlessIterator = projData.Map(v => CurrentArrayIndex() <= floorPowerOfTwo ? CurrentArrayIndex() : -1).Filter(i => i != -1);
@@ -136,7 +136,7 @@ if (_projDestructorQueue.First.time <= TotalTimeElapsed())
         projData = indexes.Map(v => projData[v]);
         //projData = projData[indexes];
         //projData = projData.Filter((v, idx) => idx < floorPowerOfTwo);
-        LogToInspector($"Made size smaller! (shrank to {floorPowerOfTwo}, from {indexes.First} through {indexes.Last})");
+        ToggleableLogToInspector($"Made size smaller! (shrank to {floorPowerOfTwo}, from {indexes.First} through {indexes.Last})");
     }
     LoopIfConditionIsTrue();
 }

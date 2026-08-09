@@ -44,3 +44,7 @@ public void CastPFX(in ProjFX pfx, const ProjectileType => void castProjFX, cons
         case ProjFX.None:                                                                                     break;
     }
 }
+
+public void ToggleableLogToInspector(in String str) {
+    LogToInspector(str);
+}

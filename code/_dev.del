@@ -2,6 +2,15 @@
 import "BMPW/projDestructor.del";
 
 void _CreateDevText(in String str) {CreateHudText(HostPlayer(), str, null, null, Location.Left);}
+
+rule: '[DEV] remove dmg'
+//if (AllPlayers().Length != EvaluateOnce(AllPlayers().Length))
+if (HasSpawned(HostPlayer()))
+{
+    StartDamageModification(HostPlayer(), AllPlayers(OppositeTeamOf(HostPlayer().Team())), 0.5, DamageModificationRev.ReceiversAndDamagers);
+    SetKnockbackReceived(HostPlayer(), 0);
+}
+
 rule: '[DEV] Spawn Dummies'
 Event.OngoingGlobal
 if (HostPlayer().IsButtonHeld(Button.Crouch) && HostPlayer().IsButtonHeld(Button.PrimaryFire) && !hp.IsButtonHeld(Button.Jump))

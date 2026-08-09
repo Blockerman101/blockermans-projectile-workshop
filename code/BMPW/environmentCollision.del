@@ -17,7 +17,7 @@ if (_envCollisionList.Length)
 if (!ECCurrentTick)
 {
     _envCollisionIndex = 0;
-    LogToInspector($"Lap ended. (Index returned to 0) (TTE: {TotalTimeElapsed()})");
+    ToggleableLogToInspector($"Lap ended. (Index returned to 0) (TTE: {TotalTimeElapsed()})");
 }
 
 
@@ -64,7 +64,7 @@ if ((_envCollisionIndex < _envCollisionList.Length && _envCollisionList[_envColl
         Number lapCount: 4;
 
         WaitlessForLoop(0, i => i < lapCount, 1, currentLap => {
-            LogToInspector($"On lap {currentLap}");
+            ToggleableLogToInspector($"On lap {currentLap}");
 
             
 
@@ -111,8 +111,8 @@ if ((_envCollisionIndex < _envCollisionList.Length && _envCollisionList[_envColl
             //action for nonzero EC (not needed if interval isnt reset to smth else)
             _TEMP_tempPositions.Interval = (interval + 0.016 * extraTicks);
 
-            //LogToInspector($"coll checked! (ID: {ID}, Check: {projData[ID].DEBUG_ECCheck + 1}, CurrentTII: {ECCurrentTick}, interval: {_TEMP_tempPositions.Interval}, TTE: {TotalTimeElapsed()})");
-            LogToInspector($"coll checked! (ID: {ID}, CurrentTII: {ECCurrentTick}, interval: {_TEMP_tempPositions.Interval}, TTE: {TotalTimeElapsed()})");
+            //ToggleableLogToInspector($"coll checked! (ID: {ID}, Check: {projData[ID].DEBUG_ECCheck + 1}, CurrentTII: {ECCurrentTick}, interval: {_TEMP_tempPositions.Interval}, TTE: {TotalTimeElapsed()})");
+            ToggleableLogToInspector($"coll checked! (ID: {ID}, CurrentTII: {ECCurrentTick}, interval: {_TEMP_tempPositions.Interval}, TTE: {TotalTimeElapsed()})");
             
             
 
@@ -121,7 +121,7 @@ if ((_envCollisionIndex < _envCollisionList.Length && _envCollisionList[_envColl
             //Structuring the state check like this allows us to reuse the projs _TEMP_tempPositions.StartPosition instead of recalculating it
             //StateCheck(ID, _TEMP_tempPositions.StartPosition);
 
-                //if (IsTrueForAny([_TEMP_tempPositions.StartPosition, _TEMP_tempPositions.EndPosition, _TEMP_tempPositions.RaycastPosition], ArrayElement() == Vector.Zero)) {LogToInspector("!--POSITIONS REGISTERED ZERO--!");}
+                //if (IsTrueForAny([_TEMP_tempPositions.StartPosition, _TEMP_tempPositions.EndPosition, _TEMP_tempPositions.RaycastPosition], ArrayElement() == Vector.Zero)) {ToggleableLogToInspector("!--POSITIONS REGISTERED ZERO--!");}
 
 
                 CreateBeamEffect(HostPlayer(), BeamType.GrappleBeam, _TEMP_tempPositions.StartPosition, _TEMP_tempPositions.RaycastPosition, Color.Red, EffectRev.None);
@@ -134,7 +134,7 @@ if ((_envCollisionIndex < _envCollisionList.Length && _envCollisionList[_envColl
                 //projData[ID].ReadOnly.VFX.ModAppend(LastCreatedEntity());
                 
 
-        //        if ([_TEMP_tempPositions.StartPosition, _TEMP_tempPositions.EndPosition, _TEMP_tempPositions.RaycastPosition].IsTrueForAny(v => v == Vector.Zero)) {LogToInspector($"POSITIONS REGISTERED ZERO");}
+        //        if ([_TEMP_tempPositions.StartPosition, _TEMP_tempPositions.EndPosition, _TEMP_tempPositions.RaycastPosition].IsTrueForAny(v => v == Vector.Zero)) {ToggleableLogToInspector($"POSITIONS REGISTERED ZERO");}
             if (_TEMP_tempPositions.RaycastPosition != _TEMP_tempPositions.EndPosition) 
             {
     //            projData[ID].HitPlayer = RayCastHitPlayer(_TEMP_tempPositions.StartPosition, _TEMP_tempPositions.EndPosition, projData[ID].ReadOnly.Targets, null, true);
@@ -151,7 +151,7 @@ if ((_envCollisionIndex < _envCollisionList.Length && _envCollisionList[_envColl
                 //Number timeToDestroy: _TEMP_tempPositions.Interval * Min(1, Max(0, LinearInterpolate(0, 1, (_TEMP_tempPositions.StartPosition.DistanceTo(_TEMP_tempPositions.RaycastPosition) / _TEMP_tempPositions.StartPosition.DistanceTo(_TEMP_tempPositions.EndPosition))))) - offset;
                 Number timeToDestroy: _TEMP_tempPositions.Interval * Min(1, Max(0, LinearInterpolate(0, 1, (_TEMP_tempPositions.StartPosition.DistanceTo(_TEMP_tempPositions.RaycastPosition) / _TEMP_tempPositions.StartPosition.DistanceTo(_TEMP_tempPositions.EndPosition)))));
                 ProjDestructor.Queue(ID, timeToDestroy, TypeOfDestruction.Environment, _TEMP_tempPositions.Interval - timeToDestroy, TimeOfLastJITCheck); //Cant add an offset for visuals because it would mess up ricochets
-                LogToInspector($"Collided! (Proj {ID} queued with {timeToDestroy} seconds\n(Current Tick {(TotalTimeElapsed() / 0.016).Floor()} with {((timeToDestroy) / 0.016).Floor()} ticks to destruction\nExpected to be destroyed at tick {((TotalTimeElapsed() + timeToDestroy) / 0.016).Floor()}))");
+                ToggleableLogToInspector($"Collided! (Proj {ID} queued with {timeToDestroy} seconds\n(Current Tick {(TotalTimeElapsed() / 0.016).Floor()} with {((timeToDestroy) / 0.016).Floor()} ticks to destruction\nExpected to be destroyed at tick {((TotalTimeElapsed() + timeToDestroy) / 0.016).Floor()}))");
                 //break;
 
 
@@ -168,10 +168,10 @@ if ((_envCollisionIndex < _envCollisionList.Length && _envCollisionList[_envColl
 
 
         });
-        LogToInspector($"LOOP EXITED");
+        ToggleableLogToInspector($"LOOP EXITED");
     }
     else {
-        LogToInspector("\n\n\nIF TRIGGERED!!!!!!!!!1111111111\n\n\n");
+        ToggleableLogToInspector("\n\n\nIF TRIGGERED!!!!!!!!!1111111111\n\n\n");
     }
 
 
@@ -182,9 +182,9 @@ if ((_envCollisionIndex < _envCollisionList.Length && _envCollisionList[_envColl
     
     if (IsOTC) {
         //set current OTC EC ChecksLeft (idx 0) to false
-        LogToInspector("IsOTC");
+        ToggleableLogToInspector("IsOTC");
         OneTimeCheck.TruncateByID(ID);
-        LogToInspector($"EC removed proj {ID} from OTC");
+        ToggleableLogToInspector($"EC removed proj {ID} from OTC");
 
     }
     else {
