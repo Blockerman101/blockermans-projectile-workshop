@@ -63,11 +63,11 @@ if (EventPlayer() == HostPlayer())
 }
 
 disabled rule: 'iter the iter'
-if (hp.IsButtonHeld(Button.Interact))
+if (HostPlayer().IsButtonHeld(Button.Interact))
 {
     iter = (iter + 1)%(TX.Length - 1);
-    SmallMessage(hp, 'iterated the iterator...');
-    PlayEffect(hp, PlayEffect.BuffImpactSound, null, hp.EyePosition(), 100);
+    ToggleableSmallMessage(HostPlayer(), 'iterated the iterator...');
+    PlayEffect(HostPlayer(), PlayEffect.BuffImpactSound, null, HostPlayer().EyePosition(), 100);
 }
 
 rule: 'Explode big projs!'

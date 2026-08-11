@@ -16,7 +16,7 @@ if (_projDestructorQueue.First.time <= TotalTimeElapsed())
     //JIT check for EC
     if (current.TypeOfDestruction == TypeOfDestruction.Environment && (TotalTimeElapsed() - current.TimeOfLastJITCheck > JITTimeout))
     {
-        SmallMessage(HostPlayer(), "Doing JIT in Destructor!!");
+        ToggleableSmallMessage(HostPlayer(), "Doing JIT in Destructor!!");
         ToggleableLogToInspector($"\n\nENTERED OTC\n\n");
         //An alternative solution is checking earlier temporally rather than retrospectively back-checking (with timeBackwards & timeForwards)
             //This has the benefit of higher accuracy in situations where pets (shields, turrets, etc) are moving towards the projectile
@@ -48,7 +48,7 @@ if (_projDestructorQueue.First.time <= TotalTimeElapsed())
 
             //OTC here
             OneTimeCheck.ECQueue(ID, _TEMP_tempPositions.StartPosition);
-            SmallMessage(HostPlayer(), "queued OTC from destructor");
+            ToggleableSmallMessage(HostPlayer(), "queued OTC from destructor");
             ToggleableLogToInspector("queued OTC from destructor");
 
             _projDestructorQueue.ModRemoveByIndex(0);

@@ -1,7 +1,7 @@
 import "index.ostw";
 
 globalvar Vector projectilePosition;
-public void GetProjPosition(Number IDForGetProjPosition) "Get Proj Position" {
+public void GetProjPosition(Number IDForGetProjPosition) "[BMPW] Get Proj Position Sub" {
     projectilePosition = projData[IDForGetProjPosition].Position();
 }
 
