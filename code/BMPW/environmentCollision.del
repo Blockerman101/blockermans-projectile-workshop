@@ -26,7 +26,7 @@ rule: '[BMPW] Check EC'
 if ((_envCollisionIndex < _envCollisionList.Length && _envCollisionList[_envCollisionIndex].Time == ECCurrentTick) || _OTCQueue.Any(v => v.IsEC))
 {
     //If the proj radius is below this, skip extra EC
-    Number thresholdForExtraEC: 1.0;
+    Number thresholdForNonzeroRad: 1.0;
 
     //extra ticks for the end pos
     Number extraTicks: 2;
@@ -162,7 +162,7 @@ if ((_envCollisionIndex < _envCollisionList.Length && _envCollisionList[_envColl
 
         //Break loop, to prevent outer raycasts, if proj radius is below a certain threshold (UTILS_waitlessIterator is currentLap)
 
-        if (current.ReadOnly.Radius < thresholdForExtraEC) {
+        if (current.ReadOnly.Radius < thresholdForNonzeroRad) {
             UTILS_waitlessIterator = lapCount;
         }
 

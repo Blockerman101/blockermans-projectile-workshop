@@ -4,7 +4,7 @@
         "Lobby":
         {
             "Max Team 1 Players": 1,
-            "Max Team 2 Players": 7,
+            "Max Team 2 Players": 4,
             "Minimum Latency milliseconds": "15000000"
         },
 
@@ -12,7 +12,7 @@
         {
             "Skirmish":
             {
-                "Enabled Maps": ["Workshop Island Night"],
+                "Enabled Maps": ["Blizzard World Winter"],
                 "Game Mode Start": "Immediately",
                 "Respawn As Random Hero": false,
                 "Respawn Time Scalar": 0
@@ -47,11 +47,16 @@
 
         "Extensions":
         {
-            "Projectiles": true,
             "Spawn More Dummy Bots": true,
             "Play More Effects": true,
+            "Projectiles": true,
             "Beam Effects": true,
             "Energy Explosion Effects": true,
-            "Kinetic Explosion Effects": true
+            "Kinetic Explosion Effects": true,
+            "Buff Status Effects": true,
+            "Debuff Status Effects": true,
+            "Buff and Debuff Sounds": true,
+            "Explosion Sounds": true,
+            "Beam Sounds": true
         }
     }

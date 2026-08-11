@@ -150,6 +150,8 @@ if (_projConstructorQueue.Length > 0)
         {
             SyncTTE();
             ToggleableLogToInspector($"Kept Creation! (proj {ID}, tick {(UTILS_tte / 0.016).Floor()})");
+            Vector ogPos: projData[EvaluateOnce(ID)].Position(EvaluateOnce(_TEMP_argsForConstructor2));
+            Vector textPosition: UpdateEveryFrame(ogPos + LocalPlayer().EyePosition().Towards(ogPos));
             CastPFX(
                 pfx: Args.ProjFX,
                 fx => {
@@ -161,7 +163,8 @@ if (_projConstructorQueue.Length > 0)
                     CreateEffect(AllPlayers(), fx, Args.ColorForFX, UpdateEveryFrame(projData[EvaluateOnce(ID)].Position(EvaluateOnce(_TEMP_argsForConstructor2))), EvaluateOnce(Args.VisualRadius), EffectRev.PositionAndRadius);
                 },
                 () => {
-                    CreateInWorldText(AllPlayers(), Args.SillyTX, UpdateEveryFrame(projData[EvaluateOnce(ID)].Position(EvaluateOnce(_TEMP_argsForConstructor2))), Args.VisualRadius, Clipping.ClipAgainstSurfaces, InworldTextRev.VisibleToAndPosition, Args.ColorForFX, Spectators.DefaultVisibility);
+                    CreateInWorldText(LocalPlayer().EyePosition().IsInLineOfSight(ogPos, BarrierLOS.NoBarriersBlock) ? LocalPlayer() : null, Args.String, textPosition, Args.VisualRadius, Clipping.DoNotClip, InworldTextRev.VisibleToAndPosition, Args.ColorForFX, Spectators.DefaultVisibility);
+                    //CreateInWorldText(AllPlayers(), Args.String, UpdateEveryFrame(projData[EvaluateOnce(ID)].Position(EvaluateOnce(_TEMP_argsForConstructor2))), Args.VisualRadius, Clipping.ClipAgainstSurfaces, InworldTextRev.VisibleToAndPosition, Args.ColorForFX, Spectators.DefaultVisibility);
                 }
             );
 

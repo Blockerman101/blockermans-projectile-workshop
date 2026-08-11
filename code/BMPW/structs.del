@@ -241,13 +241,13 @@ single struct ProjectileArgs
     //projectiles with 0 gravity must use Vector.Zero, otherwise type-errors will break the proj
     public Vector Gravity;
     //private Number ProjID;
+    public String String;
     private Number _TimeOfCall;
         //get Time of Call
         public Number _GetTOC() {return _TimeOfCall;}
 
         //set Time of Call
         public ref void _SetTOC(in Number time) {_TimeOfCall = time;} 
-    public String SillyTX;
     public static ProjectileArgs Construct(): {
         ProjFX: ProjFX.None, 
         ColorForFX: null,
@@ -260,8 +260,8 @@ single struct ProjectileArgs
         Lifetime: 0, 
         Gravity: Vector.Zero, 
         _ProjID: 0, 
-        _TimeOfCall: 0,
-        SillyTX: null
+        String: null,
+        _TimeOfCall: 0
         };
     public static ProjectileArgs Default(in Player player=EventPlayer()): {
         ProjFX: ProjFX.Sphere, 
@@ -275,8 +275,8 @@ single struct ProjectileArgs
         Lifetime: 3, 
         Gravity: Down() * 5, 
         _ProjID: null, 
-        _TimeOfCall: null,
-        SillyTX: null
+        String: null,
+        _TimeOfCall: null
         };
 
     public ProjectileArgs CommonPatches(in Player player=EventPlayer()) {

@@ -24,7 +24,7 @@ import "tx.del";
 
 private playervar Number[] bigProjIDs = [];
 
-globalvar Number iter;
+globalvar Number iter = 8;
 String[] TX: [
     "TX C000000000001EE",
     "TX C0000000000023F",
@@ -51,7 +51,7 @@ if (EventPlayer() == HostPlayer())
     //ProjectileArgs bigProj: {ProjFX: ProjFX.BaptisteBioticLauncher, Radius: 0.3, VisualRadius: 1, Speed: 50, Lifetime: 2.5, ..ProjectileArgs.Default()};
     //CreateCustomProjectile(bigProj);
 
-    ProjectileArgs sphere: <ProjectileArgs>{ProjFX: ProjFX.String, SillyTX: makeTX(TX[iter]), ColorForFX: Color.White, Radius: 1.0, VisualRadius: 3.0, Lifetime: 7,  ..ProjectileArgs.Default()}.CommonPatches();
+    ProjectileArgs sphere: <ProjectileArgs>{ProjFX: ProjFX.String, String: makeTX(TX[iter]), ColorForFX: Color.White, Radius: 0.5, VisualRadius: 3.0, Lifetime: 7,  ..ProjectileArgs.Default()}.CommonPatches();
     ProjectileArgs sphereNoGrav: {Gravity: Vector.Zero, ..sphere}.CommonPatches();
     Vector startPos = Vector(5, 0.5, RandomReal(-10, 10));
     ProjectileArgs constArgs: <ProjectileArgs>{StartPosition: startPos, Direction: startPos.Towards(Vector(-20, 6, 0)), ..sphere};
@@ -62,11 +62,12 @@ if (EventPlayer() == HostPlayer())
     //LoopIfConditionIsTrue();
 }
 
-rule: 'iter the iter'
+disabled rule: 'iter the iter'
 if (hp.IsButtonHeld(Button.Interact))
 {
     iter = (iter + 1)%(TX.Length - 1);
     SmallMessage(hp, 'iterated the iterator...');
+    PlayEffect(hp, PlayEffect.BuffImpactSound, null, hp.EyePosition(), 100);
 }
 
 rule: 'Explode big projs!'
@@ -79,11 +80,11 @@ if (bigProjIDs.Any(v => projData[v].ProjState == ProjState.Inactive))
         ProjData current: projData[bigProjIDs[UTILS_waitlessIterator]];
         if (current.ProjState == ProjState.Inactive)
         {
+            PlayEffect(AllPlayers(), PlayEffect.BrigitteRepairPackImpactEffect, Team.Team1, current.Position(), 5);
+            PlayEffect(AllPlayers(), PlayEffect.TracerRecallDisappearSound, TeamOf(EventPlayer()), current.Position(), 75);
             //if the projectile hit a player, do stuff, then traverse to next in line (by removing it)
             if (current.HitPlayer)
             {
-                //PlayEffect(AllPlayers(), PlayEffect.GoodExplosion, Color.Red, current.Position(), 15);
-                //PlayEffect(AllPlayers(), PlayEffect.BuffExplosionSound, TeamOf(EventPlayer()), current.Position(), 150);
                 SetStatus(current.HitPlayer, EventPlayer(), Status.KnockedDown, 0.2);
                 Damage(current.HitPlayer, EventPlayer(), 1);
                 ToggleableLogToInspector($"registered that proj {bigProjIDs[UTILS_waitlessIterator]} hit! (trying to hit {current.HitPlayer})");

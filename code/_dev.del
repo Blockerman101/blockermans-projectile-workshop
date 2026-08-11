@@ -37,6 +37,18 @@ if (HasSpawned(HostPlayer()))
     //StartHoldingButton(LastCreatedEntity(), Button.SecondaryFire);
 }
 
+rule: '[DEV] Spawn Rein'
+Event.OngoingGlobal
+if (IsButtonHeld(HostPlayer(), Button.Interact))
+{
+    //CreateDummyBot(AllHeroes().Random(), OppositeTeamOf(HostPlayer().Team()), -1, PositionOf(HostPlayer()));
+    CreateDummyBot(Hero.Reinhardt, OppositeTeamOf(HostPlayer().Team()), -1, RayCastHitPosition(HostPlayer().EyePosition(), HostPlayer().EyePosition() + HostPlayer().FacingDirection() * 500, null, null, false), null);
+    dummyRein = LastCreatedEntity();
+    LogToInspector($"{LastCreatedEntity()} Spawned");
+    //Wait(0.25);
+    //StartHoldingButton(LastCreatedEntity(), Button.SecondaryFire);
+}
+
 disabled rule: '[DEV] Destroy Dummies'
 Event.OngoingGlobal
 if (HostPlayer().IsButtonHeld(Button.Crouch) && HostPlayer().IsButtonHeld(Button.SecondaryFire))
