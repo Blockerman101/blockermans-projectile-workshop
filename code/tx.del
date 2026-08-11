@@ -13,5 +13,7 @@ rule: "Setup <­tx> / <­fg> Code"
     //CreateHudText(LocalPlayer(), <"<0>fgF0FF00FF>Hello <0>tx0C00000000005A0B> <0>fg00FFF0FF>World", ZEZTX_bracket>, null, null, Location.Left, null, Color.White, null, null, HudTextRev.VisibleTo, Spectators.VisibleAlways);
 }
 
+//include 'TX' in your tx
 public String makeTX(in String TX) {return $"{ZEZTX_bracket}{TX}>";}
+//include 'FG' in your fg
 public String makeFG(in String FG, in String string) {return $"{ZEZTX_bracket}{FG}>{string}{ZEZTX_bracket}/fg>";}

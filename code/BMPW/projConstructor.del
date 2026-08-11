@@ -151,7 +151,7 @@ if (_projConstructorQueue.Length > 0)
             SyncTTE();
             ToggleableLogToInspector($"Kept Creation! (proj {ID}, tick {(UTILS_tte / 0.016).Floor()})");
             Vector ogPos: projData[EvaluateOnce(ID)].Position(EvaluateOnce(_TEMP_argsForConstructor2));
-            Vector textPosition: UpdateEveryFrame(ogPos + LocalPlayer().EyePosition().Towards(ogPos));
+            Vector textPosition: UpdateEveryFrame(LocalPlayer().EyePosition() + LocalPlayer().EyePosition().Towards(ogPos) * 2);
             CastPFX(
                 pfx: Args.ProjFX,
                 fx => {
