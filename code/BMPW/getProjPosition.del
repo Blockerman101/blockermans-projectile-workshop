@@ -1,0 +1,12 @@
+import "index.ostw";
+
+globalvar Vector projectilePosition;
+public void GetProjPosition(Number IDForGetProjPosition) "Get Proj Position" {
+    projectilePosition = projData[IDForGetProjPosition].Position();
+}
+
+//example usage:
+//
+//  Global.IDForGetProjPosition = 3;
+//  Call Subroutine(GetProjPosition);
+//  Global.myProjPosition = Global.projectilePosition;
