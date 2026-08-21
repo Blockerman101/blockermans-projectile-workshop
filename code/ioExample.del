@@ -7,7 +7,7 @@ Event.OngoingPlayer
 if (EventPlayer().IsButtonHeld(Button.Interact))
 if (!myProjID)
 {
-    CreateCustomProjectile(ProjectileArgs.Default().CommonPatches());
+    CreateCustomProjectile(MyProjArgs.CommonPatches());
     myProjID = lastProjectileID;
 }
 
@@ -20,3 +20,9 @@ if (projData[myProjID].ProjState == ProjState.Inactive)
     SetStatus(data.HitPlayer, EventPlayer(), Status.Frozen, 3);
     myProjID = 0;
 }
+
+ProjectileArgs MyProjArgs: {
+    ProjFX: ProjFX.Sphere,
+    VisualRadius: 1,
+    ..ProjectileArgs.Default()
+};

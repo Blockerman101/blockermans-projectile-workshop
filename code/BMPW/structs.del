@@ -227,26 +227,26 @@ single struct ProjectileArgs
     private Number _ProjID;
         public Number _GetID() {return _ProjID;}
         public ref void _SetID(in Number ID) {_ProjID = ID;}
+
+    //visual args
     public ProjFX ProjFX;
-    public (Color | Team) ColorForFX;
+    public (Color|Team) ColorForFX;
+    public String String;
+    public Number VisualRadius;
+    public (Player|Player[]) VisibleTo;
+    public (Player|Player[]) FriendlyTo;
+
+    //functional args
     public Vector StartPosition;
     public Vector Direction;
-    public Player[] Targets;
-    //public Number DamageAmount;
-    public Number Radius;
-    public Number VisualRadius;
     public Number Speed;
-    public Number Lifetime;
-    //public Number Knockback;
     //projectiles with 0 gravity must use Vector.Zero, otherwise type-errors will break the proj
     public Vector Gravity;
-    //private Number ProjID;
-    public String String;
+    public Player[] Targets;
+    public Number Radius;
+    public Number Lifetime;
     private Number _TimeOfCall;
-        //get Time of Call
         public Number _GetTOC() {return _TimeOfCall;}
-
-        //set Time of Call
         public ref void _SetTOC(in Number time) {_TimeOfCall = time;} 
     public static ProjectileArgs Construct(): {
         ProjFX: ProjFX.None, 
@@ -261,6 +261,8 @@ single struct ProjectileArgs
         Gravity: Vector.Zero, 
         _ProjID: 0, 
         String: null,
+        FriendlyTo: null,
+        VisibleTo: null,
         _TimeOfCall: 0
         };
     public static ProjectileArgs Default(in Player player=EventPlayer()): {
@@ -276,6 +278,8 @@ single struct ProjectileArgs
         Gravity: Down() * 5, 
         _ProjID: null, 
         String: null,
+        FriendlyTo: AllPlayers(TeamOf(player)),
+        VisibleTo: AllPlayers(),
         _TimeOfCall: null
         };
 
@@ -289,12 +293,12 @@ single struct ProjectileArgs
 }
 
 //shared (relevant) args between CreateEffect, CreateProjectile, CreateProjectileEffect, and CreateInWorldText
-//VisibleTo                 N - 
+//VisibleTo                 N - implemented
 //ProjFX                    Y - implemented
 //Color                     Y - implemented
 //Position/StartPosition    Y - implemented
 //Radius/Oversize/Scale     Y - implemented
-//FriendlyTo                N - 
+//FriendlyTo                N - implemented
 //Direction                 Y - implemented
 //Player (proj owner)       N - owned through ID system, can be made player-relative
 //AffectedTeam              N - 
