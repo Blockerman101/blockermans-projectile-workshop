@@ -228,7 +228,7 @@ single struct ProjectileArgs
         public Number _GetID() {return _ProjID;}
         public ref void _SetID(in Number ID) {_ProjID = ID;}
     public ProjFX ProjFX;
-    public Color ColorForFX;
+    public (Color | Team) ColorForFX;
     public Vector StartPosition;
     public Vector Direction;
     public Player[] Targets;
@@ -287,6 +287,24 @@ single struct ProjectileArgs
         };
     }
 }
+
+//shared (relevant) args between CreateEffect, CreateProjectile, CreateProjectileEffect, and CreateInWorldText
+//VisibleTo                 N - 
+//ProjFX                    Y - implemented
+//Color                     Y - implemented
+//Position/StartPosition    Y - implemented
+//Radius/Oversize/Scale     Y - implemented
+//FriendlyTo                N - 
+//Direction                 Y - implemented
+//Player (proj owner)       N - owned through ID system, can be made player-relative
+//AffectedTeam              N - 
+//Speed                     Y - implemented
+//Lifetime                  Y - implemented
+//Gravity                   Y - implemented
+//Header/String             Y - implemented
+
+
+
 
 globalvar PCData _playerCollisionData = EmptyArray();
 single struct PCData

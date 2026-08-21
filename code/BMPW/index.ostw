@@ -7,6 +7,7 @@ import "environmentCollision.del";
 //for non-OSTW users. for you: use projData[<myProjID>].Position()
 import "getProjPosition.del";
 
+
 // -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  
 //Want more effects? simply uncomment the ones you want!
 // -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  
