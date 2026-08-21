@@ -1,0 +1,22 @@
+import "BMPW/index.ostw";
+import "../customGameSettings.json";
+
+playervar Number myProjID;
+rule: 'Create My Projectile'
+Event.OngoingPlayer
+if (EventPlayer().IsButtonHeld(Button.Interact))
+if (!myProjID)
+{
+    CreateCustomProjectile(ProjectileArgs.Default().CommonPatches());
+    myProjID = lastProjectileID;
+}
+
+rule: 'Handle My Projectile'
+Event.OngoingPlayer
+if (projData[myProjID].ProjState == ProjState.Inactive)
+{
+    ProjData data: projData[myProjID];
+    //data.HitPlayer can be null if the projectile went inactive without hitting a player. in this case the action simply falls through
+    SetStatus(data.HitPlayer, EventPlayer(), Status.Frozen, 3);
+    myProjID = 0;
+}

@@ -265,7 +265,7 @@ single struct ProjectileArgs
         };
     public static ProjectileArgs Default(in Player player=EventPlayer()): {
         ProjFX: ProjFX.Sphere, 
-        ColorForFX: null,
+        ColorForFX: Color.Red,
         StartPosition: EyePosition(player), 
         Direction: player.FacingDirection(), 
         Targets: AllPlayers(OppositeTeamOf(TeamOf(player))), 
@@ -341,30 +341,30 @@ public void EffectiveSizeToOversize(ref ProjectileArgs projArgs) {
     projArgs.VisualRadius = [
         //fx,                                      minSize,    maxSize - minSize
         //<idx>                                    [0]         [1]
-        /*ProjFX.BaptisteBioticLauncher         */ [00.150,    (06.750 - 00.150)],
-        /*ProjFX.BastionA36TacticalGrenade      */ [00.500,    (07.500 - 00.500)],
-        /*ProjFX.EchoStickyBomb                 */ [00.200,    (05.000 - 00.200)],
-        /*ProjFX.GenjiShuriken                  */ [00.100,    (02.900 - 00.100)],
-        /*ProjFX.LucioSonicAmplifier            */ [00.625,    (05.000 - 00.625)],
-        /*ProjFX.MeiIcicle                      */ [00.625,    (09.750 - 00.625)],
-        /*ProjFX.MercyCaduceusBlaster           */ [00.025,    (01.200 - 00.025)],
-        /*ProjFX.MoiraDamageOrb                 */ [00.650,    (14.000 - 00.650)],
-        /*ProjFX.MoiraHealOrb                   */ [00.650,    (14.000 - 00.650)],
-        /*ProjFX.OrbProjectile                  */ [00.500,    (04.500 - 00.500)],
-        /*ProjFX.OrisaFusionDriver              */ [00.325,    (06.050 - 00.325)],
-        /*ProjFX.PharahRocket                   */ [00.075,    (02.350 - 00.075)],
-        /*ProjFX.RamattraRavenousVortexSphere   */ [00.300,    (05.750 - 00.300)],
-        /*ProjFX.ReinhardtFireStrike            */ [01.300,    (06.500 - 01.300)],
-        /*ProjFX.RoadhogScrap                   */ [00.200,    (00.850 - 00.200)],
-        /*ProjFX.RoadhogScrapBall               */ [00.450,    (06.000 - 00.450)],
-        /*ProjFX.SigmaHypersphere               */ [00.100,    (03.250 - 00.100)],
-        /*ProjFX.SymmetraPhotonProjector        */ [00.150,    (05.400 - 00.150)],
-        /*ProjFX.ZaryaGraviton                  */ [00.200,    (04.000 - 00.200)],
-        /*ProjFX.ZaryaParticleCannon            */ [00.250,    (08.500 - 00.250)]
+        /*ProjFX.BaptisteBioticLauncher         */ [00.150,    (06.750 - 00.150)],  //0
+        /*ProjFX.BastionA36TacticalGrenade      */ [00.500,    (07.500 - 00.500)],  //1
+        /*ProjFX.EchoStickyBomb                 */ [00.200,    (05.000 - 00.200)],  //2
+        /*ProjFX.GenjiShuriken                  */ [00.100,    (02.900 - 00.100)],  //3
+        /*ProjFX.LucioSonicAmplifier            */ [00.625,    (05.000 - 00.625)],  //4
+        /*ProjFX.MeiIcicle                      */ [00.625,    (09.750 - 00.625)],  //5
+        /*ProjFX.MercyCaduceusBlaster           */ [00.025,    (01.200 - 00.025)],  //6
+        /*ProjFX.MoiraDamageOrb                 */ [00.650,    (14.000 - 00.650)],  //7
+        /*ProjFX.MoiraHealOrb                   */ [00.650,    (14.000 - 00.650)],  //8
+                                                                                            ///*ProjFX.OrbProjectile                  */ [00.500,    (04.500 - 00.500)],  //9 //no longer using orb like Projectile.ProjectileOrb, rather just use Effect.Orb
+        /*ProjFX.OrisaFusionDriver              */ [00.325,    (06.050 - 00.325)],  //9
+        /*ProjFX.PharahRocket                   */ [00.075,    (02.350 - 00.075)],  //10
+        /*ProjFX.RamattraRavenousVortexSphere   */ [00.300,    (05.750 - 00.300)],  //11
+        /*ProjFX.ReinhardtFireStrike            */ [01.300,    (06.500 - 01.300)],  //12
+        /*ProjFX.RoadhogScrap                   */ [00.200,    (00.850 - 00.200)],  //13
+        /*ProjFX.RoadhogScrapBall               */ [00.450,    (06.000 - 00.450)],  //14
+        /*ProjFX.SigmaHypersphere               */ [00.100,    (03.250 - 00.100)],  //15
+        /*ProjFX.SymmetraPhotonProjector        */ [00.150,    (05.400 - 00.150)],  //16
+        /*ProjFX.ZaryaGraviton                  */ [00.200,    (04.000 - 00.200)],  //17
+        /*ProjFX.ZaryaParticleCannon            */ [00.250,    (08.500 - 00.250)]   //18
         //other FX are handled in the .Map
     //if the projFX matches up with the index, set that ele to the corrected size. then, if the ProjFX is a non-proj FX (yeah yeah naming stuff is hard ok?) leave it unchanged, otherwise set it to 99999. Then sort (low to high) and take the first
     //correction is (startSize - minSize)/(maxSize - minSize)
-    ].Map((v, idx) => (projArgs.ProjFX == idx) ? ((projArgs.VisualRadius - v.First) / v[1]) : (projArgs.ProjFX < 20 ? 99999 : projArgs.VisualRadius)).Sort(v => v).First;
+    ].Map((v, idx) => (projArgs.ProjFX == idx) ? ((projArgs.VisualRadius - v.First) / v[1]) : (projArgs.ProjFX < 19 ? 99999 : projArgs.VisualRadius)).Sort(v => v).First;
 }
 
 
