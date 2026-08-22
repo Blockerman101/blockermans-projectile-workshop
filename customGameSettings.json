@@ -15,7 +15,8 @@
                 "Enabled Maps": ["Blizzard World Winter"],
                 "Game Mode Start": "Immediately",
                 "Respawn As Random Hero": false,
-                "Respawn Time Scalar": 0
+                "Respawn Time Scalar": 0,
+                "Enable Perks": true
             }
         },
 
