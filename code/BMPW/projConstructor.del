@@ -84,7 +84,7 @@ if (_projConstructorQueue.Length > 0)
                 TimeOfCreation: Args._GetTOC() - deltaT,
                 Radius: Args.Radius,
                 Targets: Args.Targets,
-                Velocity: Args.Speed * Args.Direction,
+                InitVelocity: Args.Speed * Args.Direction,
                 Gravity: Args.Gravity,
                 //asdfasdf if we are tying multiple effects to a proj ID, use an empty array. otherwise, use null (and SET VFX var below, dont append to it)
                 VFX: []
@@ -157,7 +157,7 @@ if (_projConstructorQueue.Length > 0)
                 fx => {
                     //Position (without beziers) is p_0 + t * (v_0 + g * t * 1/2)
                     //Direction is v_0 + g * t
-                    CreateProjectileEffect(Args.VisibleTo, fx, Args.FriendlyTo, UpdateEveryFrame(projData[EvaluateOnce(ID)].Position(EvaluateOnce(_TEMP_argsForConstructor2))), EvaluateOnce(_TEMP_argsForConstructor2).Velocity + EvaluateOnce(_TEMP_argsForConstructor2).Gravity * projData[EvaluateOnce(ID)].Time(_TEMP_argsForConstructor2), EvaluateOnce(Args.VisualRadius), ProjectileEffectReeval.PositionDirectionAndSize);
+                    CreateProjectileEffect(Args.VisibleTo, fx, Args.FriendlyTo, UpdateEveryFrame(projData[EvaluateOnce(ID)].Position(EvaluateOnce(_TEMP_argsForConstructor2))), projData[EvaluateOnce(ID)].Velocity(EvaluateOnce(_TEMP_argsForConstructor2)), EvaluateOnce(Args.VisualRadius), ProjectileEffectReeval.PositionDirectionAndSize);
                 },
                 fx => {
                     CreateEffect(Args.VisibleTo, fx, Args.ColorForFX, UpdateEveryFrame(projData[EvaluateOnce(ID)].Position(EvaluateOnce(_TEMP_argsForConstructor2))), EvaluateOnce(Args.VisualRadius), EffectRev.PositionAndRadius);

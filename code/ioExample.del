@@ -31,7 +31,7 @@ if (projData[myProjID].ProjState == ProjState.Inactive)
 }
 
 ProjectileArgs MyProjArgs: {
-    ProjFX: ProjFX.Sphere,
+    ProjFX: ProjFX.BaptisteBioticLauncher,
     ColorForFX: Color.White,
     VisualRadius: 1,
     ..ProjectileArgs.Default()

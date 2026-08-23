@@ -1,5 +1,5 @@
 import "../index.ostw";
-Number speed(in Number ID): projData[ID].ReadOnly.Velocity.Magnitude;
+Number speed(in Number ID): projData[ID].ReadOnly.InitVelocity.Magnitude;
 
 //The interval for the checks, in seconds (15 ticks / 62.5tps = 0.24s)
 Number inter: 0.24;
