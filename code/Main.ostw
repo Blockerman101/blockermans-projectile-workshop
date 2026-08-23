@@ -1,10 +1,10 @@
 import "../customGameSettings.json";
 //import "../../../Other/extraFunctions.ostw";
 import "index.ostw";
-import "_flight.del";
-import "_dev.del";
+import "Utilities/_flight.del";
+import "Utilities/tx.del";
+import "Utilities/_dev.del";
 //import "ui.del";
-import "tx.del";
 
 //rule: 'Make my projectile'
 //Event.OngoingPlayer

@@ -1,5 +1,5 @@
-import "index.ostw";
-import "../customGameSettings.json";
+import "../index.ostw";
+import "../../customGameSettings.json";
 
 //declaring the variable which i will use to store my projectile ID
 playervar Number myProjID;
@@ -31,7 +31,7 @@ if (projData[myProjID].ProjState == ProjState.Inactive)
 }
 
 ProjectileArgs MyProjArgs: {
-    ProjFX: ProjFX.BaptisteBioticLauncher,
+    ProjFX: ProjFX.Sphere,
     ColorForFX: Color.White,
     VisualRadius: 1,
     ..ProjectileArgs.Default()
