@@ -68,7 +68,7 @@ struct ProjData
     //declared at creation, immutable
     public ReadOnlyProjData ReadOnly;
     //how long the projectile has been active for
-    public Number Time(in ReadOnlyProjData overrideReadOnlyVar=ReadOnly): (UTILS_tte - overrideReadOnlyVar.TimeOfCreation);
+    public Number Time(in ReadOnlyProjData overrideReadOnlyVar=ReadOnly, in Number tte=TotalTimeElapsed()): (tte - overrideReadOnlyVar.TimeOfCreation);
         //p0 + t(v(gt/2)) or
         //p0s + tv * (gt^2 / 2)
     //The projectiles current position
@@ -253,7 +253,7 @@ single struct ProjectileArgs
     public Vector StartPosition;
     public Vector Direction;
     public Number Speed;
-    //projectiles with 0 gravity must use Vector.Zero, otherwise type-errors will break the proj
+    //projectiles with 0 gravity must use Vector.Zero (not null), otherwise type-errors will break the proj
     public Vector Gravity;
     public Player[] Targets;
     public Number Radius;

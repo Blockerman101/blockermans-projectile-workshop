@@ -53,7 +53,7 @@ if (_projConstructorQueue.Length > 0)
     //This is useful because instead of making the projectile at the current time, I can buffer it to act as if it was created at its time of call
     Number deltaTMax: 0.5;
     //This also kind of updates (because its a macro), so it doesnt need to be reevaled manually after waits
-    Number deltaT: Min(deltaTMax, UTILS_tte - Args._GetTOC()); 
+    Number deltaT: Min(deltaTMax, TotalTimeElapsed() - Args._GetTOC()); 
     //Number deltaT: 0.45;
     //ToggleableLogToInspector($"proj {ID} has {Args.Lifetime}s LT and {deltaT} deltaT");
     
