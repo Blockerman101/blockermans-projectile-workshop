@@ -61,24 +61,32 @@ single struct ProjDestructor
 
 struct ProjData
 {
+    //projectiles go from Null -> Active -> Inactive, with inactive indicating that they have been destroyed
     public ProjState ProjState;
+    //The player hit by the projectile. Remains null if no player was hit
     public Player HitPlayer;
     //declared at creation, immutable
     public ReadOnlyProjData ReadOnly;
+    //how long the projectile has been active for
     public Number Time(in ReadOnlyProjData overrideReadOnlyVar=ReadOnly): (UTILS_tte - overrideReadOnlyVar.TimeOfCreation);
-    //p0 + t(v(gt/2)) or
-    //p0 + tv * (gt^2 / 2)
+        //p0 + t(v(gt/2)) or
+        //p0s + tv * (gt^2 / 2)
+    //The projectiles current position
     public Vector Position(in ReadOnlyProjData overrideReadOnlyVar=ReadOnly): (overrideReadOnlyVar.InitPos + Time(overrideReadOnlyVar) * (overrideReadOnlyVar.Velocity + overrideReadOnlyVar.Gravity * Time(overrideReadOnlyVar) / 2));
 
-    //A variable for the projectiles position, updated every [interval] in the EC
+    //The projectiles position at time, relative to its time
+    //PositionAtTime(1) returns where the projectile will be in 1 second
+    //PositionAtTime(-1) returns where the projectile was 1 second ago (even if the projectile hasnt existed for an entire second)
     public Vector PositionAtTime(in Number extraTime): this.ReadOnly.InitPos + (Time() + extraTime) * (this.ReadOnly.Velocity + this.ReadOnly.Gravity * (Time() + extraTime) / 2);
     //public Vector PositionAtTime(in Number time): b0Time(time); //The above macro, "Position", assumes that "time" is 0. Inputting 0.5 for this will get you the position of the projectile 0.5s in the future
 
+    //The projectiles position at a raw time
+    //PositionAtRawTime(1) returns where the projectile is 1 second after creation, regardless of the projectiles current position or time
     public Vector PositionAtRawTime(in Number time): this.ReadOnly.InitPos + time * (this.ReadOnly.Velocity + this.ReadOnly.Gravity * time / 2);
 
-   
-    //public static ProjData Construct(): {ProjState: ProjState.NULL, ReadOnly: ReadOnlyProjData.Construct(), TimeOfCreation: 0, HitPlayer: null, DEBUG_ECCheck: null};  
     public static ProjData Construct(): {ProjState: ProjState.NULL, ReadOnly: ReadOnlyProjData.Construct(), HitPlayer: null};  
+
+    public static ProjData Get(in Number ID): projData[ID];
     //public static void AddArgs(in ProjectileArgs args) {projData.Map(v => projData[CurrentArrayIndex()].ProjArgs).ModAppend(args);}
 }
 
@@ -224,6 +232,7 @@ enum ProjState
 
 single struct ProjectileArgs
 {
+    //internal
     private Number _ProjID;
         public Number _GetID() {return _ProjID;}
         public ref void _SetID(in Number ID) {_ProjID = ID;}
@@ -233,6 +242,7 @@ single struct ProjectileArgs
     public (Color|Team) ColorForFX;
     public String String;
     public Number VisualRadius;
+    //WARNING: ProjectileArgs.VisibleTo = LocalPlayer() doesnt work!
     public (Player|Player[]) VisibleTo;
     public (Player|Player[]) FriendlyTo;
 
@@ -245,6 +255,8 @@ single struct ProjectileArgs
     public Player[] Targets;
     public Number Radius;
     public Number Lifetime;
+
+    //internal
     private Number _TimeOfCall;
         public Number _GetTOC() {return _TimeOfCall;}
         public ref void _SetTOC(in Number time) {_TimeOfCall = time;} 

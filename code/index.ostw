@@ -5,7 +5,7 @@ import "BMPW/playerCollision.del";
 import "BMPW/projDestructor.del";
 import "BMPW/environmentCollision.del";
 //for non-OSTW users. for you: use projData[<myProjID>].Position()
-import "BMPW/getProjPosition.del";
+//import "BMPW/getProjPosition.del";
 
 
 // -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  
@@ -48,8 +48,8 @@ public void CastPFX(in ProjFX pfx, const ProjectileType => void castProjFX, cons
         case ProjFX.String:                         castString();                                             break;
     //No effect
         case ProjFX.None:                                                                                     break;
-
     }
+    
 }
 
 public void ToggleableLogToInspector(in String str) {
