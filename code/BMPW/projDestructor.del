@@ -1,4 +1,4 @@
-import "index.ostw";
+import "../index.ostw";
 globalvar ProjDestructor[] _projDestructorQueue = []; 
 
 rule: '[BMPW] Destructor - Destroy Proj'

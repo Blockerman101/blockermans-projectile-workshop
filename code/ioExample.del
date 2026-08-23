@@ -1,4 +1,4 @@
-import "BMPW/index.ostw";
+import "index.ostw";
 import "../customGameSettings.json";
 
 playervar Number myProjID;

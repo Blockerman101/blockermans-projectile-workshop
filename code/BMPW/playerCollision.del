@@ -1,4 +1,4 @@
-import "index.ostw";
+import "../index.ostw";
 
 //a list of proj IDs
 globalvar Number[] _complexProjs = EmptyArray();

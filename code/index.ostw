@@ -1,11 +1,11 @@
-import "structs.del";
-import "projConstructor.del";
-import "stateCheck.del";
-import "playerCollision.del";
-import "projDestructor.del";
-import "environmentCollision.del";
+import "BMPW/structs.del";
+import "BMPW/projConstructor.del";
+import "BMPW/stateCheck.del";
+import "BMPW/playerCollision.del";
+import "BMPW/projDestructor.del";
+import "BMPW/environmentCollision.del";
 //for non-OSTW users. for you: use projData[<myProjID>].Position()
-import "getProjPosition.del";
+import "BMPW/getProjPosition.del";
 
 
 // -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  

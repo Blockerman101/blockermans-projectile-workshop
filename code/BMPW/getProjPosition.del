@@ -1,4 +1,4 @@
-import "index.ostw";
+import "../index.ostw";
 
 globalvar Vector projectilePosition;
 public void GetProjPosition(Number IDForGetProjPosition) "[BMPW] Get Proj Position Sub" {

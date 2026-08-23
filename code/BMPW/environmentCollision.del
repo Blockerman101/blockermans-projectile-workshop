@@ -1,4 +1,4 @@
-import "index.ostw";
+import "../index.ostw";
 
 globalvar private RaycastPositions _TEMP_tempPositions;
 globalvar Number _envCollisionIndex;

@@ -1,4 +1,4 @@
-import "index.ostw";
+import "../index.ostw";
 
 globalvar Number UTILS_tte;
 rule: '[BMPW] Initialize TTE var'

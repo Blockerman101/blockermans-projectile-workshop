@@ -1,6 +1,6 @@
 import "../customGameSettings.json";
 //import "../../../Other/extraFunctions.ostw";
-import "BMPW/index.ostw";
+import "index.ostw";
 import "_flight.del";
 import "_dev.del";
 //import "ui.del";
