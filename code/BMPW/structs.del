@@ -55,7 +55,7 @@ single struct ProjDestructor
     public static void SortQueue() {_projDestructorQueue = _projDestructorQueue.Sort(v => v.time);}
     
     //Destroy proj ASAP
-    public static void Destroy(in Number ID) {_projDestructorQueue = _projDestructorQueue.Append(<ProjDestructor>{ID: ID, time: null, TypeOfDestruction: null, TimeLeft: null, TimeOfLastJITCheck: null}).Sort(v => v.time);}
+    public static void Destroy(in Number ID) {_projDestructorQueue = _projDestructorQueue.Append(<ProjDestructor>{ID: ID, time: null, TypeOfDestruction: TypeOfDestruction.NULL, TimeLeft: null, TimeOfLastJITCheck: null}).Sort(v => v.time);}
     public static void ClearFromQueue(in Number ID) {_projDestructorQueue = _projDestructorQueue.Filter(v => v.ID != ID);}
 }
 
@@ -243,6 +243,7 @@ single struct ProjectileArgs
     public String String;
     public Number VisualRadius;
     //WARNING: ProjectileArgs.VisibleTo = LocalPlayer() doesnt work!
+    //Tip: Use ProjFX.None instead of VisibleTo = null
     public (Player|Player[]) VisibleTo;
     public (Player|Player[]) FriendlyTo;
 

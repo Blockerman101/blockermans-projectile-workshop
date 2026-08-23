@@ -48,8 +48,18 @@ public void CastPFX(in ProjFX pfx, const ProjectileType => void castProjFX, cons
         case ProjFX.String:                         castString();                                             break;
     //No effect
         case ProjFX.None:                                                                                     break;
+
+
+
+
+    //Debug
+        default:
+            SmallMessage(HostPlayer(), "Case not found. Uncomment your ProjFX in index.ostw!");
+            LogToInspector("Case not found. Uncomment your ProjFX in index.ostw!");
+            PlayEffect(HostPlayer(), PlayEffect.DebuffImpactSound, null, HostPlayer().EyePosition(), 200);
+            break;
     }
-    
+
 }
 
 public void ToggleableLogToInspector(in String str) {

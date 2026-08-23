@@ -3,6 +3,7 @@ import "../customGameSettings.json";
 
 //declaring the variable which i will use to store my projectile ID
 playervar Number myProjID;
+
 rule: 'Create My Projectile'
 Event.OngoingPlayer
 if (EventPlayer().IsButtonHeld(Button.Interact))
@@ -31,6 +32,7 @@ if (projData[myProjID].ProjState == ProjState.Inactive)
 
 ProjectileArgs MyProjArgs: {
     ProjFX: ProjFX.Sphere,
+    ColorForFX: Color.White,
     VisualRadius: 1,
     ..ProjectileArgs.Default()
 };
