@@ -150,7 +150,7 @@ if ((_envCollisionIndex < _envCollisionList.Length && _envCollisionList[_envColl
                 //Number offset: 0.016*0;
                 //Number timeToDestroy: _TEMP_tempPositions.Interval * Min(1, Max(0, LinearInterpolate(0, 1, (_TEMP_tempPositions.StartPosition.DistanceTo(_TEMP_tempPositions.RaycastPosition) / _TEMP_tempPositions.StartPosition.DistanceTo(_TEMP_tempPositions.EndPosition))))) - offset;
                 Number timeToDestroy: _TEMP_tempPositions.Interval * Min(1, Max(0, LinearInterpolate(0, 1, (_TEMP_tempPositions.StartPosition.DistanceTo(_TEMP_tempPositions.RaycastPosition) / _TEMP_tempPositions.StartPosition.DistanceTo(_TEMP_tempPositions.EndPosition)))));
-                ProjDestructor.Queue(ID, timeToDestroy, TypeOfDestruction.Environment, _TEMP_tempPositions.Interval - timeToDestroy, TimeOfLastJITCheck); //Cant add an offset for visuals because it would mess up ricochets
+                ProjDestructor.Queue(ID, timeToDestroy, TypeOfDestruction.Environment, TimeOfLastJITCheck); //Cant add an offset for visuals because it would mess up ricochets
                 ToggleableLogToInspector($"Collided! (Proj {ID} queued with {timeToDestroy} seconds\n(Current Tick {(TotalTimeElapsed() / 0.016).Floor()} with {((timeToDestroy) / 0.016).Floor()} ticks to destruction\nExpected to be destroyed at tick {((TotalTimeElapsed() + timeToDestroy) / 0.016).Floor()}))");
                 //break;
 

@@ -150,24 +150,24 @@ if (_projConstructorQueue.Length > 0)
         {
             SyncTTE();
             ToggleableLogToInspector($"Kept Creation! (proj {ID}, tick {(UTILS_tte / 0.016).Floor()})");
-            Vector ogPos: projData[EvaluateOnce(ID)].Position(EvaluateOnce(_TEMP_argsForConstructor2));
+            Vector ogPos: projData[EvaluateOnce(ID)].Position(EvaluateOnce(_TEMP_argsForConstructor2), UTILS_tte);
             Vector textPosition: UpdateEveryFrame(LocalPlayer().EyePosition() + LocalPlayer().EyePosition().Towards(ogPos) * 2);
             CastPFX(
                 pfx: Args.ProjFX,
                 fx => {
                     //Position (without beziers) is p_0 + t * (v_0 + g * t * 1/2)
                     //Direction is v_0 + g * t
-                    CreateProjectileEffect(Args.VisibleTo, fx, Args.FriendlyTo, UpdateEveryFrame(projData[EvaluateOnce(ID)].Position(EvaluateOnce(_TEMP_argsForConstructor2))), projData[EvaluateOnce(ID)].Velocity(EvaluateOnce(_TEMP_argsForConstructor2)), EvaluateOnce(Args.VisualRadius), ProjectileEffectReeval.PositionDirectionAndSize);
+                    CreateProjectileEffect(Args.VisibleTo, fx, Args.FriendlyTo, UpdateEveryFrame(projData[EvaluateOnce(ID)].Position(EvaluateOnce(_TEMP_argsForConstructor2), UTILS_tte)), projData[EvaluateOnce(ID)].Velocity(EvaluateOnce(_TEMP_argsForConstructor2), UTILS_tte), EvaluateOnce(Args.VisualRadius), ProjectileEffectReeval.PositionDirectionAndSize);
                 },
                 fx => {
-                    CreateEffect(Args.VisibleTo, fx, Args.ColorForFX, UpdateEveryFrame(projData[EvaluateOnce(ID)].Position(EvaluateOnce(_TEMP_argsForConstructor2))), EvaluateOnce(Args.VisualRadius), EffectRev.PositionAndRadius);
+                    CreateEffect(Args.VisibleTo, fx, Args.ColorForFX, UpdateEveryFrame(projData[EvaluateOnce(ID)].Position(EvaluateOnce(_TEMP_argsForConstructor2), UTILS_tte)), EvaluateOnce(Args.VisualRadius), EffectRev.PositionAndRadius);
                 },
                 () => {
                     //expensive String projectile with better depth perception
                     //if Args.VisibleTo doesnt contain local player, set to null. Otherwise, run the LOS check
                     //CreateInWorldText(!EvaluateOnce(Args.VisibleTo.Contains(LocalPlayer())) ? null : (LocalPlayer().EyePosition().IsInLineOfSight(ogPos, BarrierLOS.NoBarriersBlock) ? LocalPlayer() : null), Args.String, textPosition, Args.VisualRadius, Clipping.DoNotClip, InworldTextRev.VisibleToAndPosition, Args.ColorForFX, Spectators.DefaultVisibility);
                     //less expensive, worse depth perception
-                    CreateInWorldText(EvaluateOnce(Args.VisibleTo), Args.String, UpdateEveryFrame(projData[EvaluateOnce(ID)].Position(EvaluateOnce(_TEMP_argsForConstructor2))), Args.VisualRadius, Clipping.ClipAgainstSurfaces, InworldTextRev.VisibleToAndPosition, Args.ColorForFX, Spectators.DefaultVisibility);
+                    CreateInWorldText(EvaluateOnce(Args.VisibleTo), Args.String, UpdateEveryFrame(projData[EvaluateOnce(ID)].Position(EvaluateOnce(_TEMP_argsForConstructor2), UTILS_tte)), Args.VisualRadius, Clipping.ClipAgainstSurfaces, InworldTextRev.VisibleToAndPosition, Args.ColorForFX, Spectators.DefaultVisibility);
                 }
             );
 
