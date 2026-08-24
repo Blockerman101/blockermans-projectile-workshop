@@ -83,8 +83,17 @@ if (_projDestructorQueue.First.time <= TotalTimeElapsed())
         else
         {
             //FINE TUNE HERE
+            //use more accurate hit position if possible
+            projData[ID].Hit.Position = _TEMP_tempPositions.RaycastPosition;
         }
     }
+    else
+    {
+        //if more accurate hit position isnt possible (not TypeOfDestruction.Environment), fallback to .Position()
+        projData[ID].Hit.Position = projData[ID].Position();
+    }
+
+    projData[ID].Hit.Time = TotalTimeElapsed();
 
 
     DestroyEffect(projData[ID].Internal.VFX);
@@ -109,8 +118,8 @@ if (_projDestructorQueue.First.time <= TotalTimeElapsed())
     //This doesnt need to maintain indices like projData, so when a projectile is made Inactive, its simply removed from this array
     EnvironmentCollision.ClearFromQueue(ID);
 
-    ToggleableLogToInspector($"Destroyed Proj {ID} (Tick {(TotalTimeElapsed()/0.016).Floor()})");
 
+    ToggleableLogToInspector($"Destroyed Proj {ID} (Tick {(TotalTimeElapsed()/0.016).Floor()})");
     //Do this last, ID is tied to ProjDestructor
     _projDestructorQueue = _projDestructorQueue.Filter(v => v.ID != ID);
     //_projDestructorQueue.ModRemoveByIndex(0); //ts does NOT work when theres >1 queue for any proj

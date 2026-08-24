@@ -200,3 +200,8 @@ rule: '[DEV] track >0 rad'
 //    Number incOrDec: hp.IsButtonHeld(Button.PrimaryFire) ? 1 : -1;
 //    ticksFromCurrentTick += incOrDec;
 //}
+
+rule: '[DEV] trying out Hit.Position'
+{
+    CreateEffect(HostPlayer(), Effect.Sphere, Color.SkyBlue, ProjData.Get(1).Hit.Position, 0.2, EffectRev.VisibleToPositionAndRadius);
+}

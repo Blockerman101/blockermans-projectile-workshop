@@ -26,9 +26,10 @@ rule: 'Handle My Freeze Projectile'
 Event.OngoingPlayer
 if (projData[myProjID].ProjState == ProjState.Inactive)
 {
-    //both compile to the same thing, use whichever syntax you prefer!
-    ProjData data: projData[myProjID];
-    ProjData dataAlternateSyntax: ProjData.Get(myProjID);
+    //both compile to the same thing, .Get() is recommended but both work!
+    ProjData data: ProjData.Get(myProjID);
+    //This alternate syntax lets you write to projData, which you should not do, so be careful!
+    ProjData dataAlternateSyntax: projData[myProjID];
 
     //data.HitPlayer can be null if the projectile went inactive without hitting a player. in this case the action simply falls through
     SetStatus(data.Hit.Player, EventPlayer(), Status.Frozen, 3);

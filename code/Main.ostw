@@ -83,11 +83,11 @@ if (bigProjIDs.Any(v => projData[v].ProjState == ProjState.Inactive))
             PlayEffect(AllPlayers(), PlayEffect.BrigitteRepairPackImpactEffect, Team.Team1, current.Position(), 5);
             PlayEffect(AllPlayers(), PlayEffect.TracerRecallDisappearSound, TeamOf(EventPlayer()), current.Position(), 75);
             //if the projectile hit a player, do stuff, then traverse to next in line (by removing it)
-            if (current.HitPlayer)
+            if (current.Hit.Player)
             {
-                SetStatus(current.HitPlayer, EventPlayer(), Status.KnockedDown, 0.2);
-                Damage(current.HitPlayer, EventPlayer(), 1);
-                ToggleableLogToInspector($"registered that proj {bigProjIDs[UTILS_waitlessIterator]} hit! (trying to hit {current.HitPlayer})");
+                SetStatus(current.Hit.Player, EventPlayer(), Status.KnockedDown, 0.2);
+                Damage(current.Hit.Player, EventPlayer(), 1);
+                ToggleableLogToInspector($"registered that proj {bigProjIDs[UTILS_waitlessIterator]} hit! (trying to hit {current.Hit.Player})");
                 //Damage(current.HitPlayer, EventPlayer(), 50);
             }
                 bigProjIDs.ModRemoveByIndex(UTILS_waitlessIterator);
