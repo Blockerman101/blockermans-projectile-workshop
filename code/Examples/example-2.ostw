@@ -39,7 +39,7 @@ if (freezeProjIDs.Any(v => ProjData.Get(v).ProjState == ProjState.Inactive)) //P
     ProjData currentData: ProjData.Get(currentID);
 
     //Freeze the hit player
-    SetStatus(currentData.HitPlayer, EventPlayer(), Status.Frozen, 3);
+    SetStatus(currentData.Hit.Player, EventPlayer(), Status.Frozen, 3);
 
     //After handling, remove that ID from the list
     freezeProjIDs.ModRemoveByValue(currentID);

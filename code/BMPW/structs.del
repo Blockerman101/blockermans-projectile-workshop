@@ -63,7 +63,7 @@ struct ProjData
     //projectiles go from Null -> Active -> Inactive, with inactive indicating that they have been destroyed
     public ProjState ProjState;
     //The player hit by the projectile. Remains null if no player was hit
-    public Player HitPlayer;
+    public ProjHitData Hit;
     //declared at creation, immutable
     public InternalProjData Internal;
     //how long the projectile has been active for
@@ -85,8 +85,11 @@ struct ProjData
 
     //The projectiles current position
     public Vector Velocity(in InternalProjData overrideReadOnlyVar=Internal, in Number tte=TotalTimeElapsed()): overrideReadOnlyVar.InitVelocity + overrideReadOnlyVar.Gravity * Time(overrideReadOnlyVar, tte);
-    public static ProjData Construct(): {ProjState: ProjState.NULL, Internal: InternalProjData.Construct(), HitPlayer: null};  
-
+    public static ProjData Construct(): {
+        ProjState: ProjState.NULL,
+        Hit: ProjHitData.Construct(),  
+        Internal: InternalProjData.Construct()
+    };
     public static ProjData Get(in Number ID): projData[ID];
     //public static void AddArgs(in ProjectileArgs args) {projData.Map(v => projData[CurrentArrayIndex()].ProjArgs).ModAppend(args);}
 }
@@ -112,6 +115,19 @@ single struct InternalProjData
         Gravity: Vector.Zero
         };
 }
+
+single struct ProjHitData
+{
+    public Player Player;
+    public Vector Position;
+    public Number Time;
+    public static ProjHitData Construct(): {
+        Player: null,
+        Position: Vector.Zero,
+        Time: null
+    };
+}
+
 
 single struct RaycastPositions
 {

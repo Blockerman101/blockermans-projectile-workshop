@@ -31,7 +31,7 @@ if (projData[myProjID].ProjState == ProjState.Inactive)
     ProjData dataAlternateSyntax: ProjData.Get(myProjID);
 
     //data.HitPlayer can be null if the projectile went inactive without hitting a player. in this case the action simply falls through
-    SetStatus(data.HitPlayer, EventPlayer(), Status.Frozen, 3);
+    SetStatus(data.Hit.Player, EventPlayer(), Status.Frozen, 3);
 
     //after handling my projectile, set the ID back to 0 so im able to fire another!
     myProjID = 0;

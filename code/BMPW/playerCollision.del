@@ -34,7 +34,7 @@ if (((TotalTimeElapsed()/0.016).Floor()%5 < _complexProjs.Length) || _OTCQueue.A
         
         //CreateBeamEffect(LocalPlayer(), BeamType.GoodBeam, EvaluateOnce(_playerCollisionData.Position + _playerCollisionData.ShiftForRaycastPositions), EvaluateOnce(proj.PositionAtTime(0.016*tickCount) + _playerCollisionData.ShiftForRaycastPositions), null, EffectRev.VisibleToPositionAndRadius);
 
-        projData[ID].HitPlayer = RayCastHitPlayer(
+        projData[ID].Hit.Player = RayCastHitPlayer(
             _playerCollisionData.Position + _playerCollisionData.ShiftForRaycastPositions,
             proj.PositionAtTime(0.016*tickCount) + _playerCollisionData.ShiftForRaycastPositions,
             proj.Internal.Targets,
@@ -42,10 +42,10 @@ if (((TotalTimeElapsed()/0.016).Floor()%5 < _complexProjs.Length) || _OTCQueue.A
             true);
         //PlayEffect(HostPlayer(), PlayEffect.GoodExplosion, Color.White, proj.Position(), 0.5);
         //PlayEffect(HostPlayer(), PlayEffect.GoodExplosion, Color.White, proj.PositionAtTime(0.016*tickCount), 0.5);
-        if (proj.HitPlayer)
+        if (proj.Hit.Player)
         {
             ProjDestructor.Destroy(ID);
-            ToggleableLogToInspector($"Proj {ID} hit {proj.HitPlayer}!");
+            ToggleableLogToInspector($"Proj {ID} hit {proj.Hit.Player}!");
             OneTimeCheck.TruncateByID(ID);
             ToggleableLogToInspector($"PC removed proj {ID} from OTC");
         }
