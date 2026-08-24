@@ -93,7 +93,7 @@ if (_projDestructorQueue.First.time <= TotalTimeElapsed())
         projData[ID].Hit.Position = projData[ID].Position();
     }
 
-    projData[ID].Hit.Time = TotalTimeElapsed();
+    projData[ID].Hit.Time = TotalTimeElapsed() + (projData[ID].Hit.Time * 0.016);
 
 
     DestroyEffect(projData[ID].Internal.VFX);
@@ -129,13 +129,10 @@ if (_projDestructorQueue.First.time <= TotalTimeElapsed())
 }
 
 rule: '[BMPW] Destructor - Make Projectiles Unsafe'
-//v + n, n is the extra time
-//if (projData.Map(v => v.ProjState).Any(v => v == ProjState.Inactive))
-//if (projData.Map(v => v.Hit.Time).Any((v, idx) => idx && TotalTimeElapsed() > (v + 5)))
-if (projData.Any(v => (v.ProjState == ProjState.Inactive) && (TotalTimeElapsed() > (v.Hit.Time + 5))))
+if (projData.Any(v => (v.ProjState == ProjState.Inactive) && (TotalTimeElapsed() > (v.Hit.Time))))
 {
     projData = projData.Map(v => {
-        ProjState: (v.ProjState == ProjState.Inactive && (TotalTimeElapsed() > v.Hit.Time + 5)) ? ProjState.Unsafe : v.ProjState,
+        ProjState: (v.ProjState == ProjState.Inactive && (TotalTimeElapsed() > v.Hit.Time)) ? ProjState.Unsafe : v.ProjState,
         ..v
     });
     SmallMessage(HostPlayer(), "Unsafe rule triggered!");
@@ -167,9 +164,9 @@ rule: '[BMPW] Destructor - Clear Projectile Data'
 Event.OngoingGlobal
 if (projData.Length > 1)
 if (!_projConstructorQueue.Length)
-if (projData.All(v => v.ProjState == ProjState.Unsafe || !CurrentArrayIndex())) //If all real projectiles are inactive
+if (projData.All(v => (v.ProjState != ProjState.Active))) //If all real projectiles are inactive
 {
-    Wait(0.25, WaitBehavior.AbortWhenFalse);
+    Wait(10, WaitBehavior.AbortWhenFalse);
     DestroyEffect(projData.Map(v => v.Internal.VFX));
     WipeData();
 
@@ -188,6 +185,8 @@ private void WipeData() {
     _envCollisionIndex = 0;
 
     _complexProjs = [];
+
+    _OTCQueue = [];
     
     lastProjectileID = 0;
 }

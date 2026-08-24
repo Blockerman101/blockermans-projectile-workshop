@@ -88,7 +88,10 @@ if (_projConstructorQueue.Length > 0)
                 //asdfasdf if we are tying multiple effects to a proj ID, use an empty array. otherwise, use null (and SET VFX var below, dont append to it)
                 VFX: []
                 },
-            Hit: ProjHitData.Construct()
+            Hit: {
+                Time: Args.SaveDataTicks,
+                ..ProjHitData.Construct()
+            }
         };
 
         InternalProjData _TEMP_argsForConstructor2 = projData[ID].Internal;
@@ -145,7 +148,8 @@ if (_projConstructorQueue.Length > 0)
 //        }
 
         //The projectile can be destroyed very early, if it collides with smth before the first wait is over. If that happens, dont bother with creating it
-        if (projData[ID].ProjState != ProjState.Inactive && projData[ID].ProjState != ProjState.NULL)
+        //if (![ProjState.Inactive, ProjState.NULL, ProjState.Unsafe].Any(v => v == projData[ID].ProjState))
+        if (projData[ID].ProjState == ProjState.Active)
         {
             SyncTTE();
             ToggleableLogToInspector($"Kept Creation! (proj {ID}, tick {(UTILS_tte / 0.016).Floor()})");
@@ -198,7 +202,7 @@ if (_projConstructorQueue.Length > 0)
         }
 
         //This will happen if the proj has a deltaT >= lifetime
-        else
+        else if (projData[ID].ProjState != ProjState.Unsafe)
         {
             projData[ID].ProjState = ProjState.Inactive;
         }

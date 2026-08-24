@@ -255,24 +255,27 @@ single struct ProjectileArgs
         public ref void _SetID(in Number ID) {_ProjID = ID;}
 
     //visual args
-    public ProjFX ProjFX;
-    public (Color|Team) ColorForFX;
-    public String String;
-    public Number VisualRadius;
-    //WARNING: ProjectileArgs.VisibleTo = LocalPlayer() doesnt work!
-    //Tip: Use ProjFX.None instead of VisibleTo = null
-    public (Player|Player[]) VisibleTo;
-    public (Player|Player[]) FriendlyTo;
+        public ProjFX ProjFX;
+        public (Color|Team) ColorForFX;
+        public String String;
+        public Number VisualRadius;
+        //WARNING: ProjectileArgs.VisibleTo = LocalPlayer() doesnt work!
+        //Tip: Use ProjFX.None instead of VisibleTo = null
+        public (Player|Player[]) VisibleTo;
+        public (Player|Player[]) FriendlyTo;
 
     //functional args
-    public Vector StartPosition;
-    public Vector Direction;
-    public Number Speed;
-    //projectiles with 0 gravity must use Vector.Zero (not null), otherwise type-errors will break the proj
-    public Vector Gravity;
-    public Player[] Targets;
-    public Number Radius;
-    public Number Lifetime;
+        public Vector StartPosition;
+        public Vector Direction;
+        public Number Speed;
+        //projectiles with 0 gravity must use Vector.Zero (not null), otherwise type-errors will break the proj
+        public Vector Gravity;
+        public Player[] Targets;
+        public Number Radius;
+        //saves this projectiles data (prevents it from going Inactive -> Unsafe) for SaveDataTicks ticks (a tick is 0.016s)
+        //Note that excessive save time (doing 9999 without thinking) is not recommended and even safeguarded against by the system (which caps it at ~600 ticks)
+        public Number SaveDataTicks;
+        public Number Lifetime;
 
     //internal
     private Number _TimeOfCall;
@@ -293,6 +296,7 @@ single struct ProjectileArgs
         String: null,
         FriendlyTo: null,
         VisibleTo: null,
+        SaveDataTicks: null,
         _TimeOfCall: 0
         };
     public static ProjectileArgs Default(in Player player=EventPlayer()): {
@@ -310,6 +314,7 @@ single struct ProjectileArgs
         String: null,
         FriendlyTo: AllPlayers(TeamOf(player)),
         VisibleTo: AllPlayers(),
+        SaveDataTicks: 10,
         _TimeOfCall: null
         };
 
