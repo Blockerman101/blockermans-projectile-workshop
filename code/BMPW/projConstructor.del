@@ -77,7 +77,7 @@ if (_projConstructorQueue.Length > 0)
         projData[ID] = <ProjData> {
             ProjState: ProjState.Active, 
 
-            ReadOnly: {
+            Internal: {
                 InitPos: Args.StartPosition,
                     //This is used as the reference for other time-based values, so by modifying this, you modify everything else
                     //The lower this value is, the 'later' the time/position is
@@ -92,7 +92,7 @@ if (_projConstructorQueue.Length > 0)
             HitPlayer: null
         };
 
-        ReadOnlyProjData _TEMP_argsForConstructor2 = projData[ID].ReadOnly;
+        InternalProjData _TEMP_argsForConstructor2 = projData[ID].Internal;
 
 
 
@@ -174,7 +174,7 @@ if (_projConstructorQueue.Length > 0)
             //ProjFX.None skips the visual entirely, so theres nothing (correct) to append
             //Append a text ID if its ProjFX.String
             if (Args.ProjFX != ProjFX.None) {
-                projData[ID].ReadOnly.VFX.ModAppend(Args.ProjFX == ProjFX.String ? LastTextID() : LastCreatedEntity());
+                projData[ID].Internal.VFX.ModAppend(Args.ProjFX == ProjFX.String ? LastTextID() : LastCreatedEntity());
             } 
             
             ProjDestructor.Queue(ID, Args.Lifetime - deltaT, TypeOfDestruction.Timeout);

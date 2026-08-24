@@ -65,33 +65,33 @@ struct ProjData
     //The player hit by the projectile. Remains null if no player was hit
     public Player HitPlayer;
     //declared at creation, immutable
-    public ReadOnlyProjData ReadOnly;
+    public InternalProjData Internal;
     //how long the projectile has been active for
-    public Number Time(in ReadOnlyProjData overrideReadOnlyVar=ReadOnly, in Number tte=TotalTimeElapsed()): (tte - overrideReadOnlyVar.TimeOfCreation);
+    public Number Time(in InternalProjData overrideReadOnlyVar=Internal, in Number tte=TotalTimeElapsed()): (tte - overrideReadOnlyVar.TimeOfCreation);
         //p0 + t(v(gt/2)) or
         //p0s + tv * (gt^2 / 2)
     //The projectiles current position
-    public Vector Position(in ReadOnlyProjData overrideReadOnlyVar=ReadOnly, in Number tte=TotalTimeElapsed()): (overrideReadOnlyVar.InitPos + Time(overrideReadOnlyVar, tte) * (overrideReadOnlyVar.InitVelocity + overrideReadOnlyVar.Gravity * Time(overrideReadOnlyVar, tte) / 2));
+    public Vector Position(in InternalProjData overrideReadOnlyVar=Internal, in Number tte=TotalTimeElapsed()): (overrideReadOnlyVar.InitPos + Time(overrideReadOnlyVar, tte) * (overrideReadOnlyVar.InitVelocity + overrideReadOnlyVar.Gravity * Time(overrideReadOnlyVar, tte) / 2));
 
     //The projectiles position at time, relative to its time
     //PositionAtTime(1) returns where the projectile will be in 1 second
     //PositionAtTime(-1) returns where the projectile was 1 second ago (even if the projectile hasnt existed for an entire second)
-    public Vector PositionAtTime(in Number extraTime): this.ReadOnly.InitPos + (Time() + extraTime) * (this.ReadOnly.InitVelocity + this.ReadOnly.Gravity * (Time() + extraTime) / 2);
+    public Vector PositionAtTime(in Number extraTime): this.Internal.InitPos + (Time() + extraTime) * (this.Internal.InitVelocity + this.Internal.Gravity * (Time() + extraTime) / 2);
     //public Vector PositionAtTime(in Number time): b0Time(time); //The above macro, "Position", assumes that "time" is 0. Inputting 0.5 for this will get you the position of the projectile 0.5s in the future
 
     //The projectiles position at a raw time
     //PositionAtRawTime(1) returns where the projectile is 1 second after creation, regardless of the projectiles current position or time
-    public Vector PositionAtRawTime(in Number time): this.ReadOnly.InitPos + time * (this.ReadOnly.InitVelocity + this.ReadOnly.Gravity * time / 2);
+    public Vector PositionAtRawTime(in Number time): this.Internal.InitPos + time * (this.Internal.InitVelocity + this.Internal.Gravity * time / 2);
 
     //The projectiles current position
-    public Vector Velocity(in ReadOnlyProjData overrideReadOnlyVar=ReadOnly, in Number tte=TotalTimeElapsed()): overrideReadOnlyVar.InitVelocity + overrideReadOnlyVar.Gravity * Time(overrideReadOnlyVar, tte);
-    public static ProjData Construct(): {ProjState: ProjState.NULL, ReadOnly: ReadOnlyProjData.Construct(), HitPlayer: null};  
+    public Vector Velocity(in InternalProjData overrideReadOnlyVar=Internal, in Number tte=TotalTimeElapsed()): overrideReadOnlyVar.InitVelocity + overrideReadOnlyVar.Gravity * Time(overrideReadOnlyVar, tte);
+    public static ProjData Construct(): {ProjState: ProjState.NULL, Internal: InternalProjData.Construct(), HitPlayer: null};  
 
     public static ProjData Get(in Number ID): projData[ID];
     //public static void AddArgs(in ProjectileArgs args) {projData.Map(v => projData[CurrentArrayIndex()].ProjArgs).ModAppend(args);}
 }
 
-single struct ReadOnlyProjData
+single struct InternalProjData
 {
     //first because its used in ProjData.Time(), which is called a ton
     public Number TimeOfCreation;
@@ -102,7 +102,7 @@ single struct ReadOnlyProjData
     //the vfx associated with the projectile, usually only the projfx but ive used it for stuff like beam effects for trajectories
     public Number[] VFX;
     public Vector Gravity;
-    public static ReadOnlyProjData Construct(): {
+    public static InternalProjData Construct(): {
         TimeOfCreation: null,
         InitPos: Vector.Zero,
         Radius: 0,
