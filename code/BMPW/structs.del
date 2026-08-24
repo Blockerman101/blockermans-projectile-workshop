@@ -240,8 +240,8 @@ enum ProjState
 {
     NULL, //Debugging
     Active, //Projectile is processing passively/simply - run EC, update ProjState
-    Inactive //Projectile was spawned, then was destroyed
-    //Complex //Projectile is processing special things - player collision
+    Inactive, //Projectile was spawned, then was destroyed
+    Unsafe //The projectile ID is able to be overridden and thus have its current data destroyed
 
 }
 

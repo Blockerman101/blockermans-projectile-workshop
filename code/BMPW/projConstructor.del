@@ -15,10 +15,9 @@ globalvar ProjectileArgs[] _projConstructorQueue = [];
 
 void CreateCustomProjectile(ProjectileArgs projectileArgs) "[BMPW] CreateProj Sub"
 {
-    //if (projData.Any(v => v.ProjState == ProjState.Inactive))
-    if (IsTrueForAny(projData.Map(v => v.ProjState), ArrayElement() == ProjState.Inactive)) //Make new lastProjID
+    if (projData.Map(v => v.ProjState).Any(v => v == ProjState.Unsafe)) //Make new lastProjID
     {
-        lastProjectileID = projData.Map(v => v.ProjState == ProjState.Inactive ? CurrentArrayIndex() : false).Filter(v => v).First;
+        lastProjectileID = projData.Map(v => v.ProjState == ProjState.Unsafe ? CurrentArrayIndex() : false).Filter(v => v).First;
     }
     else
     {

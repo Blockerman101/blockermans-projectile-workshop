@@ -124,18 +124,28 @@ if (_projDestructorQueue.First.time <= TotalTimeElapsed())
     _projDestructorQueue = _projDestructorQueue.Filter(v => v.ID != ID);
     //_projDestructorQueue.ModRemoveByIndex(0); //ts does NOT work when theres >1 queue for any proj
     
-    MinWait();
+    MinWait();    
+    LoopIfConditionIsTrue();
+}
 
-    //
-    //The rest of the code in this rule is for optimization, not related to destroying the current projectile
-    //
-    
+rule: '[BMPW] Destructor - Make Projectiles Unsafe'
+//v + n, n is the extra time
+//if (projData.Map(v => v.ProjState).Any(v => v == ProjState.Inactive))
+//if (projData.Map(v => v.Hit.Time).Any((v, idx) => idx && TotalTimeElapsed() > (v + 5)))
+if (projData.Any(v => (v.ProjState == ProjState.Inactive) && (TotalTimeElapsed() > (v.Hit.Time + 5))))
+{
+    projData = projData.Map(v => {
+        ProjState: (v.ProjState == ProjState.Inactive && (TotalTimeElapsed() > v.Hit.Time + 5)) ? ProjState.Unsafe : v.ProjState,
+        ..v
+    });
+    SmallMessage(HostPlayer(), "Unsafe rule triggered!");
+
     //The closest power of 2 to the size of projData, rounded down (so if length is 25, this is 16, so you can check)
     UTILS_waitlessIterator = [4, 8, 16, 32, 64, 128, 256].Filter((v, idx) => projData.Length - 1 > v).Last;
     Number floorPowerOfTwo: UTILS_waitlessIterator;
 
     //Half the size of the database, if possible
-    if (projData.All(v => v.ProjState == ProjState.Inactive || CurrentArrayIndex() <= floorPowerOfTwo) && floorPowerOfTwo)
+    if (projData.All(v => v.ProjState == ProjState.Unsafe || CurrentArrayIndex() <= floorPowerOfTwo) && floorPowerOfTwo)
     {
         //ToggleableLogToInspector($"size: {projData.Length}, FPOT: {floorPowerOfTwo}");
 
@@ -147,6 +157,8 @@ if (_projDestructorQueue.First.time <= TotalTimeElapsed())
         //projData = projData.Filter((v, idx) => idx < floorPowerOfTwo);
         ToggleableLogToInspector($"Made size smaller! (shrank to {floorPowerOfTwo}, from {indexes.First} through {indexes.Last})");
     }
+
+    MinWait();
     LoopIfConditionIsTrue();
 }
 
@@ -155,7 +167,7 @@ rule: '[BMPW] Destructor - Clear Projectile Data'
 Event.OngoingGlobal
 if (projData.Length > 1)
 if (!_projConstructorQueue.Length)
-if (projData.All(v => v.ProjState == ProjState.Inactive || !CurrentArrayIndex())) //If all real projectiles are inactive
+if (projData.All(v => v.ProjState == ProjState.Unsafe || !CurrentArrayIndex())) //If all real projectiles are inactive
 {
     Wait(0.25, WaitBehavior.AbortWhenFalse);
     DestroyEffect(projData.Map(v => v.Internal.VFX));
