@@ -93,7 +93,8 @@ if (_projDestructorQueue.First.time <= TotalTimeElapsed())
         projData[ID].Hit.Position = projData[ID].Position();
     }
 
-    projData[ID].Hit.Time = TotalTimeElapsed() + (projData[ID].Hit.Time * 0.016);
+    //cap SaveDataTicks to +10s
+    projData[ID].Hit.Time = TotalTimeElapsed() + Min(10, projData[ID].Hit.Time * 0.016);
 
 
     DestroyEffect(projData[ID].Internal.VFX);
@@ -135,7 +136,7 @@ if (projData.Any(v => (v.ProjState == ProjState.Inactive) && (TotalTimeElapsed()
         ProjState: (v.ProjState == ProjState.Inactive && (TotalTimeElapsed() > v.Hit.Time)) ? ProjState.Unsafe : v.ProjState,
         ..v
     });
-    SmallMessage(HostPlayer(), "Unsafe rule triggered!");
+    ToggleableSmallMessage(HostPlayer(), "Unsafe rule triggered!");
 
     //The closest power of 2 to the size of projData, rounded down (so if length is 25, this is 16, so you can check)
     UTILS_waitlessIterator = [4, 8, 16, 32, 64, 128, 256].Filter((v, idx) => projData.Length - 1 > v).Last;
@@ -164,9 +165,18 @@ rule: '[BMPW] Destructor - Clear Projectile Data'
 Event.OngoingGlobal
 if (projData.Length > 1)
 if (!_projConstructorQueue.Length)
-if (projData.All(v => (v.ProjState != ProjState.Active))) //If all real projectiles are inactive
+if (projData.All(v => (v.ProjState != ProjState.Active)))
 {
-    Wait(10, WaitBehavior.AbortWhenFalse);
+    //Wait for all projs to not be active for 0.25s
+    Wait(0.25, WaitBehavior.AbortWhenFalse);
+
+    //Then, wait for them to all turn Unsafe, with a max (total) wait time of 10s
+    WaitUntil(projData.All((v, idx) => !idx || (v.ProjState == ProjState.Unsafe)) || _projConstructorQueue.Length, 9.75);
+    
+    //Ensure constructor queue is empty
+    AbortIfConditionIsFalse();
+
+    //Now, proceed with wiping data and clearing the tool
     DestroyEffect(projData.Map(v => v.Internal.VFX));
     WipeData();
 
