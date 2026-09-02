@@ -53,7 +53,7 @@ if (freezeProjIDs.Any(v => ProjData.Get(v).ProjState == ProjState.Inactive)) //P
 
 ProjectileArgs MyProjArgs: {
     ProjFX: ProjFX.Sphere,
-    ColorForFX: Color.White,
+    Color: Color.White,
     VisualRadius: 0.25,
     ..ProjectileArgs.Default()
 };

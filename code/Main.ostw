@@ -51,11 +51,11 @@ if (EventPlayer() == HostPlayer())
     //ProjectileArgs bigProj: {ProjFX: ProjFX.BaptisteBioticLauncher, Radius: 0.3, VisualRadius: 1, Speed: 50, Lifetime: 2.5, ..ProjectileArgs.Default()};
     //CreateCustomProjectile(bigProj);
 
-    //ProjectileArgs electricBall: <ProjectileArgs>{ProjFX: ProjFX.String, String: makeTX(TX[iter]), ColorForFX: Color.White, Radius: 0.5, VisualRadius: 3.0, Lifetime: 7,  ..ProjectileArgs.Default()}.CommonPatches();
+    //ProjectileArgs electricBall: <ProjectileArgs>{ProjFX: ProjFX.String, String: makeTX(TX[iter]), Color: Color.White, Radius: 0.5, VisualRadius: 3.0, Lifetime: 7,  ..ProjectileArgs.Default()}.CommonPatches();
     ProjectileArgs sphere: {
         SaveDataTicks: 10,
         ProjFX: ProjFX.BaptisteBioticLauncher,
-        ColorForFX: Color.LimeGreen,
+        Color: Color.LimeGreen,
         Radius: 0.5,
         VisualRadius: 0.5,
         Lifetime: 7,

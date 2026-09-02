@@ -40,7 +40,7 @@ if (projData[myProjID].ProjState == ProjState.Inactive)
 
 ProjectileArgs MyProjArgs: {
     ProjFX: ProjFX.Sphere,
-    ColorForFX: Color.White,
+    Color: Color.White,
     VisualRadius: 1,
     ..ProjectileArgs.Default()
 };

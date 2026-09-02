@@ -160,17 +160,41 @@ if (_projConstructorQueue.Length > 0)
                 fx => {
                     //Position (without beziers) is p_0 + t * (v_0 + g * t * 1/2)
                     //Direction is v_0 + g * t
-                    CreateProjectileEffect(Args.VisibleTo, fx, Args.FriendlyTo, UpdateEveryFrame(projData[EvaluateOnce(ID)].Position(EvaluateOnce(_TEMP_argsForConstructor2), UTILS_tte)), projData[EvaluateOnce(ID)].Velocity(EvaluateOnce(_TEMP_argsForConstructor2), UTILS_tte), EvaluateOnce(Args.VisualRadius), ProjectileEffectReeval.PositionDirectionAndSize);
+                    CreateProjectileEffect(
+                        VisibleTo:      Args.VisibleTo,
+                        ProjectileType: fx,
+                        FriendlyTo:     Args.FriendlyTo,
+                        Position:       UpdateEveryFrame(projData[EvaluateOnce(ID)].Position(EvaluateOnce(_TEMP_argsForConstructor2), UTILS_tte)),
+                        Direction:      projData[EvaluateOnce(ID)].Velocity(EvaluateOnce(_TEMP_argsForConstructor2), UTILS_tte),
+                        Oversize:       EvaluateOnce(Args.VisualRadius),
+                        Reevaluation:   ProjectileEffectReeval.PositionDirectionAndSize
+                    );
                 },
                 fx => {
-                    CreateEffect(Args.VisibleTo, fx, Args.ColorForFX, UpdateEveryFrame(projData[EvaluateOnce(ID)].Position(EvaluateOnce(_TEMP_argsForConstructor2), UTILS_tte)), EvaluateOnce(Args.VisualRadius), EffectRev.PositionAndRadius);
+                    CreateEffect(
+                        VisibleTo:      Args.VisibleTo,
+                        Type:           fx,
+                        Color:          Args.Color,
+                        Position:       UpdateEveryFrame(projData[EvaluateOnce(ID)].Position(EvaluateOnce(_TEMP_argsForConstructor2), UTILS_tte)),
+                        Radius:         EvaluateOnce(Args.VisualRadius),
+                        Reevaluation:   EffectRev.PositionAndRadius
+                    );
                 },
                 () => {
                     //expensive String projectile with better depth perception
                     //if Args.VisibleTo doesnt contain local player, set to null. Otherwise, run the LOS check
-                    //CreateInWorldText(!EvaluateOnce(Args.VisibleTo.Contains(LocalPlayer())) ? null : (LocalPlayer().EyePosition().IsInLineOfSight(ogPos, BarrierLOS.NoBarriersBlock) ? LocalPlayer() : null), Args.String, textPosition, Args.VisualRadius, Clipping.DoNotClip, InworldTextRev.VisibleToAndPosition, Args.ColorForFX, Spectators.DefaultVisibility);
+                    //CreateInWorldText(!EvaluateOnce(Args.VisibleTo.Contains(LocalPlayer())) ? null : (LocalPlayer().EyePosition().IsInLineOfSight(ogPos, BarrierLOS.NoBarriersBlock) ? LocalPlayer() : null), Args.String, textPosition, Args.VisualRadius, Clipping.DoNotClip, InworldTextRev.VisibleToAndPosition, Args.Color, Spectators.DefaultVisibility);
                     //less expensive, worse depth perception
-                    CreateInWorldText(EvaluateOnce(Args.VisibleTo), Args.String, UpdateEveryFrame(projData[EvaluateOnce(ID)].Position(EvaluateOnce(_TEMP_argsForConstructor2), UTILS_tte)), Args.VisualRadius, Clipping.ClipAgainstSurfaces, InworldTextRev.VisibleToAndPosition, Args.ColorForFX, Spectators.DefaultVisibility);
+                    CreateInWorldText(
+                        VisibleTo:      EvaluateOnce(Args.VisibleTo),
+                        Header:         Args.String,
+                        Position:       UpdateEveryFrame(projData[EvaluateOnce(ID)].Position(EvaluateOnce(_TEMP_argsForConstructor2), UTILS_tte)),
+                        Scale:          Args.VisualRadius,
+                        Clipping:       Clipping.ClipAgainstSurfaces,
+                        Reevaluation:   InworldTextRev.VisibleToAndPosition,
+                        TextColor:      Args.Color,
+                        Spectators:     Spectators.DefaultVisibility
+                    );
                 }
             );
 

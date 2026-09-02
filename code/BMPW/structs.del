@@ -256,7 +256,7 @@ single struct ProjectileArgs
 
     //visual args
         public ProjFX ProjFX;
-        public (Color|Team) ColorForFX;
+        public (Color|Team) Color;
         public String String;
         public Number VisualRadius;
         //WARNING: ProjectileArgs.VisibleTo = LocalPlayer() doesnt work!
@@ -283,7 +283,7 @@ single struct ProjectileArgs
         public ref void _SetTOC(in Number time) {_TimeOfCall = time;} 
     public static ProjectileArgs Construct(): {
         ProjFX: ProjFX.None, 
-        ColorForFX: null,
+        Color: null,
         StartPosition: Vector.Zero, 
         Direction: Vector.Zero, 
         Targets: null, 
@@ -301,7 +301,7 @@ single struct ProjectileArgs
         };
     public static ProjectileArgs Default(in Player player=EventPlayer()): {
         ProjFX: ProjFX.Sphere, 
-        ColorForFX: Color.Red,
+        Color: Color.Red,
         StartPosition: EyePosition(player), 
         Direction: player.FacingDirection(), 
         Targets: AllPlayers(OppositeTeamOf(TeamOf(player))), 
