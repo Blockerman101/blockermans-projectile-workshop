@@ -52,7 +52,16 @@ if (EventPlayer() == HostPlayer())
     //CreateCustomProjectile(bigProj);
 
     //ProjectileArgs electricBall: <ProjectileArgs>{ProjFX: ProjFX.String, String: makeTX(TX[iter]), ColorForFX: Color.White, Radius: 0.5, VisualRadius: 3.0, Lifetime: 7,  ..ProjectileArgs.Default()}.CommonPatches();
-    ProjectileArgs sphere: <ProjectileArgs>{SaveDataTicks: 10, ProjFX: ProjFX.BaptisteBioticLauncher, ColorForFX: Color.White, Radius: 0.5, VisualRadius: 0.5, Lifetime: 7,  ..ProjectileArgs.Default()}.CommonPatches();
+    ProjectileArgs sphere: {
+        SaveDataTicks: 10,
+        ProjFX: ProjFX.BaptisteBioticLauncher,
+        ColorForFX: Color.LimeGreen,
+        Radius: 0.5,
+        VisualRadius: 0.5,
+        Lifetime: 7,
+        ..ProjectileArgs.Default()
+        }.CommonPatches();
+
     ProjectileArgs sphereNoGrav: {Gravity: Vector.Zero, ..sphere}.CommonPatches();
     Vector startPos = Vector(5, 0.5, RandomReal(-10, 10));
     ProjectileArgs constArgs: <ProjectileArgs>{StartPosition: startPos, Direction: startPos.Towards(Vector(-20, 6, 0)), ..sphere};
