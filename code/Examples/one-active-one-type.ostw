@@ -1,0 +1,47 @@
+import "../index.ostw";
+import "../../customGameSettings.json";
+
+// -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -
+//simplest case: 1 projectile type, maximum 1 active projectile
+// -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -
+
+
+# declaring the variable which i will use to store my projectile ID
+playervar Number myProjID;
+
+rule: 'Create My Freeze Projectile'
+Event.OngoingPlayer
+if (EventPlayer().IsButtonHeld(Button.Interact))
+# projectile IDs are never 0, so we can do this to only allow 1 projectile to exist at a time
+if (!myProjID)
+{
+    # create the projectile
+    //common patches modifies your args with things that youll probably want, like gimbal locking fix
+    CreateCustomProjectile(Freeze.CommonPatches());
+
+    # store my projectile ID. similar to something like myEffectID = LastCreatedEntity();
+    myProjID = lastProjectileID;
+}
+
+rule: 'Handle My Freeze Projectile'
+Event.OngoingPlayer
+if (ProjData.Get(myProjID).ProjState == ProjState.Inactive)
+{
+    # both compile to the same thing, .Get() is recommended but both work!
+    ProjData data: ProjData.Get(myProjID);
+    # this alternate syntax lets you write to projData, which you should not do, so be careful!
+    ProjData dataAlternateSyntax: projData[myProjID];
+
+    # data.Hit.Player can be null if the projectile went inactive without hitting a player. in this case the action simply falls through
+    SetStatus(data.Hit.Player, EventPlayer(), Status.Frozen, 3);
+
+    # after handling my projectile, set the ID back to 0 so im able to fire another!
+    myProjID = 0;
+}
+
+ProjectileArgs Freeze: {
+    ProjFX: ProjFX.Sphere,
+    Color: Color.White,
+    VisualRadius: 1,
+    ..ProjectileArgs.Default()
+};

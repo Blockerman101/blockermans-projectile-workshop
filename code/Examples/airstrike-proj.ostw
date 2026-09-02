@@ -1,0 +1,97 @@
+import "../index.ostw";
+import "../../customGameSettings.json";
+
+// -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -
+//cool airstrike demo - make sure ProjFX.PharahRocket is enabled in index.ostw!
+// -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -
+
+playervar Number airstrikeParent;
+
+ProjectileArgs AirstrikeParent: {
+    ProjFX: ProjFX.PharahRocket,
+    Direction: (EventPlayer().FacingDirection() + Up() * 0.1).Normalize(), //add delta vector
+    Speed: 25,
+    Lifetime: 3,
+    Radius: 0.4,
+    VisualRadius: 0.4,
+    ..ProjectileArgs.Default()
+};
+
+
+Number verticalVariance: 10;
+ProjectileArgs AirstrikeChild: {
+    ProjFX: ProjFX.PharahRocket,
+    Direction: DirectionFromAngles(RandomReal(0, 360), RandomReal(270 - verticalVariance, 270 + verticalVariance)).Normalize(),
+    Gravity: Vector(0, -80, 0),
+    StartPosition: ProjData.Get(airstrikeParent).Position(),
+    Speed: 30,
+    Lifetime: RandomReal(2, 3),
+    Radius: 0.2,
+    VisualRadius: 0,
+    ..ProjectileArgs.Default()
+};
+
+rule: 'Create Airstrike Parent Projectile'
+Event.OngoingPlayer
+if (EventPlayer().IsButtonHeld(Button.Interact))
+{
+    CreateCustomProjectile(AirstrikeParent.CommonPatches());
+    airstrikeParent = lastProjectileID;
+    PlayEffect(AllPlayers(), PlayEffect.PharahConcussiveBlastSound, null, EyePosition(EventPlayer()), 80);
+
+    # since the cd is longer than the lifetime, we can assume only 1 Airstrike Parent will be active at once
+    Wait(5);
+    SmallMessage(EventPlayer(), "Airstrike Ready!");
+    PlayEffect(EventPlayer(), PlayEffect.BuffImpactSound, null, EventPlayer().EyePosition(), 65);
+}
+
+
+playervar Number[] airstrikeChild = [];
+
+rule: 'Create Airstrike Child'
+Event.OngoingPlayer
+# Run this every half second the projectile is active
+if (ProjData.Get(airstrikeParent).ProjState == ProjState.Active)
+if (ProjData.Get(airstrikeParent).Time() % 0.5 <= 0.016)
+{
+    //no common patches because this does not fire from a player
+    CreateCustomProjectile(AirstrikeChild);
+    airstrikeChild.ModAppend(lastProjectileID);
+}
+
+rule: 'Handle Airstrike Child'
+Event.OngoingPlayer
+if (airstrikeChild.Any(v => ProjData.Get(v).ProjState == ProjState.Inactive))
+{
+    Number currentID = airstrikeChild.Filter(v => ProjData.Get(v).ProjState == ProjState.Inactive).First;
+    
+    ProjData data: ProjData.Get(currentID);
+
+    # visuals
+    PlayEffect(AllPlayers(), PlayEffect.JunkratRipTireExplosionEffect, null, data.Hit.Position, 0);
+    PlayEffect(AllPlayers(), PlayEffect.JunkratRipTireExplosionSound, null, data.Hit.Position, 70);
+    
+    # functionality
+    Player[] hitPlayers: PlayersWithinRadius(data.Hit.Position, 7, OppositeTeamOf(EventPlayer().Team()), RadiusLOS.SurfacesAndEnemyBarriers);
+    Damage(hitPlayers, EventPlayer(), 80);
+    SetStatus(hitPlayers, EventPlayer(), Status.Burning, 1.5);
+    StartDamageOverTime(hitPlayers, EventPlayer(), 1.5, 20 / 1.5);
+
+
+    airstrikeChild.ModRemoveByValue(currentID);
+
+    MinWait();
+    LoopIfConditionIsTrue();
+}
+
+
+
+
+
+
+rule: '[DEV] Spawn Dummies'
+Event.OngoingGlobal
+if (HostPlayer().IsButtonHeld(Button.Crouch))
+{
+    CreateDummyBot([Hero.Dva, Hero.Bastion, Hero.Zenyatta].Random(), OppositeTeamOf(HostPlayer().Team()), -1, PositionOf(HostPlayer()), HostPlayer().FacingDirection());
+}

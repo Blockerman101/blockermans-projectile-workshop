@@ -2,58 +2,60 @@ import "../index.ostw";
 import "../../customGameSettings.json";
 
 // -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -
-//1 projectile type, multiple active projectiles
+//somewhat complex case: 1 projectile type, multiple active projectiles
 // -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -
 
 
-#init empty ID array
+# init empty ID array
 playervar Number[] freezeProjIDs = [];
+
+//set macro for proj args
+ProjectileArgs Freeze: {
+    ProjFX: ProjFX.Sphere,
+    Color: Color.White,
+    VisualRadius: 0.25,
+    ..ProjectileArgs.Default()
+};
 
 rule: 'Create My Freeze Projectile'
 Event.OngoingPlayer
 if (EventPlayer().IsButtonHeld(Button.Interact))
 {
-    #Create the projectile
-    CreateCustomProjectile(MyProjArgs.CommonPatches());
+    # create the projectile
+    //common patches modifies your args with things that youll probably want, like gimbal locking fix
+    CreateCustomProjectile(Freeze.CommonPatches());
 
-    #Append proj ID
+    # append proj ID
     freezeProjIDs.ModAppend(lastProjectileID);
 
-    #Add a 0.5s cooldown
+    # add a 0.5s cooldown
     Wait(0.5);
 
-    #Alert player that cooldown is over
+    # alert player that cooldown is over
     SmallMessage(EventPlayer(), "Freeze Projectile Ready!");
 }
 
 rule: 'Handle My Freeze Projectile'
 Event.OngoingPlayer
-#If any of my projs are inactive
+# if any of my projs are inactive
 if (freezeProjIDs.Any(v => ProjData.Get(v).ProjState == ProjState.Inactive)) //ProjData.Get(v).Projstate is the same as projData[v].ProjState
 {
-    #Find the first inactive ID in freezeProjIDs
+    # find the first inactive ID in freezeProjIDs
     Number currentID = freezeProjIDs.Filter(v => ProjData.Get(v).ProjState == ProjState.Inactive).First;
 
     //make a convenient macro for data
     //TIP: dont make variables of type ProjData, since that will compile to several variables and take up more eles than .Get()-ing whatever you need
     ProjData currentData: ProjData.Get(currentID);
 
-    #Freeze the hit player
+    # freeze the hit player
     SetStatus(currentData.Hit.Player, EventPlayer(), Status.Frozen, 3);
 
-    #After handling, remove that ID from the list
+    # after handling, remove that ID from the list
     freezeProjIDs.ModRemoveByValue(currentID);
 
-    #If youre worried about crashing, add a MinWait()! (Wait(False, Ignore Condition);)
-    #Note that this limits your handlers rate to 62.5 projs per player per second
+    # if youre worried about crashing, add a MinWait()! (Wait(False, Ignore Condition);)
+    # note that this limits your handlers rate to 62.5 projs per player per second
     //MinWait();
 
     LoopIfConditionIsTrue();
 }
-
-ProjectileArgs MyProjArgs: {
-    ProjFX: ProjFX.Sphere,
-    Color: Color.White,
-    VisualRadius: 0.25,
-    ..ProjectileArgs.Default()
-};

@@ -249,7 +249,7 @@ enum ProjState
 
 single struct ProjectileArgs
 {
-    //internal
+    //internal - do not set!
     private Number _ProjID;
         public Number _GetID() {return _ProjID;}
         public ref void _SetID(in Number ID) {_ProjID = ID;}
@@ -277,7 +277,7 @@ single struct ProjectileArgs
         public Number SaveDataTicks;
         public Number Lifetime;
 
-    //internal
+    //internal - do not set!
     private Number _TimeOfCall;
         public Number _GetTOC() {return _TimeOfCall;}
         public ref void _SetTOC(in Number time) {_TimeOfCall = time;} 
@@ -318,10 +318,14 @@ single struct ProjectileArgs
         _TimeOfCall: null
         };
 
+    //Modifies your args with things that youll probably want, like gimbal locking fix
     public ProjectileArgs CommonPatches(in Player player=EventPlayer()) {
         return {
-            StartPosition: this.StartPosition + this.Direction * this.Radius, //ensure proj starts out of player
-            Direction: VerticalFacingAngleOf(player) <= -88.9 ? Up() : (VerticalFacingAngleOf(player) >= 88.9 ? Down() : this.Direction), //fix gimbal locking
+            //ensure proj starts out of player
+            StartPosition: this.StartPosition + this.Direction * this.Radius, 
+            
+            //fix gimbal locking
+            Direction: VerticalFacingAngleOf(player) <= -88.9 ? Up() : (VerticalFacingAngleOf(player) >= 88.9 ? Down() : this.Direction),
             ..this
         };
     }

@@ -12,7 +12,7 @@
         {
             "Skirmish":
             {
-                "Enabled Maps": ["Blizzard World Winter"],
+                "Enabled Maps": ["Workshop Island Night"],
                 "Game Mode Start": "Immediately",
                 "Respawn As Random Hero": false,
                 "Respawn Time Scalar": 0,
