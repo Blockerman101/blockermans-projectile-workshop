@@ -1,0 +1,82 @@
+import "../index.ostw";
+import "../../customGameSettings.json";
+import "../Utilities/_dev.del";
+
+// -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -
+//showcase how BMPW can be used to track abilities
+// -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -
+
+
+//this system is made to account for 1 active helix rocket per player
+//having multiple active helix rockets will result in only the last one being handled
+
+ProjectileArgs HelixRocket: {
+    Speed: 50,
+    //add 0.3 to account for edge cases, since BMPW player hit detection is (currently) not as accurate as in-game hit detection
+    Radius: 0.32 + 0.3,
+    VisualRadius: 0.32,
+    Lifetime: 2,
+    //use ProjFX.None to make it invisible (doesnt use an entity), but can ensure tracking is accurate by swapping to ProjFX.Sphere temporarily
+    ProjFX: ProjFX.None,
+    //ProjFX: ProjFX.Sphere,
+    Gravity: Vector.Zero,
+    ..ProjectileArgs.Default()
+};
+
+playervar Number HelixID;
+rule: 'Track Helix'
+Event.OngoingPlayer
+if (EventPlayer().Hero() == Hero.Soldier76)
+if (EventPlayer().IsFiringSecondary())
+{
+    # helix has 6 ticks (0.016 * 6) of startup
+    # the workshops FacingDirectionOf() can be a couple ticks ahead or behind, so this number may need to be tweaked
+    # its possible for wait time to be negative, so you may need to make a queue of the players last n facing dirs and use one of those
+    //Wait(0.016 * 6, WaitBehavior.AbortWhenFalse);
+
+    # this example is for base game helix rocket, where there
+    CreateCustomProjectile(HelixRocket);
+    HelixID = lastProjectileID;
+}
+
+rule: 'Handle Helix'
+Event.OngoingPlayer
+if (ProjData.Get(HelixID).ProjState == ProjState.Inactive)
+{
+    ProjData data: ProjData.Get(HelixID);
+    
+    # visuals
+    PlayEffect(AllPlayers(), PlayEffect.CassidyFlashbangExplosionEffect, EventPlayer().Team(), data.Hit.Position, 0);
+    PlayEffect(AllPlayers(), PlayEffect.AsheDynamiteExplosionSound, EventPlayer().Team(), data.Hit.Position, 30);
+
+    Player[] hitTargets: PlayersWithinRadius(data.Hit.Position, 5, OppositeTeamOf(EventPlayer().Team()), RadiusLOS.SurfacesAndEnemyBarriers);
+    SetStatus(hitTargets, EventPlayer(), Status.KnockedDown, 1);
+    # make direct hits stun for 2 seconds instead of one
+    SetStatus(data.Hit.Player, EventPlayer(), Status.KnockedDown, 2);
+
+
+}
+
+
+
+
+
+disabled rule: '[DEV] track helix with camera'
+Event.OngoingPlayer
+if (ProjData.Get(HelixID).ProjState == ProjState.Active)
+{
+    StartCamera(EventPlayer(), ProjData.Get(HelixID).Position() - EventPlayer().FacingDirection() * 1, ProjData.Get(HelixID).Position(), 0);
+    WaitUntil(ProjData.Get(HelixID).ProjState != ProjState.Active, 4);
+    Wait(0.5);
+    StopCamera(EventPlayer());
+}
+
+rule: '[DEV] Spawn Dummies'
+Event.OngoingGlobal
+if (HostPlayer().IsButtonHeld(Button.Crouch))
+{
+    //CreateDummyBot([Hero.Dva, Hero.Bastion, Hero.Zenyatta].Random(), OppositeTeamOf(HostPlayer().Team()), -1, PositionOf(HostPlayer()), HostPlayer().FacingDirection());
+    CreateDummyBot([Hero.Zenyatta].Random(), OppositeTeamOf(HostPlayer().Team()), -1, PositionOf(HostPlayer()), HostPlayer().FacingDirection());
+    Player dummy = LastCreatedEntity();
+    CreateEffect(HostPlayer(), Effect.Sphere, Color.Red, dummy.Position(), 0.25, EffectRev.PositionAndRadius);
+}
