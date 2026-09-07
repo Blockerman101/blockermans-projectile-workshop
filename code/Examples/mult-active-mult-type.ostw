@@ -1,0 +1,226 @@
+import "../index.ostw";
+import "../../customGameSettings.json";
+
+// -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -
+//complex case: multiple projectile types, multiple active projectiles
+// -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -
+
+
+//my 4 proj types
+
+ProjectileArgs Bullet: {
+    Speed: 75,
+    Lifetime: 2,
+    Radius: 0.25,
+    VisualRadius: 0.25,
+    ProjFX: ProjFX.Sphere,
+    Color: Color.Purple,
+    ..ProjectileArgs.Default()
+};
+
+ProjectileArgs Bomb: {
+    Speed: 15,
+    //Add delta vector
+    Direction: (EventPlayer().FacingDirection() + Up() * 0.13).Normalize(),
+    Gravity: Vector(0, -3, 0),
+    Lifetime: 5,
+    ProjFX: ProjFX.Sphere,
+    Color: Color.Gray,
+    VisualRadius: 2,
+    Radius: 2,
+    //there are 62.5 ticks in a second, so having 65 save data ticks ensures my ProjData will still be there after a 1s fuse
+    SaveDataTicks: 65,
+    ..ProjectileArgs.Default()
+};
+
+ProjectileArgs Freeze: {
+    ProjFX: ProjFX.Sphere,
+    Color: Color.White,
+    Speed: 40,
+    VisualRadius: 0.25,
+    ..ProjectileArgs.Default()
+};
+
+ProjectileArgs Burn: {
+    Color: Color.Red,
+    ..Freeze //notice how we can inherit the other args of Freeze to make coding easier!
+};
+
+
+
+
+enum ProjType {
+    NULL, //for debugging, if need be
+    Bullet,
+    Bomb,
+    Freeze,
+    Burn
+}
+
+struct MyProj
+{
+    public Number ID;
+    public ProjType Type;
+}
+
+# this type of structure ties the ID and proj type together
+playervar MyProj[] projs = [];
+
+rule: 'Config'
+Event.OngoingPlayer
+if (HasSpawned(EventPlayer()))
+{
+    # disallow normal buttons
+    DisallowButton(EventPlayer(), Button.PrimaryFire);
+    DisallowButton(EventPlayer(), Button.SecondaryFire);
+    DisallowButton(EventPlayer(), Button.Ability1);
+    DisallowButton(EventPlayer(), Button.Ability2);
+
+    # set custom ammo
+    SetMaxAmmo(EventPlayer(), 0, 10);
+    SetAmmo(EventPlayer(), 0, 10);
+}
+
+Boolean NoStuns: !HasStatus(EventPlayer(), Status.Stunned);
+
+rule: 'Create Bullet'
+Event.OngoingPlayer
+if (IsButtonHeld(EventPlayer(), Button.PrimaryFire))
+if (Ammo(EventPlayer(), 0))
+if (!IsReloading(EventPlayer()))
+if (NoStuns)
+{
+    CreateCustomProjectile(Bullet);
+    projs.ModAppend(<MyProj>{
+        ID: lastProjectileID,
+        Type: ProjType.Bullet
+    });
+
+    # dec ammo
+    SetAmmo(EventPlayer(), 0, Ammo(EventPlayer()) - 1);
+
+    # 0.2s cooldown
+    Wait(0.2);
+    LoopIfConditionIsTrue();
+}
+
+//creating projectiles
+
+rule: 'Create Bomb'
+Event.OngoingPlayer
+if (IsButtonHeld(EventPlayer(), Button.SecondaryFire))
+if (!AbilityCooldown(EventPlayer(), Button.SecondaryFire))
+if (NoStuns)
+{
+    CreateCustomProjectile(Bomb.CommonPatches());
+    projs.ModAppend(<MyProj>{
+        ID: lastProjectileID,
+        Type: ProjType.Bomb
+    });
+
+    # set cd through SetAbilityCooldown()
+    SetAbilityCooldown(EventPlayer(), Button.SecondaryFire, 8);
+    Wait(8);
+    SetAbilityCooldown(EventPlayer(), Button.SecondaryFire, 0);
+}
+
+rule: 'Create Freeze'
+Event.OngoingPlayer
+if (IsButtonHeld(EventPlayer(), Button.Ability1))
+if (!AbilityCooldown(EventPlayer(), Button.Ability1))
+if (NoStuns)
+{
+    CreateCustomProjectile(Freeze);
+    projs.ModAppend(<MyProj>{
+        ID: lastProjectileID,
+        Type: ProjType.Freeze
+    });
+
+    # set cd through SetAbilityCooldown()
+    SetAbilityCooldown(EventPlayer(), Button.Ability1, 5);
+    Wait(5);
+    SetAbilityCooldown(EventPlayer(), Button.Ability1, 0);
+}
+
+rule: 'Create Burn'
+Event.OngoingPlayer
+if (IsButtonHeld(EventPlayer(), Button.Ability2))
+if (!AbilityCooldown(EventPlayer(), Button.Ability2))
+if (NoStuns)
+{
+    CreateCustomProjectile(Burn);
+    projs.ModAppend(<MyProj>{
+        ID: lastProjectileID,
+        Type: ProjType.Burn
+    });
+
+    # set cd through SetAbilityCooldown()
+    SetAbilityCooldown(EventPlayer(), Button.Ability2, 5);
+    Wait(5);
+    SetAbilityCooldown(EventPlayer(), Button.Ability2, 0);
+}
+
+//handle projectiles
+
+rule: 'Handle My Projs'
+Event.OngoingPlayer
+if (projs.Map(v => v.ID).Any(v => ProjData.Get(v).ProjState == ProjState.Inactive))
+{
+    # convenient macro for each struct field
+    Number[] IDs: projs.Map(v => v.ID);
+    ProjType[] Types: projs.Map(v => v.Type);
+
+    # find the first inactive ID and type
+    Number currentID = IDs.Filter(v => ProjData.Get(v).ProjState == ProjState.Inactive).First;
+    # macro for the type is p cheap since we are already storing the ID
+    ProjType currentType: Types[IDs.IndexOf(currentID)];
+
+
+    ProjData currentData: ProjData.Get(currentID);
+
+    //handle each proj type
+    switch (currentType)
+    {
+        case ProjType.Bullet:   
+            Damage(currentData.Hit.Player, EventPlayer(), 50);
+            break;
+
+        case ProjType.Bomb:
+            async! ExplodeBomb(currentID); //ensure the timeout of the bomb does not interfere with handling other projs
+            break;
+
+        case ProjType.Freeze:   
+            SetStatus(currentData.Hit.Player, EventPlayer(), Status.Frozen, 1.5);
+            break;
+
+        case ProjType.Burn:     
+            SetStatus(currentData.Hit.Player, EventPlayer(), Status.Burning, 3);
+            StartDamageOverTime(currentData.Hit.Player, EventPlayer(), 3, 45);
+            break;
+
+    }
+
+    # change currentID to the index to remove of our projs struct
+    currentID = projs.Map(v => v.ID).IndexOf(currentID);
+    projs.ModRemoveByIndex(currentID);
+
+    //MinWait(); //optional minwait for performance
+    LoopIfConditionIsTrue();
+}
+
+public void ExplodeBomb(Number ID) "Explode Bomb"
+{
+    ProjData currentData: ProjData.Get(ID);
+    PlayEffect(AllPlayers(), PlayEffect.WidowmakerVenomMineExplosionEffect, null, currentData.Hit.Position, 0);
+    Wait(1);
+    PlayEffect(AllPlayers(), PlayEffect.BastionTankCannonExplosionEffect, TeamOf(EventPlayer()), currentData.Hit.Position, 0);
+    Damage(PlayersWithinRadius(currentData.Hit.Position, 7, OppositeTeamOf(TeamOf(EventPlayer())), RadiusLOS.Surfaces), EventPlayer(), 190);
+}
+
+
+rule: '[DEV] Spawn Dummies'
+Event.OngoingGlobal
+if (HostPlayer().IsButtonHeld(Button.Crouch))
+{
+    CreateDummyBot([Hero.Dva, Hero.Bastion, Hero.Zenyatta].Random(), OppositeTeamOf(HostPlayer().Team()), -1, PositionOf(HostPlayer()), HostPlayer().FacingDirection());
+}
