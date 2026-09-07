@@ -19,7 +19,7 @@ enum UIType
     //ExportArgs
 }
 
-enum UIArgName
+enum OLD_UIArgName
 {
     _ProjID,              //0
     ProjFX,               //1
@@ -38,8 +38,51 @@ enum UIArgName
     EnableEffectiveSize,  //14
     EffectiveSize         //15
 }
+enum UIArgName
+{
+    _ProjID,                //1
+    ProjFX,                 //1
+    Color,                  //~
+    String,                 //~
+    VisualRadius,           //1
+    VisibleTo,              //1
+    FriendlyTo,             //1
+    StartPosition,          //1
+    Direction,              //1
+    Speed,                  //1
+    Gravity,                //1
+    Targets,                //1
+    Radius,                 //1
+    SaveDataTicks,          //1
+    Lifetime,               //1
+    _TimeOfCall,            //1
 
+    ExportActions,          //1
+    UseRawValues,           //1
+    ChangeFiringButton,     //1
+    DeltaVector,            //1
+    EnableEffectiveSize,    //0
+    EffectiveSize           //0
+}
 
+/*
+private     Number                  _ProjID
+public      ProjFX                  ProjFX
+public      (Color|Team)            Color
+public      String                  String
+public      Number                  VisualRadius
+public      (Player|Player[])       VisibleTo
+public      (Player|Player[])       FriendlyTo
+public      Vector                  StartPosition
+public      Vector                  Direction
+public      Number                  Speed
+public      Vector                  Gravity
+public      Player[]                Targets
+public      Number                  Radius
+public      Number                  SaveDataTicks
+public      Number                  Lifetime
+private     Number                  _TimeOfCall
+*/
 
 single struct ProjArgData
 {
@@ -56,6 +99,7 @@ single struct ProjArgData
     public Boolean Internal;
     public UIType UIType;
     //Whether the default value for this arg is constant. ex. startPos = Eye Position is not constant, speed = 20 is
+    //If the arg is constant, this field returns an empty string
     public String TextForInconstantValue;
     public String Name; //Never changes
     public Boolean IsArg;
@@ -113,6 +157,53 @@ globalvar ProjArgData[] UI = [
         ..ProjArgData.Construct()
     },
 
+    //Color
+    {
+        Pointer: UIArgName.Color,
+        UIType: UIType.Special,
+        Name: "Color",
+
+        ActionForSpecialType: incOrDec => {
+            _projArgs[ArgIndexForUI.First] = (_Colors.IndexOf(_projArgs[ArgIndexForUI.First]) + incOrDec) >= 0 ? _Colors[(_Colors.IndexOf(_projArgs[ArgIndexForUI.First]) + incOrDec) % (_ColorsLength)] : _Colors.Last;
+        },
+        ..ProjArgData.Construct()
+    },
+
+    //String
+    {
+        Pointer: UIArgName.String,
+        UIType: UIType.NULL, //gonna need a bank of TX imported beforehand by user
+        Name: "String",
+        ..ProjArgData.Construct()
+    },
+
+    //VisualRadius
+    {
+        Pointer: UIArgName.VisualRadius,
+        UIType: UIType.Number,
+        MinAndMax: [0, 1000000],
+        Name: "Radius (Visual)",
+        ..ProjArgData.Construct()
+    },
+
+    //VisibleTo
+    {
+        Pointer: UIArgName.VisibleTo,
+        UIType: UIType.NULL,
+        Name: "Visible To",
+        TextForInconstantValue: "All Players(All Teams)", //asdfasdf will need to make functional
+        ..ProjArgData.Construct()
+    },
+
+    //FriendlyTo
+    {
+        Pointer: UIArgName.FriendlyTo,
+        UIType: UIType.NULL,
+        Name: "Friendly To",
+        TextForInconstantValue: "All Players(Team Of(EP))", //asdfasdf will need to make functional
+        ..ProjArgData.Construct()
+    },
+
     //StartPosition
     {
         Pointer: UIArgName.StartPosition,
@@ -122,6 +213,7 @@ globalvar ProjArgData[] UI = [
         TextForInconstantValue: "Eye Position(EP)",
         ..ProjArgData.Construct()
     },
+
     //Direction
     {
         Pointer: UIArgName.Direction,
@@ -129,6 +221,25 @@ globalvar ProjArgData[] UI = [
         UIType: UIType.Vector,
         Name: "Direction",
         TextForInconstantValue: "Facing Dir(EP)",
+        ..ProjArgData.Construct()
+    },
+
+    //Speed
+    {
+        Pointer: UIArgName.Speed,
+        Internal: false,
+        UIType: UIType.Number,
+        MinAndMax: [0, 1000000],
+        Name: "Speed",
+        ..ProjArgData.Construct()
+    },
+
+    //Gravity
+    {
+        Pointer: UIArgName.Gravity,
+        Internal: false,
+        UIType: UIType.Vector,
+        Name: "Gravity",
         ..ProjArgData.Construct()
     },
 
@@ -141,21 +252,21 @@ globalvar ProjArgData[] UI = [
         ..ProjArgData.Construct()
     },
 
-    //Oversize
+    //Radius
     {
-        Pointer: UIArgName.Oversize,
+        Pointer: UIArgName.Radius,
         Internal: false,
         UIType: UIType.Number,
-        Name: "Oversize",
-        MinAndMax: [0, 1],
+        MinAndMax: [0, 1000000],
+        Name: "Radius (In-World)",
         ..ProjArgData.Construct()
     },
-    //Speed
+
+    //SaveDataTicks
     {
-        Pointer: UIArgName.Speed,
-        Internal: false,
+        Pointer: UIArgName.SaveDataTicks,
         UIType: UIType.Number,
-        Name: "Speed",
+        Name: "Save-Data Ticks",
         ..ProjArgData.Construct()
     },
 
@@ -169,15 +280,6 @@ globalvar ProjArgData[] UI = [
         ..ProjArgData.Construct()
     },
 
-    //Gravity
-    {
-        Pointer: UIArgName.Gravity,
-        Internal: false,
-        UIType: UIType.Vector,
-        Name: "Gravity",
-        ..ProjArgData.Construct()
-    },
-
     //_TimeOfCall
     {
         Pointer: UIArgName._TimeOfCall,
@@ -185,6 +287,10 @@ globalvar ProjArgData[] UI = [
         //Name: "_TimeOfCall",
         ..ProjArgData.Construct()
     },
+
+    //  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -
+    //  non args below
+    //  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -
 
     //Export Actions
     {
@@ -220,7 +326,7 @@ globalvar ProjArgData[] UI = [
         UIType: UIType.Special,
         ActionForSpecialType: incOrDec => {
             //((EventPlayer()._projArgs[ArgIndexForUI.First] + incOrDec) >= 0 ? (EventPlayer()._projArgs[ArgIndexForUI.First] + incOrDec)%countOfProjFX : countOfProjFX - 1);
-            UI[12].ValueForNonArg = (buttonsForFiringButton.IndexOf(UI[12].ValueForNonArg) + incOrDec >= 0 ? buttonsForFiringButton[(buttonsForFiringButton.IndexOf(UI[12].ValueForNonArg) + incOrDec)%buttonsForFiringButton.Length] : buttonsForFiringButton.Last);
+            UI[UIArgName.ChangeFiringButton].ValueForNonArg = (buttonsForFiringButton.IndexOf(UI[UIArgName.ChangeFiringButton].ValueForNonArg) + incOrDec >= 0 ? buttonsForFiringButton[(buttonsForFiringButton.IndexOf(UI[UIArgName.ChangeFiringButton].ValueForNonArg) + incOrDec)%buttonsForFiringButton.Length] : buttonsForFiringButton.Last);
         },
         ValueForNonArg: Button.Interact,
         //OverrideText: () => <"<0>", ButtonToText(UI[12].ValueForNonArg)>,
@@ -234,29 +340,28 @@ globalvar ProjArgData[] UI = [
         IsArg: false,
         UIType: UIType.Number,
         ..ProjArgData.Construct()
-    },
-
-    //Enable Effective Size
-    {
-        Pointer: UIArgName.EnableEffectiveSize,
-        Name: "Enable effective size",
-        IsArg: false,
-        UIType: UIType.Boolean,
-        ValueForNonArg: false,
-        ..ProjArgData.Construct()
-    },
-    //Effective Size
-    {
-        Pointer: UIArgName.EffectiveSize,
-        Name: "Effective size",
-        IsArg: false,
-        UIType: UIType.Number,
-        ValueForNonArg: 0.5,
-        ..ProjArgData.Construct()
     }
+//    //Enable Effective Size
+//    {
+//        Pointer: UIArgName.EnableEffectiveSize,
+//        Name: "Enable effective size",
+//        IsArg: false,
+//        UIType: UIType.Boolean,
+//        ValueForNonArg: false,
+//        ..ProjArgData.Construct()
+//    },
+//    //Effective Size
+//    {
+//        Pointer: UIArgName.EffectiveSize,
+//        Name: "Effective size",
+//        IsArg: false,
+//        UIType: UIType.Number,
+//        ValueForNonArg: 0.5,
+//        ..ProjArgData.Construct()
+//    }
 ];
 Button[] buttonsForFiringButton: [Button.Ability1, Button.Ability2, Button.Crouch, Button.Interact, Button.Jump, Button.Melee, Button.PrimaryFire, Button.Reload, Button.SecondaryFire, Button.Ultimate];
-
+//Button[] buttonsTest: GetAllEnumValues<Button>();
 public String ButtonToText(in Button button) {
     switch (button)
     {
@@ -272,6 +377,28 @@ public String ButtonToText(in Button button) {
         case Button.Ultimate:       return "Ultimate";          break;
     }
 }
+
+Color[] _Colors: [
+    Color.Aqua,
+    Color.Black,
+    Color.Blue,
+    Color.Gray,
+    Color.Green,
+    Color.LimeGreen,
+    Color.Orange,
+    Color.Purple,
+    Color.Red,
+    Color.Rose,
+    Color.SkyBlue,
+    Color.Team1,
+    Color.Team2,
+    Color.Turquoise,
+    Color.Violet,
+    Color.White,
+    Color.Yellow
+];
+
+Number _ColorsLength: 17;
 
 //struct ProjArgDataForUI
 //{
@@ -299,7 +426,6 @@ ProjectileArgs args: HostPlayer()._projArgs;
 
 Player host: HostPlayer();
 playervar ProjectileArgs _projArgs = ProjectileArgs.Default();
-ProjectileArgs defaultArgsWithVectors: {StartPosition: Vector(0,0,0), Direction: Vector(0,0,0), ..ProjectileArgs.Default(host)};
 
 void updateInconstants(Player player=HostPlayer()) "Update Inconstants" {
     if (!UI[UIArgName.UseRawValues].ValueForNonArg) {
@@ -368,7 +494,15 @@ if (UI.Length)
 
     Wait(1);
     CreateHudText(VisibleTo: LocalPlayer(),
-        Header: ((!lp.editingArgs || !bindings.Map(v => v.button).Contains(UI[UIArgName.ChangeFiringButton].ValueForNonArg)) ? $"Press {makeFG('fg55FF55FF', InputBindingString(UI[UIArgName.ChangeFiringButton].ValueForNonArg))} to fire projectile!" : $"(Button: {InputBindingString(UI[UIArgName.ChangeFiringButton].ValueForNonArg)}) " + makeFG('fg990000FF', 'Stop editing args')) + $"\nPress {InputBindingString(Button.Crouch)} + {InputBindingString(Button.PrimaryFire)} to start/stop editing\nPress {InputBindingString(Button.Crouch)} + {InputBindingString(Button.SecondaryFire)} to change heroes",
+    //header is an if-then-else + additional info that doesnt change
+        Header:
+            ((!lp.editingArgs || !bindings.Map(v => v.button).Contains(UI[UIArgName.ChangeFiringButton].ValueForNonArg))
+                ?
+            ($"Press {makeFG('fg55FF55FF', InputBindingString(UI[UIArgName.ChangeFiringButton].ValueForNonArg))} to fire projectile!")
+                :
+            ($"(Button: {InputBindingString(UI[UIArgName.ChangeFiringButton].ValueForNonArg)}) " + makeFG('fg990000FF', 'Stop editing args')))
+            
+            + $"\nPress {InputBindingString(Button.Crouch)} + {InputBindingString(Button.PrimaryFire)} to start/stop editing\nPress {InputBindingString(Button.Crouch)} + {InputBindingString(Button.SecondaryFire)} to change heroes",
         Location: Location.Left, SortOrder: -1, Reevaluation: HudTextRev.VisibleToAndString, Spectators: Spectators.DefaultVisibility);
     String colorForBindings: 'fg7777FFFF';
     CreateHudText(VisibleTo: LocalPlayer(),
@@ -498,7 +632,7 @@ if ((bindings.Any(v => IsButtonHeld(EventPlayer(), v.button)) && editingArgs) ||
                 //if (current.IsArg) {
                 //TEMP || true FOR DEV
                 //May not be needed in general
-                    if (!current.TextForInconstantValue || true) {
+                    if (!current.TextForInconstantValue) {
                         switch(current.UIType) {
                             //If type -> if increase button is held, increase, else, decrease
                             case UIType.Number:
@@ -585,46 +719,47 @@ if ((bindings.Any(v => IsButtonHeld(EventPlayer(), v.button)) && editingArgs) ||
     }
 }
 
+rule: 'Fire Projectile'
+Event.OngoingPlayer
+if (EventPlayer().IsButtonHeld(UI[UIArgName.ChangeFiringButton].ValueForNonArg))
+if (!editingArgs || !bindings.Map(v => v.button).Contains(UI[UIArgName.ChangeFiringButton].ValueForNonArg))
+{
+    updateInconstants(EventPlayer());
+    SmallMessage(HostPlayer(), "proj created");
+
+    ProjectileArgs processed: {Direction: (_projArgs.Direction + Vector(0, UI[UIArgName.DeltaVector].ValueForNonArg, 0)).Normalize(), .._projArgs};
+    CreateCustomProjectile(processed.CommonPatches());
+    _projIDs.ModAppend(lastProjectileID);
+}
+
+
+rule: 'Handle Projectile'
+Event.OngoingPlayer
+if (_projIDs.Any(v => ProjData.Get(v).ProjState == ProjState.Inactive))
+{
+    Number currentID = _projIDs.Filter(v => ProjData.Get(v).ProjState == ProjState.Inactive).First;
+    ProjData currentData: ProjData.Get(currentID);
+
+    SetStatus(currentData.Hit.Player, EventPlayer(), Status.Frozen, 3);
+
+    _projIDs.ModRemoveByValue(currentID);
+
+    MinWait();
+    LoopIfConditionIsTrue();
+}
+
+
+globalvar Number[] _projIDs = [];
+
 Number countOfProjFX: GetAllEnumValues<ProjFX>().Length;
-//Number countOfProjFX: 30;
 
-
-//public void UpdateOversizeByEffectiveSize() {
-//    //Data gathered by ispeakpeak
-//    //https://discord.com/channels/570672959799164958/1253195280573136896/1253203348610486326
-//    if (UI[UIArgName.EnableEffectiveSize].ValueForNonArg)
-//    {
-//        switch (host._projArgs.ProjFX)
-//        {
-//            case ProjFX.BaptisteBioticLauncher:         UI[UIArgName.EffectiveSize].ValueForNonArg = Clamp(UI[UIArgName.EffectiveSize].ValueForNonArg, 00.150, 06.750);    host._projArgs.Oversize = (UI[UIArgName.EffectiveSize].ValueForNonArg - 00.150) / (06.750 - 00.150);      break;
-//            case ProjFX.BastionA36TacticalGrenade:      UI[UIArgName.EffectiveSize].ValueForNonArg = Clamp(UI[UIArgName.EffectiveSize].ValueForNonArg, 00.500, 07.500);    host._projArgs.Oversize = (UI[UIArgName.EffectiveSize].ValueForNonArg - 00.500) / (07.500 - 00.500);      break;
-//            case ProjFX.EchoStickyBomb:                 UI[UIArgName.EffectiveSize].ValueForNonArg = Clamp(UI[UIArgName.EffectiveSize].ValueForNonArg, 00.200, 05.000);    host._projArgs.Oversize = (UI[UIArgName.EffectiveSize].ValueForNonArg - 00.200) / (05.000 - 00.200);      break;
-//            case ProjFX.GenjiShuriken:                  UI[UIArgName.EffectiveSize].ValueForNonArg = Clamp(UI[UIArgName.EffectiveSize].ValueForNonArg, 00.100, 02.900);    host._projArgs.Oversize = (UI[UIArgName.EffectiveSize].ValueForNonArg - 00.100) / (02.900 - 00.100);      break;
-//            case ProjFX.LucioSonicAmplifier:            UI[UIArgName.EffectiveSize].ValueForNonArg = Clamp(UI[UIArgName.EffectiveSize].ValueForNonArg, 00.625, 05.000);    host._projArgs.Oversize = (UI[UIArgName.EffectiveSize].ValueForNonArg - 00.625) / (05.000 - 00.625);      break;
-//            case ProjFX.MeiIcicle:                      UI[UIArgName.EffectiveSize].ValueForNonArg = Clamp(UI[UIArgName.EffectiveSize].ValueForNonArg, 00.625, 09.750);    host._projArgs.Oversize = (UI[UIArgName.EffectiveSize].ValueForNonArg - 00.625) / (09.750 - 00.625);      break;
-//            case ProjFX.MercyCaduceusBlaster:           UI[UIArgName.EffectiveSize].ValueForNonArg = Clamp(UI[UIArgName.EffectiveSize].ValueForNonArg, 00.025, 01.200);    host._projArgs.Oversize = (UI[UIArgName.EffectiveSize].ValueForNonArg - 00.025) / (01.200 - 00.025);      break;
-//            case ProjFX.MoiraDamageOrb:                 UI[UIArgName.EffectiveSize].ValueForNonArg = Clamp(UI[UIArgName.EffectiveSize].ValueForNonArg, 00.650, 14.000);    host._projArgs.Oversize = (UI[UIArgName.EffectiveSize].ValueForNonArg - 00.650) / (14.000 - 00.650);      break;
-//            case ProjFX.MoiraHealOrb:                   UI[UIArgName.EffectiveSize].ValueForNonArg = Clamp(UI[UIArgName.EffectiveSize].ValueForNonArg, 00.650, 14.000);    host._projArgs.Oversize = (UI[UIArgName.EffectiveSize].ValueForNonArg - 00.650) / (14.000 - 00.650);      break;
-//            case ProjFX.OrbProjectile:                  UI[UIArgName.EffectiveSize].ValueForNonArg = Clamp(UI[UIArgName.EffectiveSize].ValueForNonArg, 00.500, 04.500);    host._projArgs.Oversize = (UI[UIArgName.EffectiveSize].ValueForNonArg - 00.500) / (04.500 - 00.500);      break;
-//            case ProjFX.OrisaFusionDriver:              UI[UIArgName.EffectiveSize].ValueForNonArg = Clamp(UI[UIArgName.EffectiveSize].ValueForNonArg, 00.325, 06.050);    host._projArgs.Oversize = (UI[UIArgName.EffectiveSize].ValueForNonArg - 00.325) / (06.050 - 00.325);      break;
-//            case ProjFX.PharahRocket:                   UI[UIArgName.EffectiveSize].ValueForNonArg = Clamp(UI[UIArgName.EffectiveSize].ValueForNonArg, 00.075, 02.350);    host._projArgs.Oversize = (UI[UIArgName.EffectiveSize].ValueForNonArg - 00.075) / (02.350 - 00.075);      break;
-//            case ProjFX.RamattraRavenousVortexSphere:   UI[UIArgName.EffectiveSize].ValueForNonArg = Clamp(UI[UIArgName.EffectiveSize].ValueForNonArg, 00.300, 05.750);    host._projArgs.Oversize = (UI[UIArgName.EffectiveSize].ValueForNonArg - 00.300) / (05.750 - 00.300);      break;
-//            case ProjFX.ReinhardtFireStrike:            UI[UIArgName.EffectiveSize].ValueForNonArg = Clamp(UI[UIArgName.EffectiveSize].ValueForNonArg, 01.300, 06.500);    host._projArgs.Oversize = (UI[UIArgName.EffectiveSize].ValueForNonArg - 01.300) / (06.500 - 01.300);      break;
-//            case ProjFX.RoadhogScrap:                   UI[UIArgName.EffectiveSize].ValueForNonArg = Clamp(UI[UIArgName.EffectiveSize].ValueForNonArg, 00.200, 00.850);    host._projArgs.Oversize = (UI[UIArgName.EffectiveSize].ValueForNonArg - 00.200) / (00.850 - 00.200);      break;
-//            case ProjFX.RoadhogScrapBall:               UI[UIArgName.EffectiveSize].ValueForNonArg = Clamp(UI[UIArgName.EffectiveSize].ValueForNonArg, 00.450, 06.000);    host._projArgs.Oversize = (UI[UIArgName.EffectiveSize].ValueForNonArg - 00.450) / (06.000 - 00.450);      break;
-//            case ProjFX.SigmaHypersphere:               UI[UIArgName.EffectiveSize].ValueForNonArg = Clamp(UI[UIArgName.EffectiveSize].ValueForNonArg, 00.100, 03.250);    host._projArgs.Oversize = (UI[UIArgName.EffectiveSize].ValueForNonArg - 00.100) / (03.250 - 00.100);      break;
-//            case ProjFX.SymmetraPhotonProjector:        UI[UIArgName.EffectiveSize].ValueForNonArg = Clamp(UI[UIArgName.EffectiveSize].ValueForNonArg, 00.150, 05.400);    host._projArgs.Oversize = (UI[UIArgName.EffectiveSize].ValueForNonArg - 00.150) / (05.400 - 00.150);      break;
-//            case ProjFX.ZaryaGraviton:                  UI[UIArgName.EffectiveSize].ValueForNonArg = Clamp(UI[UIArgName.EffectiveSize].ValueForNonArg, 00.200, 04.000);    host._projArgs.Oversize = (UI[UIArgName.EffectiveSize].ValueForNonArg - 00.200) / (04.000 - 00.200);      break;
-//            case ProjFX.ZaryaParticleCannon:            UI[UIArgName.EffectiveSize].ValueForNonArg = Clamp(UI[UIArgName.EffectiveSize].ValueForNonArg, 00.250, 08.500);    host._projArgs.Oversize = (UI[UIArgName.EffectiveSize].ValueForNonArg - 00.250) / (08.500 - 00.250);      break;
-//        }
-//    }
-//}
 public String PFXToText(in ProjFX pfx)
 {
     switch (pfx)
     {
+    //Projectile effects
         case ProjFX.BaptisteBioticLauncher:         return("Baptiste Biotic Launcher");         break;
-        case ProjFX.BastionA36TacticalGrenade:      return("Bastion A36 Tactical Grenade");     break;
+        case ProjFX.BastionA36TacticalGrenade:      return("Bastion A-36 Tactical Grenade");    break;
         case ProjFX.EchoStickyBomb:                 return("Echo Sticky Bomb");                 break;
         case ProjFX.GenjiShuriken:                  return("Genji Shuriken");                   break;
         case ProjFX.LucioSonicAmplifier:            return("Lucio Sonic Amplifier");            break;
@@ -643,6 +778,19 @@ public String PFXToText(in ProjFX pfx)
         case ProjFX.SymmetraPhotonProjector:        return("Symmetra Photon Projector");        break;
         case ProjFX.ZaryaGraviton:                  return("Zarya Graviton");                   break;
         case ProjFX.ZaryaParticleCannon:            return("Zarya Particle Cannon");            break;
+    //Other effects
+        case ProjFX.Sphere:                         return("Sphere");                           break;
+        case ProjFX.LightShaft:                     return("Light Shaft");                      break;
+        case ProjFX.Orb:                            return("Orb");                              break;
+        case ProjFX.Ring:                           return("Ring");                             break;
+        case ProjFX.Cloud:                          return("Cloud");                            break;
+        case ProjFX.Sparkles:                       return("Sparkles");                         break;
+        case ProjFX.GoodAura:                       return("Good Aura");                        break;
+        case ProjFX.BadAura:                        return("Bad Aura");                         break;
+    //TX string
+        case ProjFX.String:                         return("String");                           break;
+    //None
+        case ProjFX.None:                           return("None");                             break;
     }
 }
 
