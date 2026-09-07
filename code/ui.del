@@ -1,6 +1,7 @@
-import "BMPW/structs.del";
+import "index.ostw";
+import "../customGameSettings.json";
 //import "../../../Other/extraFunctions.ostw";
-import "tx.del";
+import "Utilities/tx.del";
 //import "mynewfile.del";
 
 enum UIType
@@ -583,7 +584,10 @@ if ((bindings.Any(v => IsButtonHeld(EventPlayer(), v.button)) && editingArgs) ||
         }
     }
 }
+
 Number countOfProjFX: GetAllEnumValues<ProjFX>().Length;
+//Number countOfProjFX: 30;
+
 
 //public void UpdateOversizeByEffectiveSize() {
 //    //Data gathered by ispeakpeak
@@ -718,7 +722,7 @@ if (IsDummyBot())
 if (EventPlayer() == copyBot)
 if (UI[UIArgName.ExportActions].ValueForNonArg)
 {
-    SmallMessage(HostPlayer(), "   Exported! (Check Inspector)");
+    SmallMessage(HostPlayer(), "Exported! (Check Inspector)");
     updateInconstants();
 
     _projArgs = host._projArgs;
