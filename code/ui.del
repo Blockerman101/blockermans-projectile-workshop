@@ -886,3 +886,9 @@ Vector ClampDirection(in Vector dir)
 {
     return Vector(Clamp(dir.X, -1, 1), Clamp(dir.Y, -1, 1), Clamp(dir.Z, -1, 1));
 }
+
+disabled rule: '[DEV] show eles'
+{
+    CreateHudText(HostPlayer(), $"Entity: {EntityCount()}", Location: Location.Right);
+    CreateHudText(HostPlayer(), $"Text: {TextCount()}", Location: Location.Right);
+}
