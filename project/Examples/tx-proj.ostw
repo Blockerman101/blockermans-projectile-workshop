@@ -1,0 +1,53 @@
+import "../BMPW/index.ostw";
+import "../../customGameSettings.json";
+
+// -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -
+//showcase of ProjFX.String option
+// -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -
+
+
+playervar Number myProjID;
+
+import "../Utilities/tx.del";
+String tx: makeTX("TX C00000000001268");
+
+rule: 'Create My TX Projectile'
+Event.OngoingPlayer
+if (EventPlayer().IsButtonHeld(Button.Interact))
+if (!myProjID)
+{
+    CreateCustomProjectile(TX.CommonPatches());
+    myProjID = lastProjectileID;
+}
+
+rule: 'Handle My TX Projectile'
+Event.OngoingPlayer
+if (ProjData.Get(myProjID).ProjState == ProjState.Inactive)
+{
+    ProjData data: ProjData.Get(myProjID);
+    Vector pos: data.Hit.Position;
+
+    PlayEffect(AllPlayers(), PlayEffect.BrigitteRepairPackImpactEffect, Team.Team1, pos, 0);
+    PlayEffect(AllPlayers(), PlayEffect.TracerRecallDisappearSound, TeamOf(EventPlayer()), pos, 75);
+    
+    Damage(data.Hit.Player, EventPlayer(), 160);
+
+    myProjID = 0;
+}
+
+ProjectileArgs TX: {
+    ProjFX: ProjFX.String,
+    String: tx,
+    VisualRadius: 2.5,
+    Radius: 1,
+    ..ProjectileArgs.Default()
+};
+
+
+
+rule: '[DEV] Spawn Dummies'
+Event.OngoingGlobal
+if (HostPlayer().IsButtonHeld(Button.Crouch))
+{
+    CreateDummyBot([Hero.Dva, Hero.Bastion, Hero.Zenyatta].Random(), OppositeTeamOf(HostPlayer().Team()), -1, PositionOf(HostPlayer()), HostPlayer().FacingDirection());
+}
