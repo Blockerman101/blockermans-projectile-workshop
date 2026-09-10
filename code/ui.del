@@ -500,8 +500,6 @@ if (UI.Length)
         Number ie: EvaluateOnce(i);
         ProjArgData current: UI[ie];
 
-        //Update initial
-        LogToInspector("Updated");
         UI[i].UpdateOverriddenText();
 
         //Split into 3 different strings, 1 for each vector component
@@ -712,8 +710,6 @@ if (EventPlayer().IsButtonHeld(UI[UIArgName.ChangeFiringButton].ValueForNonArg))
 if (!editingArgs || !bindings.Map(v => v.button).Contains(UI[UIArgName.ChangeFiringButton].ValueForNonArg))
 {
     updateInconstants(EventPlayer());
-    SmallMessage(HostPlayer(), "proj created");
-
     ProjectileArgs processed: {Direction: (_projArgs.Direction + Vector(0, UI[UIArgName.DeltaVector].ValueForNonArg, 0)).Normalize(), .._projArgs};
     CreateCustomProjectile(processed.CommonPatches());
     _projIDs.ModAppend(lastProjectileID);

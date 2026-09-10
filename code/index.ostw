@@ -70,9 +70,9 @@ public void CastPFX(in ProjFX pfx, const ProjectileType => void castProjFX, cons
 }
 
 public void ToggleableLogToInspector(in String str) {
-    LogToInspector(str);
+    //LogToInspector(str);
 }
 
 public void ToggleableSmallMessage(in Player|Player[] player, in String str) {
-    SmallMessage(player, str);
+    //SmallMessage(player, str);
 }

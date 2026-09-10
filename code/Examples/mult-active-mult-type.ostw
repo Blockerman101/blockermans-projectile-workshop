@@ -43,7 +43,7 @@ ProjectileArgs Freeze: {
 
 ProjectileArgs Burn: {
     Color: Color.Red,
-    ..Freeze //notice how we can inherit the other args of Freeze to make coding easier!
+    ..Freeze //notice how we can inherit the other args of pre-defined proj types for a better workflow!
 };
 
 
