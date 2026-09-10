@@ -12,7 +12,7 @@ import "../../customGameSettings.json";
 
 ProjectileArgs HelixRocket: {
     Speed: 50,
-    //add 0.3 to account for edge cases, since BMPW player hit detection is (currently) not as accurate as in-game hit detection
+    //add 0.3 to account for edge cases, since BMPW player hit detection is (as of v1.0) not as accurate as in-game hit detection
     Radius: 0.32 + 0.3,
     VisualRadius: 0.32,
     Lifetime: 2,
