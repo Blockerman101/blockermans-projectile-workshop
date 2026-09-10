@@ -19,31 +19,13 @@ enum UIType
     //ExportArgs
 }
 
-enum OLD_UIArgName
-{
-    _ProjID,              //0
-    ProjFX,               //1
-    StartPosition,        //2
-    Direction,            //3
-    Targets,              //4
-    Oversize,             //5
-    Speed,                //6
-    Lifetime,             //7
-    Gravity,              //8
-    _TimeOfCall,          //9
-    ExportActions,        //10
-    UseRawValues,         //11
-    ChangeFiringButton,   //12
-    DeltaVector,          //13
-    EnableEffectiveSize,  //14
-    EffectiveSize         //15
-}
+
 enum UIArgName
 {
     _ProjID,                //1
     ProjFX,                 //1
-    Color,                  //~
-    String,                 //~
+    Color,                  //1
+    String,                 //1
     VisualRadius,           //1
     VisibleTo,              //1
     FriendlyTo,             //1
@@ -53,16 +35,14 @@ enum UIArgName
     Gravity,                //1
     Targets,                //1
     Radius,                 //1
-    SaveDataTicks,          //1
     Lifetime,               //1
+    SaveDataTicks,          //1
     _TimeOfCall,            //1
 
     ExportActions,          //1
     UseRawValues,           //1
     ChangeFiringButton,     //1
-    DeltaVector,            //1
-    EnableEffectiveSize,    //0
-    EffectiveSize           //0
+    DeltaVector             //1
 }
 
 /*
@@ -261,15 +241,6 @@ globalvar ProjArgData[] UI = [
         Name: "Radius (In-World)",
         ..ProjArgData.Construct()
     },
-
-    //SaveDataTicks
-    {
-        Pointer: UIArgName.SaveDataTicks,
-        UIType: UIType.Number,
-        Name: "Save-Data Ticks",
-        ..ProjArgData.Construct()
-    },
-
     //Lifetime
     {
         Pointer: UIArgName.Lifetime,
@@ -279,6 +250,15 @@ globalvar ProjArgData[] UI = [
         MinAndMax: [0, 60],
         ..ProjArgData.Construct()
     },
+
+    //SaveDataTicks
+    {
+        Pointer: UIArgName.SaveDataTicks,
+        UIType: UIType.Number,
+        Name: "Save-Data Ticks",
+        ..ProjArgData.Construct()
+    },
+
 
     //_TimeOfCall
     {
@@ -423,9 +403,13 @@ Number _ColorsLength: 17;
 
 ProjectileArgs args: HostPlayer()._projArgs;
 
-
+rule: '[Change Me!] Set Default Projectile Args'
+Event.OngoingPlayer
+{
+    _projArgs = ProjectileArgs.Default();
+}
 Player host: HostPlayer();
-playervar ProjectileArgs _projArgs = ProjectileArgs.Default();
+playervar ProjectileArgs _projArgs;
 
 void updateInconstants(Player player=HostPlayer()) "Update Inconstants" {
     if (!UI[UIArgName.UseRawValues].ValueForNonArg) {
@@ -478,6 +462,8 @@ ActionsForUIPress[] bindings: [
 ];
 playervar Boolean editingArgs;
 globalvar Number changeSize = 1;
+//This value points to the index of a proj arg 
+//This can have two elements, with the second pointing to a component of a vector
 globalvar Number[] ArgIndexForUI = [externalPointers.First];
 
 
@@ -559,7 +545,7 @@ if (UI.Length)
     }
 }
 
-
+//the UI struct has internal variables, but we only want the user to access external variables
 Number[] externalPointers: UI.Filter(v => !v.Internal).Map(v => <Number>v.Pointer);
 playervar Number indexInExternalPointers = 0;
 
@@ -668,8 +654,9 @@ if ((bindings.Any(v => IsButtonHeld(EventPlayer(), v.button)) && editingArgs) ||
                                 EventPlayer()._projArgs[ArgIndexForUI.First] = !EventPlayer()._projArgs[ArgIndexForUI.First];
                             } else {
                                 UI[ArgIndexForUI.First].ValueForNonArg = !current.ValueForNonArg;
-                            }break;
+                            } break;
                             
+
                             case UIType.TwoStepBoolean:
                                 if (current.Value() == 1 || current.Value() == 0) {
                                     twoStepBooleanTimer.ModAppend([<Number>current.Pointer, TotalTimeElapsed()]);

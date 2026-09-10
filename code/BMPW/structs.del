@@ -272,10 +272,10 @@ single struct ProjectileArgs
         public Vector Gravity;
         public Player[] Targets;
         public Number Radius;
+        public Number Lifetime;
         //saves this projectiles data (prevents it from going Inactive -> Unsafe) for SaveDataTicks ticks (a tick is 0.016s)
         //Note that excessive save time (doing 9999 without thinking) is not recommended and even safeguarded against by the system (which caps it at ~600 ticks)
         public Number SaveDataTicks;
-        public Number Lifetime;
 
     //internal - do not set!
     private Number _TimeOfCall;
