@@ -1,6 +1,6 @@
 import "../customGameSettings.json";
 //import "../../../Other/extraFunctions.ostw";
-import "index.ostw";
+import "BMPW/index.ostw";
 import "Utilities/_flight.del";
 //import "Utilities/tx.del";
 import "Utilities/_dev.del";
@@ -34,7 +34,7 @@ String[] TX: [
     "TX C000000000004F3",
     "TX C00000000000633",
     "TX C00000000000EE9",
-    "TX C00000000001268",
+    "TX C00000000001268", //*
     "TX C00000000001291",
     "TX C00000000001411",
     "TX C0000000000173E",

@@ -1,4 +1,4 @@
-import "index.ostw";
+import "BMPW/index-full.ostw";
 import "../customGameSettings.json";
 //import "../../../Other/extraFunctions.ostw";
 import "Utilities/tx.del";
