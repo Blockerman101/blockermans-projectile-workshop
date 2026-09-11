@@ -1,12 +1,12 @@
 import "../index.ostw";
 
-globalvar Vector projectilePosition;
+globalvar Vector projPosition;
 public void GetProjPosition(Number IDForGetProjPosition) "[BMPW] Get Proj Position Sub" {
-    projectilePosition = projData[IDForGetProjPosition].Position();
+    projPosition = projData[IDForGetProjPosition].Position();
 }
 
 //example usage:
 //
 //  Global.IDForGetProjPosition = 3;
 //  Call Subroutine(GetProjPosition);
-//  Global.myProjPosition = Global.projectilePosition;
+//  Global.myProjPosition = Global.projPosition;

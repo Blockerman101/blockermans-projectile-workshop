@@ -5,7 +5,7 @@ import "code/playerCollision.del";
 import "code/projDestructor.del";
 import "code/environmentCollision.del";
 //for non-OSTW users. for you: use projData[<myProjID>].Position()
-//import "BMPW/getProjPosition.del";
+//import "code/getProjPosition.del";
 
 
 // -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  
