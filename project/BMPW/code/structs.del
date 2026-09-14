@@ -325,7 +325,7 @@ single struct ProjArgs
             StartPosition: this.StartPosition + (0.5 * this.Direction * this.Radius), 
             
             //fix gimbal locking
-            Direction: VerticalFacingAngleOf(player) <= -88.9 ? Up() : (VerticalFacingAngleOf(player) >= 88.9 ? Down() : this.Direction),
+            Direction: VerticalFacingAngleOf(player) <= -89.8 ? Up() : (VerticalFacingAngleOf(player) >= 89.8 ? Down() : this.Direction),
             ..this
         };
     }
