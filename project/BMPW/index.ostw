@@ -4,7 +4,8 @@ import "code/stateCheck.del";
 import "code/playerCollision.del";
 import "code/projDestructor.del";
 import "code/environmentCollision.del";
-//for non-OSTW users. for you: use projData[<myProjID>].Position()
+
+//for non-OSTW users. for you: use projData.Get(<myProjID>).Position()
 //import "code/getProjPosition.del";
 
 
@@ -68,6 +69,18 @@ public void CastPFX(in ProjFX pfx, const ProjectileType => void castProjFX, cons
     }
 
 }
+
+
+
+
+
+
+
+// -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  
+//developer only -- you dont need to mess with anything below this point
+// -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  
+
+
 
 public void ToggleableLogToInspector(in String str) {
     //LogToInspector(str);
