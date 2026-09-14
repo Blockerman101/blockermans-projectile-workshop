@@ -7,19 +7,19 @@ import "../../customGameSettings.json";
 
 playervar Number airstrikeParent;
 
-ProjectileArgs AirstrikeParent: {
+ProjArgs AirstrikeParent: {
     ProjFX: ProjFX.PharahRocket,
     Direction: (EventPlayer().FacingDirection() + Up() * 0.1).Normalize(), //add delta vector
     Speed: 25,
     Lifetime: 3,
     Radius: 0.4,
     VisualRadius: 0.4,
-    ..ProjectileArgs.Default()
+    ..ProjArgs.Default()
 };
 
 
 Number verticalVariance: 10;
-ProjectileArgs AirstrikeChild: {
+ProjArgs AirstrikeChild: {
     ProjFX: ProjFX.PharahRocket,
     Direction: DirectionFromAngles(RandomReal(0, 360), RandomReal(270 - verticalVariance, 270 + verticalVariance)).Normalize(),
     Gravity: Vector(0, -80, 0),
@@ -28,7 +28,7 @@ ProjectileArgs AirstrikeChild: {
     Lifetime: RandomReal(2, 3),
     Radius: 0.2,
     VisualRadius: 0,
-    ..ProjectileArgs.Default()
+    ..ProjArgs.Default()
 };
 
 rule: 'Create Airstrike Parent Projectile'
@@ -36,7 +36,7 @@ Event.OngoingPlayer
 if (EventPlayer().IsButtonHeld(Button.Interact))
 {
     CreateCustomProjectile(AirstrikeParent.CommonPatches());
-    airstrikeParent = lastProjectileID;
+    airstrikeParent = lastProjID;
     PlayEffect(AllPlayers(), PlayEffect.PharahConcussiveBlastSound, null, EyePosition(EventPlayer()), 80);
 
     # since the cd is longer than the lifetime, we can assume only 1 Airstrike Parent will be active at once
@@ -56,7 +56,7 @@ if (ProjData.Get(airstrikeParent).Time() % 0.5 <= 0.016)
 {
     //no common patches because this does not fire from a player
     CreateCustomProjectile(AirstrikeChild);
-    airstrikeChild.ModAppend(lastProjectileID);
+    airstrikeChild.ModAppend(lastProjID);
 }
 
 rule: 'Handle Airstrike Child'

@@ -6,31 +6,31 @@ Vector | Number lerp2(in Vector | Number a, in Vector | Number b, in Number t, i
 
 
 
-globalvar Number lastProjectileID = 0;
+globalvar Number lastProjID = 0;
 globalvar ProjData[] projData = [ProjData.Construct()];
 //globalvar (Number|Number[])[] projData_VFX = [null];
-globalvar ProjectileArgs[] _projConstructorQueue = [];
-//globalvar ProjectileArgs[] constructorData = [EmptyArray()];  //This var isnt be needed with 1 constructor, you can just ref `_projConstructorQueue.First`
+globalvar ProjArgs[] _projConstructorQueue = [];
+//globalvar ProjArgs[] constructorData = [EmptyArray()];  //This var isnt be needed with 1 constructor, you can just ref `_projConstructorQueue.First`
 
 
-void CreateCustomProjectile(ProjectileArgs projectileArgs) "[BMPW] CreateProj Sub"
+void CreateCustomProjectile(ProjArgs projArgs) "[BMPW] CreateProj Sub"
 {
     if (projData.Map(v => v.ProjState).Any(v => v == ProjState.Unsafe)) //Make new lastProjID
     {
-        lastProjectileID = projData.Map(v => v.ProjState == ProjState.Unsafe ? CurrentArrayIndex() : false).Filter(v => v).First;
+        lastProjID = projData.Map(v => v.ProjState == ProjState.Unsafe ? CurrentArrayIndex() : false).Filter(v => v).First;
     }
     else
     {
-        lastProjectileID = projData.Length;
+        lastProjID = projData.Length;
     }
-    //Args.ProjID = lastProjectileID;
-    projectileArgs._SetID(lastProjectileID);
-    projectileArgs._SetTOC(UTILS_tte);
-    projData[lastProjectileID].ProjState = ProjState.NULL; //setting a projstate value so `lastProjectileID = projData.Length` increments correctly with >1 proj in a single tick
+    //Args.ProjID = lastProjID;
+    projArgs._SetID(lastProjID);
+    projArgs._SetTOC(UTILS_tte);
+    projData[lastProjID].ProjState = ProjState.NULL; //setting a projstate value so `lastProjID = projData.Length` increments correctly with >1 proj in a single tick
     
 
-    //ToggleableLogToInspector($"Last ID: {lastProjectileID}");
-    _projConstructorQueue.ModAppend(projectileArgs); //Add this proj call to the construction queue
+    //ToggleableLogToInspector($"Last ID: {lastProjID}");
+    _projConstructorQueue.ModAppend(projArgs); //Add this proj call to the construction queue
 
     //DEV
     //Args = null;
@@ -43,8 +43,8 @@ if (_projConstructorQueue.Length > 0)
 
     //ToggleableLogToInspector("Constructor Fired!");
 
-    ProjectileArgs _TEMP_argsForConstructor = _projConstructorQueue.First;
-    ProjectileArgs Args: _TEMP_argsForConstructor;
+    ProjArgs _TEMP_argsForConstructor = _projConstructorQueue.First;
+    ProjArgs Args: _TEMP_argsForConstructor;
 
     Any ID: Args._GetID();
 

@@ -198,7 +198,7 @@ private void WipeData() {
 
     _OTCQueue = [];
     
-    lastProjectileID = 0;
+    lastProjID = 0;
 
     //consider wiping temp variables?
 }

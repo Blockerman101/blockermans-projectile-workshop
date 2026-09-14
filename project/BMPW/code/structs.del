@@ -22,8 +22,8 @@ void SyncTTE() {
 //    //this struct currently uses 2 vars (parallel)
 //    //public Number ID;
 //    //public Number type;
-//    public ProjectileArgs args;
-//    public static ProjConstructor Construct(): {args: ProjectileArgs.Construct()};
+//    public ProjArgs args;
+//    public static ProjConstructor Construct(): {args: ProjArgs.Construct()};
 //    public static void Queue(in ProjConstructor projArguments) {_projConstructorQueue.ModAppend(projArguments);}
 //
 //}
@@ -91,7 +91,7 @@ struct ProjData
         Internal: InternalProjData.Construct()
     };
     public static ProjData Get(in Number ID): projData[ID];
-    //public static void AddArgs(in ProjectileArgs args) {projData.Map(v => projData[CurrentArrayIndex()].ProjArgs).ModAppend(args);}
+    //public static void AddArgs(in ProjArgs args) {projData.Map(v => projData[CurrentArrayIndex()].ProjArgs).ModAppend(args);}
 }
 
 single struct InternalProjData
@@ -102,7 +102,7 @@ single struct InternalProjData
     public Number Radius;
     public Player[] Targets;
     public Vector InitVelocity;
-    //the vfx associated with the projectile, usually only the projfx but ive used it for stuff like beam effects for trajectories
+    //the vfx associated with the projectile, usually only the projfx but ive used it for stuff like beam effects for trajectories in testing
     public Number[] VFX;
     public Vector Gravity;
     public static InternalProjData Construct(): {
@@ -247,7 +247,7 @@ enum ProjState
 
 
 
-single struct ProjectileArgs
+single struct ProjArgs
 {
     //internal - do not set!
     private Number _ProjID;
@@ -259,7 +259,7 @@ single struct ProjectileArgs
         public (Color|Team) Color;
         public String String;
         public Number VisualRadius;
-        //WARNING: ProjectileArgs.VisibleTo = LocalPlayer() doesnt work!
+        //WARNING: ProjArgs.VisibleTo = LocalPlayer() doesnt work!
         //Tip: Use ProjFX.None instead of VisibleTo = null
         public (Player|Player[]) VisibleTo;
         public (Player|Player[]) FriendlyTo;
@@ -281,7 +281,7 @@ single struct ProjectileArgs
     private Number _TimeOfCall;
         public Number _GetTOC() {return _TimeOfCall;}
         public ref void _SetTOC(in Number time) {_TimeOfCall = time;} 
-    public static ProjectileArgs Construct(): {
+    public static ProjArgs Construct(): {
         ProjFX: ProjFX.None, 
         Color: null,
         StartPosition: Vector.Zero, 
@@ -299,7 +299,7 @@ single struct ProjectileArgs
         SaveDataTicks: null,
         _TimeOfCall: 0
         };
-    public static ProjectileArgs Default(in Player player=EventPlayer()): {
+    public static ProjArgs Default(in Player player=EventPlayer()): {
         ProjFX: ProjFX.Sphere, 
         Color: Color.Red,
         StartPosition: EyePosition(player), 
@@ -319,10 +319,10 @@ single struct ProjectileArgs
         };
 
     //Modifies your args with things that youll probably want, like gimbal locking fix
-    public ProjectileArgs CommonPatches(in Player player=EventPlayer()) {
+    public ProjArgs CommonPatches(in Player player=EventPlayer()) {
         return {
-            //ensure proj starts out of player
-            StartPosition: this.StartPosition + this.Direction * this.Radius, 
+            //ensure proj starts somewhat out of player
+            StartPosition: this.StartPosition + (0.5 * this.Direction * this.Radius), 
             
             //fix gimbal locking
             Direction: VerticalFacingAngleOf(player) <= -88.9 ? Up() : (VerticalFacingAngleOf(player) >= 88.9 ? Down() : this.Direction),
@@ -398,7 +398,7 @@ enum ProjFX
 
 Number Clamp(in Number value, in Number min, in Number max): Min(Max(value, min), max);
 
-public void EffectiveSizeToOversize(ref ProjectileArgs projArgs) {
+public void EffectiveSizeToOversize(ref ProjArgs projArgs) {
     projArgs.VisualRadius = [
         //fx,                                      minSize,    maxSize - minSize
         //<idx>                                    [0]         [1]

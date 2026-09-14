@@ -17,7 +17,7 @@ if (EventPlayer().IsButtonHeld(Button.Interact))
 if (!myProjID)
 {
     CreateCustomProjectile(TX.CommonPatches());
-    myProjID = lastProjectileID;
+    myProjID = lastProjID;
 }
 
 rule: 'Handle My TX Projectile'
@@ -35,12 +35,12 @@ if (ProjData.Get(myProjID).ProjState == ProjState.Inactive)
     myProjID = 0;
 }
 
-ProjectileArgs TX: {
+ProjArgs TX: {
     ProjFX: ProjFX.String,
     String: tx,
     VisualRadius: 2.5,
     Radius: 1,
-    ..ProjectileArgs.Default()
+    ..ProjArgs.Default()
 };
 
 

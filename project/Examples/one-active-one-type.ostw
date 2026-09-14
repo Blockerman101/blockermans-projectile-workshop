@@ -20,7 +20,7 @@ if (!myProjID)
     CreateCustomProjectile(Freeze.CommonPatches());
 
     # store my projectile ID. similar to something like myEffectID = LastCreatedEntity();
-    myProjID = lastProjectileID;
+    myProjID = lastProjID;
 }
 
 rule: 'Handle My Freeze Projectile'
@@ -39,9 +39,9 @@ if (ProjData.Get(myProjID).ProjState == ProjState.Inactive)
     myProjID = 0;
 }
 
-ProjectileArgs Freeze: {
+ProjArgs Freeze: {
     ProjFX: ProjFX.Sphere,
     Color: Color.White,
     VisualRadius: 1,
-    ..ProjectileArgs.Default()
+    ..ProjArgs.Default()
 };

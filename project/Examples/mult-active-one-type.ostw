@@ -10,11 +10,11 @@ import "../../customGameSettings.json";
 playervar Number[] freezeProjIDs = [];
 
 //set macro for proj args
-ProjectileArgs Freeze: {
+ProjArgs Freeze: {
     ProjFX: ProjFX.Sphere,
     Color: Color.White,
     VisualRadius: 0.25,
-    ..ProjectileArgs.Default()
+    ..ProjArgs.Default()
 };
 
 rule: 'Create My Freeze Projectile'
@@ -26,7 +26,7 @@ if (EventPlayer().IsButtonHeld(Button.Interact))
     CreateCustomProjectile(Freeze.CommonPatches());
 
     # append proj ID
-    freezeProjIDs.ModAppend(lastProjectileID);
+    freezeProjIDs.ModAppend(lastProjID);
 
     # add a 0.5s cooldown
     Wait(0.5);

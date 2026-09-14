@@ -10,7 +10,7 @@ import "../../customGameSettings.json";
 //this system is made to account for 1 active helix rocket per player
 //having multiple active helix rockets will result in only the last one being handled
 
-ProjectileArgs HelixRocket: {
+ProjArgs HelixRocket: {
     Speed: 50,
     //add 0.3 to account for edge cases, since BMPW player hit detection is (as of v1.0) not as accurate as in-game hit detection
     Radius: 0.32 + 0.3,
@@ -20,7 +20,7 @@ ProjectileArgs HelixRocket: {
     ProjFX: ProjFX.None,
     //ProjFX: ProjFX.Sphere,
     Gravity: Vector.Zero,
-    ..ProjectileArgs.Default()
+    ..ProjArgs.Default()
 };
 
 playervar Number HelixID;
@@ -36,7 +36,7 @@ if (EventPlayer().IsFiringSecondary())
 
     # this example is for base game helix rocket, where there
     CreateCustomProjectile(HelixRocket);
-    HelixID = lastProjectileID;
+    HelixID = lastProjID;
 }
 
 rule: 'Handle Helix'

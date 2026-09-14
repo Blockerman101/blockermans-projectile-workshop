@@ -72,7 +72,7 @@ single struct ProjArgData
     //Text refers to the displayed text of a value of an arg, on the ui. It can be overridden without changing what value is
     
 
-    //The corresponding index in ProjectileArgs
+    //The corresponding index in ProjArgs
     //Make another field in the UIArgName enum, and assign it to the pointer
     public UIArgName Pointer;
     //Whether this arg is used internally, or can be set by the player
@@ -401,21 +401,21 @@ Number _ColorsLength: 17;
 //"Gravity",
 //"_TimeOfCall",
 
-ProjectileArgs args: HostPlayer()._projArgs;
+ProjArgs args: HostPlayer()._projArgs;
 
 rule: '[Change Me!] Set Default Projectile Args'
 Event.OngoingPlayer
 {
-    _projArgs = ProjectileArgs.Default();
+    _projArgs = ProjArgs.Default();
 }
 Player host: HostPlayer();
-playervar ProjectileArgs _projArgs;
+playervar ProjArgs _projArgs;
 
 void updateInconstants(Player player=HostPlayer()) "Update Inconstants" {
     if (!UI[UIArgName.UseRawValues].ValueForNonArg) {
         for (UTILS_waitlessIterator = 0; UTILS_waitlessIterator < CountOf(player._projArgs); UTILS_waitlessIterator++) {
             if (UI[UTILS_waitlessIterator].TextForInconstantValue) {
-            player._projArgs[UTILS_waitlessIterator] = ProjectileArgs.Default(player)[UTILS_waitlessIterator];
+            player._projArgs[UTILS_waitlessIterator] = ProjArgs.Default(player)[UTILS_waitlessIterator];
             }
         }   
     }
@@ -710,9 +710,9 @@ if (EventPlayer().IsButtonHeld(UI[UIArgName.ChangeFiringButton].ValueForNonArg))
 if (!editingArgs || !bindings.Map(v => v.button).Contains(UI[UIArgName.ChangeFiringButton].ValueForNonArg))
 {
     updateInconstants(EventPlayer());
-    ProjectileArgs processed: {Direction: (_projArgs.Direction + Vector(0, UI[UIArgName.DeltaVector].ValueForNonArg, 0)).Normalize(), .._projArgs};
+    ProjArgs processed: {Direction: (_projArgs.Direction + Vector(0, UI[UIArgName.DeltaVector].ValueForNonArg, 0)).Normalize(), .._projArgs};
     CreateCustomProjectile(processed.CommonPatches());
-    _projIDs.ModAppend(lastProjectileID);
+    _projIDs.ModAppend(lastProjID);
 }
 
 
@@ -797,7 +797,7 @@ rule: '[DEV] show values'
    //_CreateDevText(testString);
    //_CreateDevText($"[0]: {split.First}, [1]: {split[1]}, [2]: {split[2]}]");
 }
-//ProjectileArgs args(in Player player=EventPlayer()): ProjectileArgs.Default(player);
+//ProjArgs args(in Player player=EventPlayer()): ProjArgs.Default(player);
 
 
 //

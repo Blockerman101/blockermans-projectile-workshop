@@ -8,17 +8,17 @@ import "../../customGameSettings.json";
 
 //my 4 proj types
 
-ProjectileArgs Bullet: {
+ProjArgs Bullet: {
     Speed: 75,
     Lifetime: 2,
     Radius: 0.25,
     VisualRadius: 0.25,
     ProjFX: ProjFX.Sphere,
     Color: Color.Purple,
-    ..ProjectileArgs.Default()
+    ..ProjArgs.Default()
 };
 
-ProjectileArgs Bomb: {
+ProjArgs Bomb: {
     Speed: 15,
     //Add delta vector
     Direction: (EventPlayer().FacingDirection() + Up() * 0.13).Normalize(),
@@ -30,18 +30,18 @@ ProjectileArgs Bomb: {
     Radius: 2,
     //there are 62.5 ticks in a second, so having 65 save data ticks ensures my ProjData will still be there after a 1s fuse
     SaveDataTicks: 65,
-    ..ProjectileArgs.Default()
+    ..ProjArgs.Default()
 };
 
-ProjectileArgs Freeze: {
+ProjArgs Freeze: {
     ProjFX: ProjFX.Sphere,
     Color: Color.White,
     Speed: 40,
     VisualRadius: 0.25,
-    ..ProjectileArgs.Default()
+    ..ProjArgs.Default()
 };
 
-ProjectileArgs Burn: {
+ProjArgs Burn: {
     Color: Color.Red,
     ..Freeze //notice how we can inherit the other args of pre-defined proj types for a better workflow!
 };
@@ -92,7 +92,7 @@ if (NoStuns)
 {
     CreateCustomProjectile(Bullet);
     projs.ModAppend(<MyProj>{
-        ID: lastProjectileID,
+        ID: lastProjID,
         Type: ProjType.Bullet
     });
 
@@ -114,7 +114,7 @@ if (NoStuns)
 {
     CreateCustomProjectile(Bomb.CommonPatches());
     projs.ModAppend(<MyProj>{
-        ID: lastProjectileID,
+        ID: lastProjID,
         Type: ProjType.Bomb
     });
 
@@ -132,7 +132,7 @@ if (NoStuns)
 {
     CreateCustomProjectile(Freeze);
     projs.ModAppend(<MyProj>{
-        ID: lastProjectileID,
+        ID: lastProjID,
         Type: ProjType.Freeze
     });
 
@@ -150,7 +150,7 @@ if (NoStuns)
 {
     CreateCustomProjectile(Burn);
     projs.ModAppend(<MyProj>{
-        ID: lastProjectileID,
+        ID: lastProjID,
         Type: ProjType.Burn
     });
 

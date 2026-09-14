@@ -15,9 +15,9 @@ import "Utilities/_dev.del";
 //{
 //    updateInconstants();
 //    //Incorporate deltaV
-//    ProjectileArgs argsForDeltaV: {Direction: (_projArgs.Direction + Vector(0, UI[13].ValueForNonArg, 0)).Normalize(), ..EventPlayer()._projArgs};
+//    ProjArgs argsForDeltaV: {Direction: (_projArgs.Direction + Vector(0, UI[13].ValueForNonArg, 0)).Normalize(), ..EventPlayer()._projArgs};
 //    CreateCustomProjectile(argsForDeltaV);
-//    //Number myID = lastProjectileID;
+//    //Number myID = lastProjID;
 //    Wait(0.25, WaitBehavior.AbortWhenFalse);
 //    LoopIfConditionIsTrue();
 //}
@@ -55,26 +55,26 @@ if (EventPlayer().IsButtonHeld(Button.PrimaryFire))
 if (!EventPlayer().IsButtonHeld(Button.Crouch) && !EventPlayer().IsButtonHeld(Button.Interact))
 if (EventPlayer() == HostPlayer())
 {
-    //ProjectileArgs bigProj: {ProjFX: ProjFX.BaptisteBioticLauncher, Radius: 0.3, VisualRadius: 1, Speed: 50, Lifetime: 2.5, ..ProjectileArgs.Default()};
+    //ProjArgs bigProj: {ProjFX: ProjFX.BaptisteBioticLauncher, Radius: 0.3, VisualRadius: 1, Speed: 50, Lifetime: 2.5, ..ProjArgs.Default()};
     //CreateCustomProjectile(bigProj);
 
-    //ProjectileArgs electricBall: <ProjectileArgs>{ProjFX: ProjFX.String, String: makeTX(TX[iter]), Color: Color.White, Radius: 0.5, VisualRadius: 3.0, Lifetime: 7,  ..ProjectileArgs.Default()}.CommonPatches();
-    ProjectileArgs sphere: {
+    //ProjArgs electricBall: <ProjArgs>{ProjFX: ProjFX.String, String: makeTX(TX[iter]), Color: Color.White, Radius: 0.5, VisualRadius: 3.0, Lifetime: 7,  ..ProjArgs.Default()}.CommonPatches();
+    ProjArgs sphere: {
         SaveDataTicks: 10,
         ProjFX: ProjFX.BaptisteBioticLauncher,
         Color: Color.LimeGreen,
         Radius: 0.5,
         VisualRadius: 0.5,
         Lifetime: 7,
-        ..ProjectileArgs.Default()
+        ..ProjArgs.Default()
         }.CommonPatches();
 
-    ProjectileArgs sphereNoGrav: {Gravity: Vector.Zero, ..sphere}.CommonPatches();
+    ProjArgs sphereNoGrav: {Gravity: Vector.Zero, ..sphere}.CommonPatches();
     Vector startPos = Vector(5, 0.5, RandomReal(-10, 10));
-    ProjectileArgs constArgs: <ProjectileArgs>{StartPosition: startPos, Direction: startPos.Towards(Vector(-20, 6, 0)), ..sphere};
+    ProjArgs constArgs: <ProjArgs>{StartPosition: startPos, Direction: startPos.Towards(Vector(-20, 6, 0)), ..sphere};
     CreateCustomProjectile(sphere);
-    bigProjIDs.ModAppend(lastProjectileID);
-    ToggleableLogToInspector("I appended proj " + lastProjectileID);
+    bigProjIDs.ModAppend(lastProjID);
+    ToggleableLogToInspector("I appended proj " + lastProjID);
     MinWait();
     //LoopIfConditionIsTrue();
 }
@@ -125,9 +125,9 @@ if (EventPlayer().IsFiringSecondary())
 if (!EventPlayer().IsButtonHeld(Button.Crouch))
 if (EventPlayer() == HostPlayer())
 {
-    ProjectileArgs myArgs = {ProjFX: ProjFX.PharahRocket, StartPosition: EventPlayer().EyePosition(), Speed: 50, Gravity: Vector.Zero, Lifetime: 2, ..ProjectileArgs.Default()};
+    ProjArgs myArgs = {ProjFX: ProjFX.PharahRocket, StartPosition: EventPlayer().EyePosition(), Speed: 50, Gravity: Vector.Zero, Lifetime: 2, ..ProjArgs.Default()};
     CreateCustomProjectile(myArgs);
-    bigProjIDs.ModAppend(lastProjectileID);
+    bigProjIDs.ModAppend(lastProjID);
 }
 
 
