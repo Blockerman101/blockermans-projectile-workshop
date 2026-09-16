@@ -399,6 +399,9 @@ enum ProjFX
 Number Clamp(in Number value, in Number min, in Number max): Min(Max(value, min), max);
 
 public void EffectiveSizeToOversize(ref ProjArgs projArgs) {
+    //Data gathered by ispeakpeak
+    //https://discord.com/channels/570672959799164958/1253195280573136896/1253203348610486326
+
     projArgs.VisualRadius = [
         //fx,                                      minSize,    maxSize - minSize
         //<idx>                                    [0]         [1]
