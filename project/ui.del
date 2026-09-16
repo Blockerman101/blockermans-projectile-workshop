@@ -656,12 +656,24 @@ if ((bindings.Any(v => IsButtonHeld(EventPlayer(), v.button)) && editingArgs) ||
                             
 
                             case UIType.TwoStepBoolean:
+
+                                //if we are not 'in between' 0 and 1 (meaning " " or Vector.Zero), then start the timeout
                                 if (current.Value() == 1 || current.Value() == 0) {
                                     twoStepBooleanTimer.ModAppend([<Number>current.Pointer, TotalTimeElapsed()]);
-                                } else {
+                                }
+                                
+                                //Otherwise, play an effect to signal the arg transitioning to either 1 or 0
+                                else {
                                     PlayEffect(HostPlayer(), PlayEffect.BuffImpactSound, null, EyePosition(host), 150);
                                 }
+
+                                //Step the two-step boolean
                                 if (current.IsArg) {
+
+                                    //As a reminder, the order is:
+                                    //0 -> Vector.Zero -> 1
+                                    //1 -> " " -> 0
+
                                     EventPlayer()._projArgs[ArgIndexForUI.First] = (args[ArgIndexForUI.First] == false ?
                                         (
                                             args[ArgIndexForUI.First] == 0 ? Vector.Zero : 1
