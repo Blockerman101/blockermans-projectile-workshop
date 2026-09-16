@@ -829,8 +829,6 @@ if (twoStepBooleanTimer.Any(v => v[1] <= TotalTimeElapsed() - TimeToTimeout))
         }
     }
     UI[current[0]].UpdateOverriddenText();
-    PlayEffect(HostPlayer(), PlayEffect.DebuffImpactSound, null, HostPlayer().EyePosition(), 100);
-    SmallMessage(HostPlayer(), "Timed Out! (Click Twice In A Row)");
     twoStepBooleanTimer = twoStepBooleanTimer.Filter(v => v.First != current.First);
     MinWait();
     LoopIfConditionIsTrue();
